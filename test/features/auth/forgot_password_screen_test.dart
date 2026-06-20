@@ -145,6 +145,7 @@ void main() {
 
     expect(repo.resetCalls, 1);
     expect(repo.lastCode, '123456');
+    expect(repo.lastEmail, 'runner@example.com');
     expect(repo.lastPassword, 'secret123');
   });
 }

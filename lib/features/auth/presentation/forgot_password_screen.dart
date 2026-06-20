@@ -29,6 +29,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
   final _confirmController = TextEditingController();
   _Phase _phase = _Phase.enterEmail;
   bool _obscurePassword = true;
+  bool _obscureConfirm = true;
 
   @override
   void dispose() {
@@ -164,9 +165,9 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
         AuthPasswordField(
           controller: _confirmController,
           label: 'Confirm new password',
-          obscure: _obscurePassword,
+          obscure: _obscureConfirm,
           onToggleObscure: () =>
-              setState(() => _obscurePassword = !_obscurePassword),
+              setState(() => _obscureConfirm = !_obscureConfirm),
           textInputAction: TextInputAction.done,
           onFieldSubmitted: (_) => _resetPassword(),
           validator: (value) {
