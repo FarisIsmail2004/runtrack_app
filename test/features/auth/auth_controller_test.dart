@@ -221,6 +221,60 @@ void main() {
       expect(container.read(authControllerProvider).errorMessage, 'apple failed');
     });
 
+    test('sendPasswordResetCode success → true, trims email, no error',
+        () async {
+      final repo = FakeAuthRepository();
+      final container = makeContainer(repo);
+
+      final ok = await container
+          .read(authControllerProvider.notifier)
+          .sendPasswordResetCode('  runner@example.com  ');
+
+      expect(ok, isTrue);
+      expect(repo.sendCodeCalls, 1);
+      expect(repo.lastResetEmail, 'runner@example.com');
+      expect(container.read(authControllerProvider).errorMessage, isNull);
+    });
+
+    test('sendPasswordResetCode failure → false with error message', () async {
+      final repo = FakeAuthRepository()..throwOnSendCode = true;
+      final container = makeContainer(repo);
+
+      final ok = await container
+          .read(authControllerProvider.notifier)
+          .sendPasswordResetCode('runner@example.com');
+
+      expect(ok, isFalse);
+      expect(container.read(authControllerProvider).errorMessage, 'send failed');
+    });
+
+    test('resetPasswordWithCode success → true, forwards trimmed code/email',
+        () async {
+      final repo = FakeAuthRepository();
+      final container = makeContainer(repo);
+
+      final ok = await container
+          .read(authControllerProvider.notifier)
+          .resetPasswordWithCode(' a@b.com ', ' 123456 ', 'newsecret');
+
+      expect(ok, isTrue);
+      expect(repo.lastResetEmail, 'a@b.com');
+      expect(repo.lastResetCode, '123456');
+      expect(repo.lastResetPassword, 'newsecret');
+    });
+
+    test('resetPasswordWithCode failure → false with error message', () async {
+      final repo = FakeAuthRepository()..throwOnResetPassword = true;
+      final container = makeContainer(repo);
+
+      final ok = await container
+          .read(authControllerProvider.notifier)
+          .resetPasswordWithCode('a@b.com', '123456', 'newsecret');
+
+      expect(ok, isFalse);
+      expect(container.read(authControllerProvider).errorMessage, 'reset failed');
+    });
+
     test('authStateProvider reflects the repository stream', () async {
       final repo = FakeAuthRepository();
       final container = makeContainer(repo);
