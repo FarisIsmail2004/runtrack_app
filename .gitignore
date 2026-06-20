@@ -54,3 +54,4 @@ app.*.map.json
 skills.md
 skills-lock.json
 *.md
+!/README.md
