@@ -34,8 +34,9 @@ migrate_working_dir/
 /coverage/
 
 # Local secrets: Supabase URL + anon key injected via --dart-define-from-file.
-# Keep the .example template committed; never commit the real keys.
+# Both the real keys and the example template are kept local, not committed.
 dart_defines.json
+dart_defines.example.json
 
 # Symbolication related
 app.*.symbols
