@@ -107,6 +107,7 @@ class RunSummaryScreen extends ConsumerWidget {
                     run: run,
                     points: points,
                     showMapTiles: false,
+                    animateReveal: true,
                     footer: _FooterButtons(
                       onSave: () {
                         // The run is already persisted locally; saving just

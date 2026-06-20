@@ -13,6 +13,7 @@ import 'package:runtrack_app/features/profile/application/profile_providers.dart
 import 'package:runtrack_app/features/run_tracking/application/run_session_notifier.dart'
     show clockProvider;
 import 'package:runtrack_app/features/run_tracking/domain/run.dart';
+import 'package:runtrack_app/shared/widgets/reveal_in.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -51,60 +52,82 @@ class HomeScreen extends ConsumerWidget {
         padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 24.h),
         children: [
           // Headline
-          Text(
-            'Ready to run?',
-            style: TextStyle(
-              fontSize: 28.sp,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
+          RevealIn(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Ready to run?',
+                  style: TextStyle(
+                    fontSize: 28.sp,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+                SizedBox(height: 6.h),
+                Text(
+                  'Track your run. Beat your best.',
+                  style: TextStyle(fontSize: 15.sp, color: Colors.white54),
+                ),
+              ],
             ),
-          ),
-          SizedBox(height: 6.h),
-          Text(
-            'Track your run. Beat your best.',
-            style: TextStyle(fontSize: 15.sp, color: Colors.white54),
           ),
           SizedBox(height: 28.h),
 
           // START RUN button
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton.icon(
-              onPressed: () => context.go('/run'),
-              icon: const Icon(Icons.play_arrow),
-              label: const Text('START RUN'),
+          RevealIn(
+            delay: const Duration(milliseconds: 80),
+            child: SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: () => context.go('/run'),
+                icon: const Icon(Icons.play_arrow),
+                label: const Text('START RUN'),
+              ),
             ),
           ),
           SizedBox(height: 36.h),
 
           // THIS WEEK section
-          _WeeklySection(),
+          RevealIn(
+            delay: const Duration(milliseconds: 160),
+            child: _WeeklySection(),
+          ),
           SizedBox(height: 28.h),
 
           // WEEKLY GOAL section
-          Builder(
-            builder: (context) =>
-                WeeklyGoalCard(onTap: () => showGoalEditorSheet(context)),
+          RevealIn(
+            delay: const Duration(milliseconds: 240),
+            child: Builder(
+              builder: (context) =>
+                  WeeklyGoalCard(onTap: () => showGoalEditorSheet(context)),
+            ),
           ),
           SizedBox(height: 28.h),
 
           // LAST RUN section
-          _LastRunSection(),
+          RevealIn(
+            delay: const Duration(milliseconds: 320),
+            child: _LastRunSection(),
+          ),
           SizedBox(height: 16.h),
 
           // VIEW HISTORY
-          TextButton(
-            onPressed: () => context.go('/history'),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Text(
-                  'VIEW HISTORY',
-                  style: TextStyle(letterSpacing: 1.2),
-                ),
-                SizedBox(width: 4.w),
-                Icon(Icons.arrow_forward, size: 16.sp),
-              ],
+          RevealIn(
+            delay: const Duration(milliseconds: 400),
+            child: TextButton(
+              onPressed: () => context.go('/history'),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text(
+                    'VIEW HISTORY',
+                    style: TextStyle(letterSpacing: 1.2),
+                  ),
+                  SizedBox(width: 4.w),
+                  Icon(Icons.arrow_forward, size: 16.sp),
+                ],
+              ),
             ),
           ),
         ],

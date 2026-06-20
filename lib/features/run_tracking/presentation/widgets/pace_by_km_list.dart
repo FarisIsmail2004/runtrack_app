@@ -16,10 +16,15 @@ class PaceByKmList extends StatelessWidget {
     super.key,
     required this.splits,
     this.unit = UnitSystem.km,
+    this.reveal = 1.0,
   });
 
   final List<Split> splits;
   final UnitSystem unit;
+
+  /// Overall reveal progress (0..1). Bars grow in sequentially as this rises;
+  /// 1.0 (the default) shows them fully for static screens.
+  final double reveal;
 
   @override
   Widget build(BuildContext context) {
@@ -29,6 +34,8 @@ class PaceByKmList extends StatelessWidget {
       0.0,
       (max, s) => s.paceSPerKm > max ? s.paceSPerKm : max,
     );
+
+    final n = splits.length;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -43,10 +50,19 @@ class PaceByKmList extends StatelessWidget {
           ),
         ),
         SizedBox(height: 12.h),
-        ...splits.map(
-          (split) =>
-              _SplitRow(split: split, slowestPace: slowestPace, unit: unit),
-        ),
+        ...splits.asMap().entries.map((entry) {
+          final i = entry.key;
+          // Each bar opens its own slice of the reveal window, so they grow in
+          // sequence rather than all at once.
+          final start = i / n;
+          final rowReveal = ((reveal - start) / (1 - start)).clamp(0.0, 1.0);
+          return _SplitRow(
+            split: entry.value,
+            slowestPace: slowestPace,
+            unit: unit,
+            reveal: rowReveal,
+          );
+        }),
       ],
     );
   }
@@ -57,11 +73,13 @@ class _SplitRow extends StatelessWidget {
     required this.split,
     required this.slowestPace,
     required this.unit,
+    this.reveal = 1.0,
   });
 
   final Split split;
   final double slowestPace;
   final UnitSystem unit;
+  final double reveal;
 
   String get _label {
     if (split.isPartial) {
@@ -114,7 +132,7 @@ class _SplitRow extends StatelessWidget {
                 alignment: Alignment.centerLeft,
                 child: Container(
                   height: 10.h,
-                  width: constraints.maxWidth * barFraction,
+                  width: constraints.maxWidth * barFraction * reveal,
                   decoration: BoxDecoration(
                     color: orange,
                     borderRadius: BorderRadius.circular(3.r),

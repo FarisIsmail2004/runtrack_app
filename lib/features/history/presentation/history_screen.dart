@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:runtrack_app/features/history/application/history_providers.dart';
 import 'package:runtrack_app/features/history/presentation/widgets/run_list_tile.dart';
 import 'package:runtrack_app/features/run_tracking/domain/run.dart';
+import 'package:runtrack_app/shared/widgets/reveal_in.dart';
 
 class HistoryScreen extends ConsumerWidget {
   const HistoryScreen({super.key});
@@ -93,10 +94,15 @@ class _HistoryList extends StatelessWidget {
       itemCount: items.length,
       itemBuilder: (context, index) {
         final item = items[index];
-        return switch (item) {
+        final child = switch (item) {
           _HeaderItem(:final label) => _MonthHeader(label: label),
           _RunItem(:final run) => RunListTile(run: run),
         };
+        // Stagger the entrance by position, capped so long lists don't lag.
+        return RevealIn(
+          delay: Duration(milliseconds: (index * 40).clamp(0, 240)),
+          child: child,
+        );
       },
     );
   }

@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/location/location_service.dart';
 import '../../../core/utils/pace_format.dart';
+import '../../../shared/theme/app_motion.dart';
 import '../../profile/application/profile_providers.dart';
 import '../application/run_session_notifier.dart';
 import '../application/run_session_state.dart';
@@ -71,24 +72,31 @@ class _LiveRunScreenState extends ConsumerState<LiveRunScreen> {
     return PopScope(
       canPop: phase != RunPhase.running && phase != RunPhase.paused,
       child: Scaffold(
-        body: switch (phase) {
-          RunPhase.idle ||
-          RunPhase.acquiringGps ||
-          RunPhase.ready => AcquiringGpsView(
-            ready: phase == RunPhase.ready,
-            onCancel: _cancelAcquiring,
-            onStart: notifier.start,
-          ),
-          RunPhase.running ||
-          RunPhase.paused ||
-          RunPhase.finished => _TrackingBody(
-            showMapTiles: widget.showMapTiles,
-            gpsQuality: gpsQuality,
-            locked: _locked,
-            onToggleLock: () => setState(() => _locked = !_locked),
-            onStop: _confirmStop,
-          ),
-        },
+        body: AnimatedSwitcher(
+          duration: AppMotion.duration(context, AppMotion.standard),
+          switchInCurve: AppMotion.emphasized,
+          switchOutCurve: AppMotion.emphasized,
+          child: switch (phase) {
+            RunPhase.idle ||
+            RunPhase.acquiringGps ||
+            RunPhase.ready => AcquiringGpsView(
+              key: const ValueKey('acquiring'),
+              ready: phase == RunPhase.ready,
+              onCancel: _cancelAcquiring,
+              onStart: notifier.start,
+            ),
+            RunPhase.running ||
+            RunPhase.paused ||
+            RunPhase.finished => _TrackingBody(
+              key: const ValueKey('tracking'),
+              showMapTiles: widget.showMapTiles,
+              gpsQuality: gpsQuality,
+              locked: _locked,
+              onToggleLock: () => setState(() => _locked = !_locked),
+              onStop: _confirmStop,
+            ),
+          },
+        ),
       ),
     );
   }
@@ -101,6 +109,7 @@ class _LiveRunScreenState extends ConsumerState<LiveRunScreen> {
 
 class _TrackingBody extends ConsumerWidget {
   const _TrackingBody({
+    super.key,
     required this.showMapTiles,
     required this.gpsQuality,
     required this.locked,
@@ -130,15 +139,25 @@ class _TrackingBody extends ConsumerWidget {
           GpsPill(quality: gpsQuality),
           SizedBox(height: 12.h),
           if (paused)
-            Padding(
-              padding: EdgeInsets.only(bottom: 4.h),
-              child: Text(
-                'PAUSED',
-                style: TextStyle(
-                  color: primary,
-                  fontSize: 16.sp,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 3,
+            TweenAnimationBuilder<double>(
+              key: const ValueKey('paused-chip'),
+              tween: Tween(begin: 0, end: 1),
+              duration: AppMotion.duration(context, AppMotion.quick),
+              curve: AppMotion.emphasized,
+              builder: (context, t, child) => Opacity(
+                opacity: t,
+                child: Transform.scale(scale: 0.9 + 0.1 * t, child: child),
+              ),
+              child: Padding(
+                padding: EdgeInsets.only(bottom: 4.h),
+                child: Text(
+                  'PAUSED',
+                  style: TextStyle(
+                    color: primary,
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 3,
+                  ),
                 ),
               ),
             ),
@@ -157,6 +176,19 @@ class _TrackingBody extends ConsumerWidget {
             child: Stack(
               children: [
                 Positioned.fill(child: _LiveRunMap(showTiles: showMapTiles)),
+                // Dim the map while paused — a calm, distinct paused state.
+                Positioned.fill(
+                  child: IgnorePointer(
+                    child: AnimatedOpacity(
+                      duration: AppMotion.duration(context, AppMotion.quick),
+                      curve: AppMotion.standardCurve,
+                      opacity: paused ? 1 : 0,
+                      child: ColoredBox(
+                        color: Colors.black.withValues(alpha: 0.45),
+                      ),
+                    ),
+                  ),
+                ),
                 Positioned(
                   left: 16.w,
                   right: 16.w,
@@ -193,6 +225,7 @@ class _ElapsedStatBlock extends ConsumerWidget {
       value: formatDuration(elapsedS),
       label: 'Time',
       size: StatBlockSize.large,
+      animateValue: true,
     );
   }
 }
@@ -207,6 +240,7 @@ class _DistanceStatBlock extends ConsumerWidget {
     return StatBlock(
       value: formatDistance(distanceM, unit),
       label: 'Distance (${distanceUnitLabel(unit)})',
+      animateValue: true,
     );
   }
 }
@@ -223,6 +257,7 @@ class _CurrentPaceStatBlock extends ConsumerWidget {
     return StatBlock(
       value: formatPaceUnit(pace, unit),
       label: 'Current pace (${paceUnitLabel(unit)})',
+      animateValue: true,
     );
   }
 }
@@ -237,6 +272,7 @@ class _AvgPaceStatBlock extends ConsumerWidget {
     return StatBlock(
       value: formatPaceUnit(pace, unit),
       label: 'Average pace (${paceUnitLabel(unit)})',
+      animateValue: true,
     );
   }
 }

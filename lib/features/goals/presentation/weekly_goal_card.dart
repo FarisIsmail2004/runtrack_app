@@ -5,6 +5,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:runtrack_app/features/goals/application/goal_providers.dart';
 import 'package:runtrack_app/features/goals/domain/goal_format.dart';
 import 'package:runtrack_app/features/profile/application/profile_providers.dart';
+import 'package:runtrack_app/shared/theme/app_motion.dart';
 
 /// Dashboard card for the weekly goal. Shows a "set a goal" prompt when none
 /// exists, otherwise a progress bar with current/target and a met state.
@@ -81,9 +82,7 @@ class WeeklyGoalCard extends ConsumerWidget {
                           progress?.current ?? 0,
                           unit,
                         );
-                        return u == null
-                            ? '$cur / $value'
-                            : '$cur / $value $u';
+                        return u == null ? '$cur / $value' : '$cur / $value $u';
                       }(),
                     ),
             ),
@@ -135,11 +134,16 @@ class _ProgressBody extends StatelessWidget {
         SizedBox(height: 12.h),
         ClipRRect(
           borderRadius: BorderRadius.circular(6.r),
-          child: LinearProgressIndicator(
-            value: fraction,
-            minHeight: 8.h,
-            backgroundColor: Colors.white12,
-            valueColor: AlwaysStoppedAnimation(cs.primary),
+          child: TweenAnimationBuilder<double>(
+            tween: Tween(begin: 0, end: fraction),
+            duration: AppMotion.duration(context, AppMotion.reveal),
+            curve: AppMotion.emphasized,
+            builder: (context, value, _) => LinearProgressIndicator(
+              value: value,
+              minHeight: 8.h,
+              backgroundColor: Colors.white12,
+              valueColor: AlwaysStoppedAnimation(cs.primary),
+            ),
           ),
         ),
       ],

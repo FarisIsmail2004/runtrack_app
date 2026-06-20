@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+import '../../../../shared/theme/app_motion.dart';
+
 /// Acquiring/ready view: pulsing GPS animation, hint card and either a
 /// CANCEL button (still searching) or START + cancel (GPS ready).
 class AcquiringGpsView extends StatelessWidget {
@@ -126,32 +128,60 @@ class _GpsPulse extends StatefulWidget {
   State<_GpsPulse> createState() => _GpsPulseState();
 }
 
-class _GpsPulseState extends State<_GpsPulse>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _controller = AnimationController(
+class _GpsPulseState extends State<_GpsPulse> with TickerProviderStateMixin {
+  // Outward ripple while searching.
+  late final AnimationController _rings = AnimationController(
     vsync: this,
     duration: const Duration(milliseconds: 1800),
   );
 
+  // One-shot handoff: rings collapse and the center dot pops on GPS lock.
+  late final AnimationController _ready = AnimationController(vsync: this);
+
+  bool _reduceMotion = false;
+
   @override
-  void initState() {
-    super.initState();
-    if (widget.animate) _controller.repeat();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _reduceMotion = AppMotion.reduceMotionOf(context);
+    _ready.duration = AppMotion.resolve(
+      AppMotion.expressive,
+      reduceMotion: _reduceMotion,
+    );
+    _sync();
   }
 
   @override
   void didUpdateWidget(_GpsPulse oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.animate && !_controller.isAnimating) {
-      _controller.repeat();
-    } else if (!widget.animate && _controller.isAnimating) {
-      _controller.stop();
+    _sync();
+  }
+
+  /// Reconcile the controllers with the current searching/ready state.
+  void _sync() {
+    if (widget.animate) {
+      // Searching: ripple (unless reduced motion), keep handoff reset.
+      _ready.reverse();
+      if (_reduceMotion) {
+        _rings.stop();
+      } else if (!_rings.isAnimating) {
+        _rings.repeat();
+      }
+    } else {
+      // Ready: stop the ripple and run the collapse/pop handoff.
+      _rings.stop();
+      if (_reduceMotion) {
+        _ready.value = 1;
+      } else if (_ready.status == AnimationStatus.dismissed) {
+        _ready.forward();
+      }
     }
   }
 
   @override
   void dispose() {
-    _controller.dispose();
+    _rings.dispose();
+    _ready.dispose();
     super.dispose();
   }
 
@@ -161,25 +191,35 @@ class _GpsPulseState extends State<_GpsPulse>
       width: 180.w,
       height: 180.w,
       child: AnimatedBuilder(
-        animation: _controller,
+        animation: Listenable.merge([_rings, _ready]),
         builder: (context, _) {
-          final t = _controller.value;
+          final ringT = _rings.value;
+          final ready = _ready.value; // 0 searching → 1 locked
+          // Pop: 1 → 1.18 → 1 over the handoff.
+          final pop = 1 + 0.18 * (1 - (ready * 2 - 1).abs());
           return Stack(
             alignment: Alignment.center,
             children: [
-              for (final phase in [0.0, 0.5]) _ring(((t + phase) % 1.0)),
-              Container(
-                width: 64.w,
-                height: 64.w,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: widget.color.withValues(alpha: 0.2),
-                  border: Border.all(color: widget.color, width: 2),
-                ),
-                child: Icon(
-                  Icons.satellite_alt,
-                  color: widget.color,
-                  size: 28.sp,
+              // Ripples fade and shrink away as the handoff completes.
+              if (ready < 1)
+                for (final phase in [0.0, 0.5])
+                  _ring(((ringT + phase) % 1.0), 1 - ready),
+              Transform.scale(
+                scale: pop,
+                child: Container(
+                  width: 64.w,
+                  height: 64.w,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    // Hollow while searching → solid orange dot when locked.
+                    color: widget.color.withValues(alpha: 0.2 + 0.8 * ready),
+                    border: Border.all(color: widget.color, width: 2),
+                  ),
+                  child: Icon(
+                    Icons.satellite_alt,
+                    color: Color.lerp(widget.color, Colors.black, ready),
+                    size: 28.sp,
+                  ),
                 ),
               ),
             ],
@@ -189,14 +229,14 @@ class _GpsPulseState extends State<_GpsPulse>
     );
   }
 
-  Widget _ring(double t) {
+  Widget _ring(double t, double fade) {
     return Container(
-      width: (64 + 116 * t).w,
-      height: (64 + 116 * t).w,
+      width: (64 + 116 * t * fade).w,
+      height: (64 + 116 * t * fade).w,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         border: Border.all(
-          color: widget.color.withValues(alpha: (1 - t) * 0.6),
+          color: widget.color.withValues(alpha: (1 - t) * 0.6 * fade),
           width: 2,
         ),
       ),
