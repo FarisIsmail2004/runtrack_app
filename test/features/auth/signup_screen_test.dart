@@ -47,6 +47,13 @@ class SpyAuthRepository implements AuthRepository {
 
   @override
   Future<void> signOut() async {}
+
+  @override
+  Future<void> sendPasswordResetCode(String email) async {}
+
+  @override
+  Future<void> resetPasswordWithCode(
+      String email, String code, String newPassword) async {}
 }
 
 void main() {

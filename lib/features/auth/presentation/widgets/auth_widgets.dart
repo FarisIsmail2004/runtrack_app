@@ -21,6 +21,15 @@ class AuthValidators {
     if (v.length < 6) return 'Min. 6 characters';
     return null;
   }
+
+  static final _codeRegExp = RegExp(r'^\d{6}$');
+
+  static String? code(String? value) {
+    final v = value?.trim() ?? '';
+    if (v.isEmpty) return 'Enter the 6-digit code';
+    if (!_codeRegExp.hasMatch(v)) return 'Enter the 6-digit code';
+    return null;
+  }
 }
 
 /// "RUN**TRACK**"-style title block with a subtitle.
@@ -121,6 +130,38 @@ class AuthPasswordField extends StatelessWidget {
         ),
       ),
       validator: validator ?? AuthValidators.password,
+    );
+  }
+}
+
+/// 6-digit numeric recovery-code input used by the forgot-password flow.
+class AuthCodeField extends StatelessWidget {
+  const AuthCodeField({
+    required this.controller,
+    this.onFieldSubmitted,
+    super.key,
+  });
+
+  final TextEditingController controller;
+  final void Function(String)? onFieldSubmitted;
+
+  @override
+  Widget build(BuildContext context) {
+    return TextFormField(
+      controller: controller,
+      keyboardType: TextInputType.number,
+      textInputAction: TextInputAction.next,
+      autocorrect: false,
+      enableSuggestions: false,
+      maxLength: 6,
+      onFieldSubmitted: onFieldSubmitted,
+      decoration: const InputDecoration(
+        labelText: '6-digit code',
+        counterText: '',
+        prefixIcon: Icon(Icons.pin_outlined),
+        border: OutlineInputBorder(),
+      ),
+      validator: AuthValidators.code,
     );
   }
 }

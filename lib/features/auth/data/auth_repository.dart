@@ -55,8 +55,9 @@ class AuthFailure implements Exception {
 
 /// Shown whenever a sign-in is attempted in a build without Supabase
 /// configured. The app stays fully usable offline; only sync/auth are gated.
-const AuthFailure _notConfiguredFailure =
-    AuthFailure('Sign-in is not configured in this build.');
+const AuthFailure _notConfiguredFailure = AuthFailure(
+  'Sign-in is not configured in this build.',
+);
 
 /// google_sign_in v7 requires `initialize()` to run AT MOST ONCE per process.
 /// We memoize the future at module scope (not per-instance) so that even if
@@ -65,8 +66,9 @@ const AuthFailure _notConfiguredFailure =
 Future<void>? _googleInitFuture;
 
 Future<void> _ensureGoogleInitialized({String? serverClientId}) =>
-    _googleInitFuture ??=
-        GoogleSignIn.instance.initialize(serverClientId: serverClientId);
+    _googleInitFuture ??= GoogleSignIn.instance.initialize(
+      serverClientId: serverClientId,
+    );
 
 /// Auth surface used by the app. Abstract so it is trivially fakeable in tests.
 abstract class AuthRepository {
@@ -92,6 +94,18 @@ abstract class AuthRepository {
 
   /// Clears the session. No-op when unconfigured / already signed out.
   Future<void> signOut();
+
+  /// Sends a 6-digit recovery code to [email]. Safe to call again to resend.
+  Future<void> sendPasswordResetCode(String email);
+
+  /// Verifies the recovery [code] for [email] and sets [newPassword]. A
+  /// successful verify signs the user in; the new password is forwarded to
+  /// Supabase over TLS and never stored locally.
+  Future<void> resetPasswordWithCode(
+    String email,
+    String code,
+    String newPassword,
+  );
 }
 
 /// Offline / unconfigured implementation. Used when this build has no Supabase
@@ -121,7 +135,20 @@ class UnconfiguredAuthRepository implements AuthRepository {
   Future<void> signInWithApple() async => throw _notConfiguredFailure;
 
   @override
-  Future<void> signOut() async {/* no-op */}
+  Future<void> signOut() async {
+    /* no-op */
+  }
+
+  @override
+  Future<void> sendPasswordResetCode(String email) async =>
+      throw _notConfiguredFailure;
+
+  @override
+  Future<void> resetPasswordWithCode(
+    String email,
+    String code,
+    String newPassword,
+  ) async => throw _notConfiguredFailure;
 }
 
 /// Real implementation wrapping `Supabase.instance.client.auth`.
@@ -132,13 +159,15 @@ class UnconfiguredAuthRepository implements AuthRepository {
 /// via `--dart-define=GOOGLE_SERVER_CLIENT_ID=...`.
 class SupabaseAuthRepository implements AuthRepository {
   SupabaseAuthRepository({String? serverClientId})
-      : _serverClientId = serverClientId ??
-            (_envGoogleServerClientId.isNotEmpty
-                ? _envGoogleServerClientId
-                : null);
+    : _serverClientId =
+          serverClientId ??
+          (_envGoogleServerClientId.isNotEmpty
+              ? _envGoogleServerClientId
+              : null);
 
-  static const String _envGoogleServerClientId =
-      String.fromEnvironment('GOOGLE_SERVER_CLIENT_ID');
+  static const String _envGoogleServerClientId = String.fromEnvironment(
+    'GOOGLE_SERVER_CLIENT_ID',
+  );
 
   final String? _serverClientId;
 
@@ -148,8 +177,8 @@ class SupabaseAuthRepository implements AuthRepository {
       user == null ? null : AuthUser(id: user.id, email: user.email);
 
   @override
-  Stream<AuthUser?> authStateChanges() => _auth.onAuthStateChange
-      .map((state) => _mapUser(state.session?.user));
+  Stream<AuthUser?> authStateChanges() =>
+      _auth.onAuthStateChange.map((state) => _mapUser(state.session?.user));
 
   @override
   AuthUser? get currentUser => _mapUser(_auth.currentUser);
@@ -197,7 +226,7 @@ class SupabaseAuthRepository implements AuthRepository {
       const scopes = <String>['email'];
       final authz =
           await account.authorizationClient.authorizationForScopes(scopes) ??
-              await account.authorizationClient.authorizeScopes(scopes);
+          await account.authorizationClient.authorizeScopes(scopes);
       await _auth.signInWithIdToken(
         provider: OAuthProvider.google,
         idToken: idToken,
@@ -269,6 +298,58 @@ class SupabaseAuthRepository implements AuthRepository {
     }
   }
 
+  @override
+  Future<void> sendPasswordResetCode(String email) async {
+    try {
+      await _auth.resetPasswordForEmail(email);
+    } on AuthException catch (e) {
+      throw AuthFailure(e.message);
+    } catch (_) {
+      throw const AuthFailure('Could not send reset code. Please try again.');
+    }
+  }
+
+  @override
+  Future<void> resetPasswordWithCode(
+    String email,
+    String code,
+    String newPassword,
+  ) async {
+    try {
+      // ORDERING HAZARD: verifyOTP signs the user IN before updateUser runs.
+      // If updateUser then throws, the caller (and the router redirect) would
+      // observe a signed-in session and route to /home — leaving the user
+      // believing the reset succeeded while the password was never changed.
+      //
+      // Guard: on any updateUser failure we sign the user back out (best-effort)
+      // so the router redirect sees "signed-out" and sends them to /login, then
+      // rethrow as an AuthFailure so the UI surfaces the error.
+      // The password is forwarded over TLS and then discarded; it is never
+      // stored locally.
+      await _auth.verifyOTP(email: email, token: code, type: OtpType.recovery);
+      try {
+        await _auth.updateUser(UserAttributes(password: newPassword));
+      } on AuthException catch (e) {
+        // updateUser failed after a successful verifyOTP — user is signed in
+        // but password unchanged. Sign them back out to avoid a false-success
+        // state, then surface the error.
+        await _auth.signOut().onError((_, _) => null); // best-effort
+        throw AuthFailure(e.message);
+      } catch (_) {
+        // Same safety net for non-AuthException failures.
+        await _auth.signOut().onError((_, _) => null); // best-effort
+        throw const AuthFailure('Could not reset password. Please try again.');
+      }
+    } on AuthFailure {
+      rethrow;
+    } on AuthException catch (e) {
+      // verifyOTP itself failed — no session was created, nothing to sign out.
+      throw AuthFailure(e.message);
+    } catch (_) {
+      throw const AuthFailure('Could not reset password. Please try again.');
+    }
+  }
+
   /// Cryptographically-strong random nonce (base64url, no padding).
   String _generateNonce([int length = 32]) {
     const charset =
@@ -280,8 +361,7 @@ class SupabaseAuthRepository implements AuthRepository {
     ).join();
   }
 
-  String _sha256(String input) =>
-      sha256.convert(utf8.encode(input)).toString();
+  String _sha256(String input) => sha256.convert(utf8.encode(input)).toString();
 }
 
 /// Picks the real Supabase repository when configured, else the offline stub.

@@ -37,6 +37,13 @@ class FakeAuthRepository implements AuthRepository {
   Future<void> signInWithGoogle() async {}
   @override
   Future<void> signInWithApple() async {}
+
+  @override
+  Future<void> sendPasswordResetCode(String email) async {}
+
+  @override
+  Future<void> resetPasswordWithCode(
+      String email, String code, String newPassword) async {}
 }
 
 void main() {
