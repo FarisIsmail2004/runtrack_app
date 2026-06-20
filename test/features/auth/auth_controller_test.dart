@@ -71,6 +71,31 @@ class FakeAuthRepository implements AuthRepository {
     signOutCalls++;
     _emit(null);
   }
+
+  // (FakeAuthRepository spy fields, near the other spy fields)
+  bool throwOnSendCode = false;
+  bool throwOnResetPassword = false;
+  String? lastResetEmail;
+  String? lastResetCode;
+  String? lastResetPassword;
+  int sendCodeCalls = 0;
+
+  @override
+  Future<void> sendPasswordResetCode(String email) async {
+    sendCodeCalls++;
+    lastResetEmail = email;
+    if (throwOnSendCode) throw const AuthFailure('send failed');
+  }
+
+  @override
+  Future<void> resetPasswordWithCode(
+      String email, String code, String newPassword) async {
+    lastResetEmail = email;
+    lastResetCode = code;
+    lastResetPassword = newPassword;
+    if (throwOnResetPassword) throw const AuthFailure('reset failed');
+    _emit(AuthUser(id: 'r1', email: email));
+  }
 }
 
 ProviderContainer makeContainer(FakeAuthRepository repo) {
@@ -234,6 +259,14 @@ void main() {
       );
       expect(repo.signInWithGoogle, throwsA(isA<AuthFailure>()));
       expect(repo.signInWithApple, throwsA(isA<AuthFailure>()));
+      expect(
+        () => repo.sendPasswordResetCode('a@b.com'),
+        throwsA(isA<AuthFailure>()),
+      );
+      expect(
+        () => repo.resetPasswordWithCode('a@b.com', '123456', 'secret123'),
+        throwsA(isA<AuthFailure>()),
+      );
       // signOut is a no-op (does not throw).
       await repo.signOut();
     });

@@ -92,6 +92,15 @@ abstract class AuthRepository {
 
   /// Clears the session. No-op when unconfigured / already signed out.
   Future<void> signOut();
+
+  /// Sends a 6-digit recovery code to [email]. Safe to call again to resend.
+  Future<void> sendPasswordResetCode(String email);
+
+  /// Verifies the recovery [code] for [email] and sets [newPassword]. A
+  /// successful verify signs the user in; the new password is forwarded to
+  /// Supabase over TLS and never stored locally.
+  Future<void> resetPasswordWithCode(
+      String email, String code, String newPassword);
 }
 
 /// Offline / unconfigured implementation. Used when this build has no Supabase
@@ -122,6 +131,15 @@ class UnconfiguredAuthRepository implements AuthRepository {
 
   @override
   Future<void> signOut() async {/* no-op */}
+
+  @override
+  Future<void> sendPasswordResetCode(String email) async =>
+      throw _notConfiguredFailure;
+
+  @override
+  Future<void> resetPasswordWithCode(
+          String email, String code, String newPassword) async =>
+      throw _notConfiguredFailure;
 }
 
 /// Real implementation wrapping `Supabase.instance.client.auth`.
@@ -266,6 +284,36 @@ class SupabaseAuthRepository implements AuthRepository {
       await _auth.signOut();
     } catch (_) {
       // Best-effort: a failed sign-out should not crash the UI.
+    }
+  }
+
+  @override
+  Future<void> sendPasswordResetCode(String email) async {
+    try {
+      await _auth.resetPasswordForEmail(email);
+    } on AuthException catch (e) {
+      throw AuthFailure(e.message);
+    } catch (_) {
+      throw const AuthFailure('Could not send reset code. Please try again.');
+    }
+  }
+
+  @override
+  Future<void> resetPasswordWithCode(
+      String email, String code, String newPassword) async {
+    try {
+      // verifyOTP creates a session; updateUser then sets the new password.
+      // The password is forwarded over TLS and then discarded.
+      await _auth.verifyOTP(
+        email: email,
+        token: code,
+        type: OtpType.recovery,
+      );
+      await _auth.updateUser(UserAttributes(password: newPassword));
+    } on AuthException catch (e) {
+      throw AuthFailure(e.message);
+    } catch (_) {
+      throw const AuthFailure('Could not reset password. Please try again.');
     }
   }
 
