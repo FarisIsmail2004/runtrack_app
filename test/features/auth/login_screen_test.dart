@@ -66,6 +66,11 @@ void main() {
           path: '/signup',
           builder: (context, state) => const Scaffold(body: Text('Signup stub')),
         ),
+        GoRoute(
+          path: '/forgot-password',
+          builder: (context, state) =>
+              const Scaffold(body: Text('Forgot stub')),
+        ),
       ],
     );
     return ProviderScope(
@@ -130,6 +135,17 @@ void main() {
     expect(repo.signInCalls, 1);
     expect(repo.lastEmail, 'runner@example.com');
     expect(repo.lastPassword, 'secret123');
+  });
+
+  testWidgets('tapping "Forgot password?" navigates to /forgot-password',
+      (tester) async {
+    await tester.pumpWidget(buildLogin());
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Forgot password?'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Forgot stub'), findsOneWidget);
   });
 
   testWidgets('password visibility toggle flips obscuring', (tester) async {

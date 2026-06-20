@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../features/auth/application/auth_notifier.dart';
 import '../../features/auth/data/auth_repository.dart';
+import '../../features/auth/presentation/forgot_password_screen.dart';
 import '../../features/auth/presentation/login_screen.dart';
 import '../../features/auth/presentation/signup_screen.dart';
 import '../../features/auth/presentation/splash_screen.dart';
@@ -26,7 +27,7 @@ const _protectedPrefixes = <String>[
 ];
 
 /// Public auth routes — a signed-in user is bounced off these to /home.
-const _authRoutes = <String>['/login', '/signup'];
+const _authRoutes = <String>['/login', '/signup', '/forgot-password'];
 
 /// Bridges a Riverpod listenable into a [ChangeNotifier] so GoRouter's
 /// `refreshListenable` re-evaluates `redirect` whenever auth state changes.
@@ -114,6 +115,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/signup',
         builder: (context, state) => const SignupScreen(),
+      ),
+      GoRoute(
+        path: '/forgot-password',
+        builder: (context, state) => const ForgotPasswordScreen(),
       ),
       // Full-screen routes outside the bottom-nav shell
       GoRoute(

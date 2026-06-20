@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart'
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
 
 import '../application/auth_notifier.dart';
 import 'widgets/auth_widgets.dart';
@@ -97,15 +98,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       child: TextButton(
                         onPressed: loading
                             ? null
-                            : () => ScaffoldMessenger.of(context)
-                                ..hideCurrentSnackBar()
-                                ..showSnackBar(
-                                  const SnackBar(
-                                    content: Text(
-                                      'Password reset is coming soon.',
-                                    ),
-                                  ),
-                                ),
+                            : () => context.push('/forgot-password'),
                         child: const Text('Forgot password?'),
                       ),
                     ),
