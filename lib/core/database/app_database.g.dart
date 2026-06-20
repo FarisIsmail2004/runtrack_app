@@ -1,0 +1,2709 @@
+// GENERATED CODE - DO NOT MODIFY BY HAND
+
+part of 'app_database.dart';
+
+// ignore_for_file: type=lint
+class $RunsTable extends Runs with TableInfo<$RunsTable, RunRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $RunsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _startedAtMeta = const VerificationMeta(
+    'startedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> startedAt = GeneratedColumn<DateTime>(
+    'started_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _endedAtMeta = const VerificationMeta(
+    'endedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> endedAt = GeneratedColumn<DateTime>(
+    'ended_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _distanceMMeta = const VerificationMeta(
+    'distanceM',
+  );
+  @override
+  late final GeneratedColumn<double> distanceM = GeneratedColumn<double>(
+    'distance_m',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0.0),
+  );
+  static const VerificationMeta _durationSMeta = const VerificationMeta(
+    'durationS',
+  );
+  @override
+  late final GeneratedColumn<int> durationS = GeneratedColumn<int>(
+    'duration_s',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _avgPaceSPerKmMeta = const VerificationMeta(
+    'avgPaceSPerKm',
+  );
+  @override
+  late final GeneratedColumn<double> avgPaceSPerKm = GeneratedColumn<double>(
+    'avg_pace_s_per_km',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0.0),
+  );
+  static const VerificationMeta _caloriesEstMeta = const VerificationMeta(
+    'caloriesEst',
+  );
+  @override
+  late final GeneratedColumn<double> caloriesEst = GeneratedColumn<double>(
+    'calories_est',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0.0),
+  );
+  static const VerificationMeta _syncedMeta = const VerificationMeta('synced');
+  @override
+  late final GeneratedColumn<bool> synced = GeneratedColumn<bool>(
+    'synced',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("synced" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    startedAt,
+    endedAt,
+    distanceM,
+    durationS,
+    avgPaceSPerKm,
+    caloriesEst,
+    synced,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'runs';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<RunRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('started_at')) {
+      context.handle(
+        _startedAtMeta,
+        startedAt.isAcceptableOrUnknown(data['started_at']!, _startedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_startedAtMeta);
+    }
+    if (data.containsKey('ended_at')) {
+      context.handle(
+        _endedAtMeta,
+        endedAt.isAcceptableOrUnknown(data['ended_at']!, _endedAtMeta),
+      );
+    }
+    if (data.containsKey('distance_m')) {
+      context.handle(
+        _distanceMMeta,
+        distanceM.isAcceptableOrUnknown(data['distance_m']!, _distanceMMeta),
+      );
+    }
+    if (data.containsKey('duration_s')) {
+      context.handle(
+        _durationSMeta,
+        durationS.isAcceptableOrUnknown(data['duration_s']!, _durationSMeta),
+      );
+    }
+    if (data.containsKey('avg_pace_s_per_km')) {
+      context.handle(
+        _avgPaceSPerKmMeta,
+        avgPaceSPerKm.isAcceptableOrUnknown(
+          data['avg_pace_s_per_km']!,
+          _avgPaceSPerKmMeta,
+        ),
+      );
+    }
+    if (data.containsKey('calories_est')) {
+      context.handle(
+        _caloriesEstMeta,
+        caloriesEst.isAcceptableOrUnknown(
+          data['calories_est']!,
+          _caloriesEstMeta,
+        ),
+      );
+    }
+    if (data.containsKey('synced')) {
+      context.handle(
+        _syncedMeta,
+        synced.isAcceptableOrUnknown(data['synced']!, _syncedMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  RunRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return RunRow(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      startedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}started_at'],
+      )!,
+      endedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}ended_at'],
+      ),
+      distanceM: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}distance_m'],
+      )!,
+      durationS: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}duration_s'],
+      )!,
+      avgPaceSPerKm: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}avg_pace_s_per_km'],
+      )!,
+      caloriesEst: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}calories_est'],
+      )!,
+      synced: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}synced'],
+      )!,
+    );
+  }
+
+  @override
+  $RunsTable createAlias(String alias) {
+    return $RunsTable(attachedDatabase, alias);
+  }
+}
+
+class RunRow extends DataClass implements Insertable<RunRow> {
+  final String id;
+  final DateTime startedAt;
+  final DateTime? endedAt;
+  final double distanceM;
+  final int durationS;
+  final double avgPaceSPerKm;
+  final double caloriesEst;
+  final bool synced;
+  const RunRow({
+    required this.id,
+    required this.startedAt,
+    this.endedAt,
+    required this.distanceM,
+    required this.durationS,
+    required this.avgPaceSPerKm,
+    required this.caloriesEst,
+    required this.synced,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['started_at'] = Variable<DateTime>(startedAt);
+    if (!nullToAbsent || endedAt != null) {
+      map['ended_at'] = Variable<DateTime>(endedAt);
+    }
+    map['distance_m'] = Variable<double>(distanceM);
+    map['duration_s'] = Variable<int>(durationS);
+    map['avg_pace_s_per_km'] = Variable<double>(avgPaceSPerKm);
+    map['calories_est'] = Variable<double>(caloriesEst);
+    map['synced'] = Variable<bool>(synced);
+    return map;
+  }
+
+  RunsCompanion toCompanion(bool nullToAbsent) {
+    return RunsCompanion(
+      id: Value(id),
+      startedAt: Value(startedAt),
+      endedAt: endedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(endedAt),
+      distanceM: Value(distanceM),
+      durationS: Value(durationS),
+      avgPaceSPerKm: Value(avgPaceSPerKm),
+      caloriesEst: Value(caloriesEst),
+      synced: Value(synced),
+    );
+  }
+
+  factory RunRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return RunRow(
+      id: serializer.fromJson<String>(json['id']),
+      startedAt: serializer.fromJson<DateTime>(json['startedAt']),
+      endedAt: serializer.fromJson<DateTime?>(json['endedAt']),
+      distanceM: serializer.fromJson<double>(json['distanceM']),
+      durationS: serializer.fromJson<int>(json['durationS']),
+      avgPaceSPerKm: serializer.fromJson<double>(json['avgPaceSPerKm']),
+      caloriesEst: serializer.fromJson<double>(json['caloriesEst']),
+      synced: serializer.fromJson<bool>(json['synced']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'startedAt': serializer.toJson<DateTime>(startedAt),
+      'endedAt': serializer.toJson<DateTime?>(endedAt),
+      'distanceM': serializer.toJson<double>(distanceM),
+      'durationS': serializer.toJson<int>(durationS),
+      'avgPaceSPerKm': serializer.toJson<double>(avgPaceSPerKm),
+      'caloriesEst': serializer.toJson<double>(caloriesEst),
+      'synced': serializer.toJson<bool>(synced),
+    };
+  }
+
+  RunRow copyWith({
+    String? id,
+    DateTime? startedAt,
+    Value<DateTime?> endedAt = const Value.absent(),
+    double? distanceM,
+    int? durationS,
+    double? avgPaceSPerKm,
+    double? caloriesEst,
+    bool? synced,
+  }) => RunRow(
+    id: id ?? this.id,
+    startedAt: startedAt ?? this.startedAt,
+    endedAt: endedAt.present ? endedAt.value : this.endedAt,
+    distanceM: distanceM ?? this.distanceM,
+    durationS: durationS ?? this.durationS,
+    avgPaceSPerKm: avgPaceSPerKm ?? this.avgPaceSPerKm,
+    caloriesEst: caloriesEst ?? this.caloriesEst,
+    synced: synced ?? this.synced,
+  );
+  RunRow copyWithCompanion(RunsCompanion data) {
+    return RunRow(
+      id: data.id.present ? data.id.value : this.id,
+      startedAt: data.startedAt.present ? data.startedAt.value : this.startedAt,
+      endedAt: data.endedAt.present ? data.endedAt.value : this.endedAt,
+      distanceM: data.distanceM.present ? data.distanceM.value : this.distanceM,
+      durationS: data.durationS.present ? data.durationS.value : this.durationS,
+      avgPaceSPerKm: data.avgPaceSPerKm.present
+          ? data.avgPaceSPerKm.value
+          : this.avgPaceSPerKm,
+      caloriesEst: data.caloriesEst.present
+          ? data.caloriesEst.value
+          : this.caloriesEst,
+      synced: data.synced.present ? data.synced.value : this.synced,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('RunRow(')
+          ..write('id: $id, ')
+          ..write('startedAt: $startedAt, ')
+          ..write('endedAt: $endedAt, ')
+          ..write('distanceM: $distanceM, ')
+          ..write('durationS: $durationS, ')
+          ..write('avgPaceSPerKm: $avgPaceSPerKm, ')
+          ..write('caloriesEst: $caloriesEst, ')
+          ..write('synced: $synced')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    startedAt,
+    endedAt,
+    distanceM,
+    durationS,
+    avgPaceSPerKm,
+    caloriesEst,
+    synced,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is RunRow &&
+          other.id == this.id &&
+          other.startedAt == this.startedAt &&
+          other.endedAt == this.endedAt &&
+          other.distanceM == this.distanceM &&
+          other.durationS == this.durationS &&
+          other.avgPaceSPerKm == this.avgPaceSPerKm &&
+          other.caloriesEst == this.caloriesEst &&
+          other.synced == this.synced);
+}
+
+class RunsCompanion extends UpdateCompanion<RunRow> {
+  final Value<String> id;
+  final Value<DateTime> startedAt;
+  final Value<DateTime?> endedAt;
+  final Value<double> distanceM;
+  final Value<int> durationS;
+  final Value<double> avgPaceSPerKm;
+  final Value<double> caloriesEst;
+  final Value<bool> synced;
+  final Value<int> rowid;
+  const RunsCompanion({
+    this.id = const Value.absent(),
+    this.startedAt = const Value.absent(),
+    this.endedAt = const Value.absent(),
+    this.distanceM = const Value.absent(),
+    this.durationS = const Value.absent(),
+    this.avgPaceSPerKm = const Value.absent(),
+    this.caloriesEst = const Value.absent(),
+    this.synced = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  RunsCompanion.insert({
+    required String id,
+    required DateTime startedAt,
+    this.endedAt = const Value.absent(),
+    this.distanceM = const Value.absent(),
+    this.durationS = const Value.absent(),
+    this.avgPaceSPerKm = const Value.absent(),
+    this.caloriesEst = const Value.absent(),
+    this.synced = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       startedAt = Value(startedAt);
+  static Insertable<RunRow> custom({
+    Expression<String>? id,
+    Expression<DateTime>? startedAt,
+    Expression<DateTime>? endedAt,
+    Expression<double>? distanceM,
+    Expression<int>? durationS,
+    Expression<double>? avgPaceSPerKm,
+    Expression<double>? caloriesEst,
+    Expression<bool>? synced,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (startedAt != null) 'started_at': startedAt,
+      if (endedAt != null) 'ended_at': endedAt,
+      if (distanceM != null) 'distance_m': distanceM,
+      if (durationS != null) 'duration_s': durationS,
+      if (avgPaceSPerKm != null) 'avg_pace_s_per_km': avgPaceSPerKm,
+      if (caloriesEst != null) 'calories_est': caloriesEst,
+      if (synced != null) 'synced': synced,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  RunsCompanion copyWith({
+    Value<String>? id,
+    Value<DateTime>? startedAt,
+    Value<DateTime?>? endedAt,
+    Value<double>? distanceM,
+    Value<int>? durationS,
+    Value<double>? avgPaceSPerKm,
+    Value<double>? caloriesEst,
+    Value<bool>? synced,
+    Value<int>? rowid,
+  }) {
+    return RunsCompanion(
+      id: id ?? this.id,
+      startedAt: startedAt ?? this.startedAt,
+      endedAt: endedAt ?? this.endedAt,
+      distanceM: distanceM ?? this.distanceM,
+      durationS: durationS ?? this.durationS,
+      avgPaceSPerKm: avgPaceSPerKm ?? this.avgPaceSPerKm,
+      caloriesEst: caloriesEst ?? this.caloriesEst,
+      synced: synced ?? this.synced,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (startedAt.present) {
+      map['started_at'] = Variable<DateTime>(startedAt.value);
+    }
+    if (endedAt.present) {
+      map['ended_at'] = Variable<DateTime>(endedAt.value);
+    }
+    if (distanceM.present) {
+      map['distance_m'] = Variable<double>(distanceM.value);
+    }
+    if (durationS.present) {
+      map['duration_s'] = Variable<int>(durationS.value);
+    }
+    if (avgPaceSPerKm.present) {
+      map['avg_pace_s_per_km'] = Variable<double>(avgPaceSPerKm.value);
+    }
+    if (caloriesEst.present) {
+      map['calories_est'] = Variable<double>(caloriesEst.value);
+    }
+    if (synced.present) {
+      map['synced'] = Variable<bool>(synced.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('RunsCompanion(')
+          ..write('id: $id, ')
+          ..write('startedAt: $startedAt, ')
+          ..write('endedAt: $endedAt, ')
+          ..write('distanceM: $distanceM, ')
+          ..write('durationS: $durationS, ')
+          ..write('avgPaceSPerKm: $avgPaceSPerKm, ')
+          ..write('caloriesEst: $caloriesEst, ')
+          ..write('synced: $synced, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $RunPointsTable extends RunPoints
+    with TableInfo<$RunPointsTable, RunPointRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $RunPointsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _runIdMeta = const VerificationMeta('runId');
+  @override
+  late final GeneratedColumn<String> runId = GeneratedColumn<String>(
+    'run_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES runs (id) ON DELETE CASCADE',
+    ),
+  );
+  static const VerificationMeta _latMeta = const VerificationMeta('lat');
+  @override
+  late final GeneratedColumn<double> lat = GeneratedColumn<double>(
+    'lat',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _lngMeta = const VerificationMeta('lng');
+  @override
+  late final GeneratedColumn<double> lng = GeneratedColumn<double>(
+    'lng',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _elevationMeta = const VerificationMeta(
+    'elevation',
+  );
+  @override
+  late final GeneratedColumn<double> elevation = GeneratedColumn<double>(
+    'elevation',
+    aliasedName,
+    true,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _timestampMeta = const VerificationMeta(
+    'timestamp',
+  );
+  @override
+  late final GeneratedColumn<DateTime> timestamp = GeneratedColumn<DateTime>(
+    'timestamp',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _speedMeta = const VerificationMeta('speed');
+  @override
+  late final GeneratedColumn<double> speed = GeneratedColumn<double>(
+    'speed',
+    aliasedName,
+    true,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _accuracyMeta = const VerificationMeta(
+    'accuracy',
+  );
+  @override
+  late final GeneratedColumn<double> accuracy = GeneratedColumn<double>(
+    'accuracy',
+    aliasedName,
+    true,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    runId,
+    lat,
+    lng,
+    elevation,
+    timestamp,
+    speed,
+    accuracy,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'run_points';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<RunPointRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('run_id')) {
+      context.handle(
+        _runIdMeta,
+        runId.isAcceptableOrUnknown(data['run_id']!, _runIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_runIdMeta);
+    }
+    if (data.containsKey('lat')) {
+      context.handle(
+        _latMeta,
+        lat.isAcceptableOrUnknown(data['lat']!, _latMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_latMeta);
+    }
+    if (data.containsKey('lng')) {
+      context.handle(
+        _lngMeta,
+        lng.isAcceptableOrUnknown(data['lng']!, _lngMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_lngMeta);
+    }
+    if (data.containsKey('elevation')) {
+      context.handle(
+        _elevationMeta,
+        elevation.isAcceptableOrUnknown(data['elevation']!, _elevationMeta),
+      );
+    }
+    if (data.containsKey('timestamp')) {
+      context.handle(
+        _timestampMeta,
+        timestamp.isAcceptableOrUnknown(data['timestamp']!, _timestampMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_timestampMeta);
+    }
+    if (data.containsKey('speed')) {
+      context.handle(
+        _speedMeta,
+        speed.isAcceptableOrUnknown(data['speed']!, _speedMeta),
+      );
+    }
+    if (data.containsKey('accuracy')) {
+      context.handle(
+        _accuracyMeta,
+        accuracy.isAcceptableOrUnknown(data['accuracy']!, _accuracyMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  RunPointRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return RunPointRow(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      runId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}run_id'],
+      )!,
+      lat: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}lat'],
+      )!,
+      lng: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}lng'],
+      )!,
+      elevation: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}elevation'],
+      ),
+      timestamp: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}timestamp'],
+      )!,
+      speed: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}speed'],
+      ),
+      accuracy: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}accuracy'],
+      ),
+    );
+  }
+
+  @override
+  $RunPointsTable createAlias(String alias) {
+    return $RunPointsTable(attachedDatabase, alias);
+  }
+}
+
+class RunPointRow extends DataClass implements Insertable<RunPointRow> {
+  final int id;
+  final String runId;
+  final double lat;
+  final double lng;
+  final double? elevation;
+  final DateTime timestamp;
+  final double? speed;
+  final double? accuracy;
+  const RunPointRow({
+    required this.id,
+    required this.runId,
+    required this.lat,
+    required this.lng,
+    this.elevation,
+    required this.timestamp,
+    this.speed,
+    this.accuracy,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['run_id'] = Variable<String>(runId);
+    map['lat'] = Variable<double>(lat);
+    map['lng'] = Variable<double>(lng);
+    if (!nullToAbsent || elevation != null) {
+      map['elevation'] = Variable<double>(elevation);
+    }
+    map['timestamp'] = Variable<DateTime>(timestamp);
+    if (!nullToAbsent || speed != null) {
+      map['speed'] = Variable<double>(speed);
+    }
+    if (!nullToAbsent || accuracy != null) {
+      map['accuracy'] = Variable<double>(accuracy);
+    }
+    return map;
+  }
+
+  RunPointsCompanion toCompanion(bool nullToAbsent) {
+    return RunPointsCompanion(
+      id: Value(id),
+      runId: Value(runId),
+      lat: Value(lat),
+      lng: Value(lng),
+      elevation: elevation == null && nullToAbsent
+          ? const Value.absent()
+          : Value(elevation),
+      timestamp: Value(timestamp),
+      speed: speed == null && nullToAbsent
+          ? const Value.absent()
+          : Value(speed),
+      accuracy: accuracy == null && nullToAbsent
+          ? const Value.absent()
+          : Value(accuracy),
+    );
+  }
+
+  factory RunPointRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return RunPointRow(
+      id: serializer.fromJson<int>(json['id']),
+      runId: serializer.fromJson<String>(json['runId']),
+      lat: serializer.fromJson<double>(json['lat']),
+      lng: serializer.fromJson<double>(json['lng']),
+      elevation: serializer.fromJson<double?>(json['elevation']),
+      timestamp: serializer.fromJson<DateTime>(json['timestamp']),
+      speed: serializer.fromJson<double?>(json['speed']),
+      accuracy: serializer.fromJson<double?>(json['accuracy']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'runId': serializer.toJson<String>(runId),
+      'lat': serializer.toJson<double>(lat),
+      'lng': serializer.toJson<double>(lng),
+      'elevation': serializer.toJson<double?>(elevation),
+      'timestamp': serializer.toJson<DateTime>(timestamp),
+      'speed': serializer.toJson<double?>(speed),
+      'accuracy': serializer.toJson<double?>(accuracy),
+    };
+  }
+
+  RunPointRow copyWith({
+    int? id,
+    String? runId,
+    double? lat,
+    double? lng,
+    Value<double?> elevation = const Value.absent(),
+    DateTime? timestamp,
+    Value<double?> speed = const Value.absent(),
+    Value<double?> accuracy = const Value.absent(),
+  }) => RunPointRow(
+    id: id ?? this.id,
+    runId: runId ?? this.runId,
+    lat: lat ?? this.lat,
+    lng: lng ?? this.lng,
+    elevation: elevation.present ? elevation.value : this.elevation,
+    timestamp: timestamp ?? this.timestamp,
+    speed: speed.present ? speed.value : this.speed,
+    accuracy: accuracy.present ? accuracy.value : this.accuracy,
+  );
+  RunPointRow copyWithCompanion(RunPointsCompanion data) {
+    return RunPointRow(
+      id: data.id.present ? data.id.value : this.id,
+      runId: data.runId.present ? data.runId.value : this.runId,
+      lat: data.lat.present ? data.lat.value : this.lat,
+      lng: data.lng.present ? data.lng.value : this.lng,
+      elevation: data.elevation.present ? data.elevation.value : this.elevation,
+      timestamp: data.timestamp.present ? data.timestamp.value : this.timestamp,
+      speed: data.speed.present ? data.speed.value : this.speed,
+      accuracy: data.accuracy.present ? data.accuracy.value : this.accuracy,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('RunPointRow(')
+          ..write('id: $id, ')
+          ..write('runId: $runId, ')
+          ..write('lat: $lat, ')
+          ..write('lng: $lng, ')
+          ..write('elevation: $elevation, ')
+          ..write('timestamp: $timestamp, ')
+          ..write('speed: $speed, ')
+          ..write('accuracy: $accuracy')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(id, runId, lat, lng, elevation, timestamp, speed, accuracy);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is RunPointRow &&
+          other.id == this.id &&
+          other.runId == this.runId &&
+          other.lat == this.lat &&
+          other.lng == this.lng &&
+          other.elevation == this.elevation &&
+          other.timestamp == this.timestamp &&
+          other.speed == this.speed &&
+          other.accuracy == this.accuracy);
+}
+
+class RunPointsCompanion extends UpdateCompanion<RunPointRow> {
+  final Value<int> id;
+  final Value<String> runId;
+  final Value<double> lat;
+  final Value<double> lng;
+  final Value<double?> elevation;
+  final Value<DateTime> timestamp;
+  final Value<double?> speed;
+  final Value<double?> accuracy;
+  const RunPointsCompanion({
+    this.id = const Value.absent(),
+    this.runId = const Value.absent(),
+    this.lat = const Value.absent(),
+    this.lng = const Value.absent(),
+    this.elevation = const Value.absent(),
+    this.timestamp = const Value.absent(),
+    this.speed = const Value.absent(),
+    this.accuracy = const Value.absent(),
+  });
+  RunPointsCompanion.insert({
+    this.id = const Value.absent(),
+    required String runId,
+    required double lat,
+    required double lng,
+    this.elevation = const Value.absent(),
+    required DateTime timestamp,
+    this.speed = const Value.absent(),
+    this.accuracy = const Value.absent(),
+  }) : runId = Value(runId),
+       lat = Value(lat),
+       lng = Value(lng),
+       timestamp = Value(timestamp);
+  static Insertable<RunPointRow> custom({
+    Expression<int>? id,
+    Expression<String>? runId,
+    Expression<double>? lat,
+    Expression<double>? lng,
+    Expression<double>? elevation,
+    Expression<DateTime>? timestamp,
+    Expression<double>? speed,
+    Expression<double>? accuracy,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (runId != null) 'run_id': runId,
+      if (lat != null) 'lat': lat,
+      if (lng != null) 'lng': lng,
+      if (elevation != null) 'elevation': elevation,
+      if (timestamp != null) 'timestamp': timestamp,
+      if (speed != null) 'speed': speed,
+      if (accuracy != null) 'accuracy': accuracy,
+    });
+  }
+
+  RunPointsCompanion copyWith({
+    Value<int>? id,
+    Value<String>? runId,
+    Value<double>? lat,
+    Value<double>? lng,
+    Value<double?>? elevation,
+    Value<DateTime>? timestamp,
+    Value<double?>? speed,
+    Value<double?>? accuracy,
+  }) {
+    return RunPointsCompanion(
+      id: id ?? this.id,
+      runId: runId ?? this.runId,
+      lat: lat ?? this.lat,
+      lng: lng ?? this.lng,
+      elevation: elevation ?? this.elevation,
+      timestamp: timestamp ?? this.timestamp,
+      speed: speed ?? this.speed,
+      accuracy: accuracy ?? this.accuracy,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (runId.present) {
+      map['run_id'] = Variable<String>(runId.value);
+    }
+    if (lat.present) {
+      map['lat'] = Variable<double>(lat.value);
+    }
+    if (lng.present) {
+      map['lng'] = Variable<double>(lng.value);
+    }
+    if (elevation.present) {
+      map['elevation'] = Variable<double>(elevation.value);
+    }
+    if (timestamp.present) {
+      map['timestamp'] = Variable<DateTime>(timestamp.value);
+    }
+    if (speed.present) {
+      map['speed'] = Variable<double>(speed.value);
+    }
+    if (accuracy.present) {
+      map['accuracy'] = Variable<double>(accuracy.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('RunPointsCompanion(')
+          ..write('id: $id, ')
+          ..write('runId: $runId, ')
+          ..write('lat: $lat, ')
+          ..write('lng: $lng, ')
+          ..write('elevation: $elevation, ')
+          ..write('timestamp: $timestamp, ')
+          ..write('speed: $speed, ')
+          ..write('accuracy: $accuracy')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $SettingsTable extends Settings with TableInfo<$SettingsTable, Setting> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $SettingsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(1),
+  );
+  static const VerificationMeta _weightKgMeta = const VerificationMeta(
+    'weightKg',
+  );
+  @override
+  late final GeneratedColumn<double> weightKg = GeneratedColumn<double>(
+    'weight_kg',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(70.0),
+  );
+  static const VerificationMeta _unitMeta = const VerificationMeta('unit');
+  @override
+  late final GeneratedColumn<String> unit = GeneratedColumn<String>(
+    'unit',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('km'),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [id, weightKg, unit];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'settings';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<Setting> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('weight_kg')) {
+      context.handle(
+        _weightKgMeta,
+        weightKg.isAcceptableOrUnknown(data['weight_kg']!, _weightKgMeta),
+      );
+    }
+    if (data.containsKey('unit')) {
+      context.handle(
+        _unitMeta,
+        unit.isAcceptableOrUnknown(data['unit']!, _unitMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  Setting map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return Setting(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      weightKg: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}weight_kg'],
+      )!,
+      unit: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}unit'],
+      )!,
+    );
+  }
+
+  @override
+  $SettingsTable createAlias(String alias) {
+    return $SettingsTable(attachedDatabase, alias);
+  }
+}
+
+class Setting extends DataClass implements Insertable<Setting> {
+  final int id;
+  final double weightKg;
+  final String unit;
+  const Setting({required this.id, required this.weightKg, required this.unit});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['weight_kg'] = Variable<double>(weightKg);
+    map['unit'] = Variable<String>(unit);
+    return map;
+  }
+
+  SettingsCompanion toCompanion(bool nullToAbsent) {
+    return SettingsCompanion(
+      id: Value(id),
+      weightKg: Value(weightKg),
+      unit: Value(unit),
+    );
+  }
+
+  factory Setting.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return Setting(
+      id: serializer.fromJson<int>(json['id']),
+      weightKg: serializer.fromJson<double>(json['weightKg']),
+      unit: serializer.fromJson<String>(json['unit']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'weightKg': serializer.toJson<double>(weightKg),
+      'unit': serializer.toJson<String>(unit),
+    };
+  }
+
+  Setting copyWith({int? id, double? weightKg, String? unit}) => Setting(
+    id: id ?? this.id,
+    weightKg: weightKg ?? this.weightKg,
+    unit: unit ?? this.unit,
+  );
+  Setting copyWithCompanion(SettingsCompanion data) {
+    return Setting(
+      id: data.id.present ? data.id.value : this.id,
+      weightKg: data.weightKg.present ? data.weightKg.value : this.weightKg,
+      unit: data.unit.present ? data.unit.value : this.unit,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('Setting(')
+          ..write('id: $id, ')
+          ..write('weightKg: $weightKg, ')
+          ..write('unit: $unit')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, weightKg, unit);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is Setting &&
+          other.id == this.id &&
+          other.weightKg == this.weightKg &&
+          other.unit == this.unit);
+}
+
+class SettingsCompanion extends UpdateCompanion<Setting> {
+  final Value<int> id;
+  final Value<double> weightKg;
+  final Value<String> unit;
+  const SettingsCompanion({
+    this.id = const Value.absent(),
+    this.weightKg = const Value.absent(),
+    this.unit = const Value.absent(),
+  });
+  SettingsCompanion.insert({
+    this.id = const Value.absent(),
+    this.weightKg = const Value.absent(),
+    this.unit = const Value.absent(),
+  });
+  static Insertable<Setting> custom({
+    Expression<int>? id,
+    Expression<double>? weightKg,
+    Expression<String>? unit,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (weightKg != null) 'weight_kg': weightKg,
+      if (unit != null) 'unit': unit,
+    });
+  }
+
+  SettingsCompanion copyWith({
+    Value<int>? id,
+    Value<double>? weightKg,
+    Value<String>? unit,
+  }) {
+    return SettingsCompanion(
+      id: id ?? this.id,
+      weightKg: weightKg ?? this.weightKg,
+      unit: unit ?? this.unit,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (weightKg.present) {
+      map['weight_kg'] = Variable<double>(weightKg.value);
+    }
+    if (unit.present) {
+      map['unit'] = Variable<String>(unit.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SettingsCompanion(')
+          ..write('id: $id, ')
+          ..write('weightKg: $weightKg, ')
+          ..write('unit: $unit')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $GoalsTable extends Goals with TableInfo<$GoalsTable, GoalRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $GoalsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _metricMeta = const VerificationMeta('metric');
+  @override
+  late final GeneratedColumn<String> metric = GeneratedColumn<String>(
+    'metric',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _targetValueMeta = const VerificationMeta(
+    'targetValue',
+  );
+  @override
+  late final GeneratedColumn<double> targetValue = GeneratedColumn<double>(
+    'target_value',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _periodMeta = const VerificationMeta('period');
+  @override
+  late final GeneratedColumn<String> period = GeneratedColumn<String>(
+    'period',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('weekly'),
+  );
+  static const VerificationMeta _syncedMeta = const VerificationMeta('synced');
+  @override
+  late final GeneratedColumn<bool> synced = GeneratedColumn<bool>(
+    'synced',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("synced" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    metric,
+    targetValue,
+    period,
+    synced,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'goals';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<GoalRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('metric')) {
+      context.handle(
+        _metricMeta,
+        metric.isAcceptableOrUnknown(data['metric']!, _metricMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_metricMeta);
+    }
+    if (data.containsKey('target_value')) {
+      context.handle(
+        _targetValueMeta,
+        targetValue.isAcceptableOrUnknown(
+          data['target_value']!,
+          _targetValueMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_targetValueMeta);
+    }
+    if (data.containsKey('period')) {
+      context.handle(
+        _periodMeta,
+        period.isAcceptableOrUnknown(data['period']!, _periodMeta),
+      );
+    }
+    if (data.containsKey('synced')) {
+      context.handle(
+        _syncedMeta,
+        synced.isAcceptableOrUnknown(data['synced']!, _syncedMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  GoalRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return GoalRow(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      metric: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}metric'],
+      )!,
+      targetValue: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}target_value'],
+      )!,
+      period: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}period'],
+      )!,
+      synced: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}synced'],
+      )!,
+    );
+  }
+
+  @override
+  $GoalsTable createAlias(String alias) {
+    return $GoalsTable(attachedDatabase, alias);
+  }
+}
+
+class GoalRow extends DataClass implements Insertable<GoalRow> {
+  final String id;
+  final String metric;
+  final double targetValue;
+  final String period;
+  final bool synced;
+  const GoalRow({
+    required this.id,
+    required this.metric,
+    required this.targetValue,
+    required this.period,
+    required this.synced,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['metric'] = Variable<String>(metric);
+    map['target_value'] = Variable<double>(targetValue);
+    map['period'] = Variable<String>(period);
+    map['synced'] = Variable<bool>(synced);
+    return map;
+  }
+
+  GoalsCompanion toCompanion(bool nullToAbsent) {
+    return GoalsCompanion(
+      id: Value(id),
+      metric: Value(metric),
+      targetValue: Value(targetValue),
+      period: Value(period),
+      synced: Value(synced),
+    );
+  }
+
+  factory GoalRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return GoalRow(
+      id: serializer.fromJson<String>(json['id']),
+      metric: serializer.fromJson<String>(json['metric']),
+      targetValue: serializer.fromJson<double>(json['targetValue']),
+      period: serializer.fromJson<String>(json['period']),
+      synced: serializer.fromJson<bool>(json['synced']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'metric': serializer.toJson<String>(metric),
+      'targetValue': serializer.toJson<double>(targetValue),
+      'period': serializer.toJson<String>(period),
+      'synced': serializer.toJson<bool>(synced),
+    };
+  }
+
+  GoalRow copyWith({
+    String? id,
+    String? metric,
+    double? targetValue,
+    String? period,
+    bool? synced,
+  }) => GoalRow(
+    id: id ?? this.id,
+    metric: metric ?? this.metric,
+    targetValue: targetValue ?? this.targetValue,
+    period: period ?? this.period,
+    synced: synced ?? this.synced,
+  );
+  GoalRow copyWithCompanion(GoalsCompanion data) {
+    return GoalRow(
+      id: data.id.present ? data.id.value : this.id,
+      metric: data.metric.present ? data.metric.value : this.metric,
+      targetValue: data.targetValue.present
+          ? data.targetValue.value
+          : this.targetValue,
+      period: data.period.present ? data.period.value : this.period,
+      synced: data.synced.present ? data.synced.value : this.synced,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('GoalRow(')
+          ..write('id: $id, ')
+          ..write('metric: $metric, ')
+          ..write('targetValue: $targetValue, ')
+          ..write('period: $period, ')
+          ..write('synced: $synced')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, metric, targetValue, period, synced);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is GoalRow &&
+          other.id == this.id &&
+          other.metric == this.metric &&
+          other.targetValue == this.targetValue &&
+          other.period == this.period &&
+          other.synced == this.synced);
+}
+
+class GoalsCompanion extends UpdateCompanion<GoalRow> {
+  final Value<String> id;
+  final Value<String> metric;
+  final Value<double> targetValue;
+  final Value<String> period;
+  final Value<bool> synced;
+  final Value<int> rowid;
+  const GoalsCompanion({
+    this.id = const Value.absent(),
+    this.metric = const Value.absent(),
+    this.targetValue = const Value.absent(),
+    this.period = const Value.absent(),
+    this.synced = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  GoalsCompanion.insert({
+    required String id,
+    required String metric,
+    required double targetValue,
+    this.period = const Value.absent(),
+    this.synced = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       metric = Value(metric),
+       targetValue = Value(targetValue);
+  static Insertable<GoalRow> custom({
+    Expression<String>? id,
+    Expression<String>? metric,
+    Expression<double>? targetValue,
+    Expression<String>? period,
+    Expression<bool>? synced,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (metric != null) 'metric': metric,
+      if (targetValue != null) 'target_value': targetValue,
+      if (period != null) 'period': period,
+      if (synced != null) 'synced': synced,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  GoalsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? metric,
+    Value<double>? targetValue,
+    Value<String>? period,
+    Value<bool>? synced,
+    Value<int>? rowid,
+  }) {
+    return GoalsCompanion(
+      id: id ?? this.id,
+      metric: metric ?? this.metric,
+      targetValue: targetValue ?? this.targetValue,
+      period: period ?? this.period,
+      synced: synced ?? this.synced,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (metric.present) {
+      map['metric'] = Variable<String>(metric.value);
+    }
+    if (targetValue.present) {
+      map['target_value'] = Variable<double>(targetValue.value);
+    }
+    if (period.present) {
+      map['period'] = Variable<String>(period.value);
+    }
+    if (synced.present) {
+      map['synced'] = Variable<bool>(synced.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('GoalsCompanion(')
+          ..write('id: $id, ')
+          ..write('metric: $metric, ')
+          ..write('targetValue: $targetValue, ')
+          ..write('period: $period, ')
+          ..write('synced: $synced, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+abstract class _$AppDatabase extends GeneratedDatabase {
+  _$AppDatabase(QueryExecutor e) : super(e);
+  $AppDatabaseManager get managers => $AppDatabaseManager(this);
+  late final $RunsTable runs = $RunsTable(this);
+  late final $RunPointsTable runPoints = $RunPointsTable(this);
+  late final $SettingsTable settings = $SettingsTable(this);
+  late final $GoalsTable goals = $GoalsTable(this);
+  late final RunDao runDao = RunDao(this as AppDatabase);
+  late final SettingsDao settingsDao = SettingsDao(this as AppDatabase);
+  late final GoalDao goalDao = GoalDao(this as AppDatabase);
+  @override
+  Iterable<TableInfo<Table, Object?>> get allTables =>
+      allSchemaEntities.whereType<TableInfo<Table, Object?>>();
+  @override
+  List<DatabaseSchemaEntity> get allSchemaEntities => [
+    runs,
+    runPoints,
+    settings,
+    goals,
+  ];
+  @override
+  StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'runs',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('run_points', kind: UpdateKind.delete)],
+    ),
+  ]);
+}
+
+typedef $$RunsTableCreateCompanionBuilder =
+    RunsCompanion Function({
+      required String id,
+      required DateTime startedAt,
+      Value<DateTime?> endedAt,
+      Value<double> distanceM,
+      Value<int> durationS,
+      Value<double> avgPaceSPerKm,
+      Value<double> caloriesEst,
+      Value<bool> synced,
+      Value<int> rowid,
+    });
+typedef $$RunsTableUpdateCompanionBuilder =
+    RunsCompanion Function({
+      Value<String> id,
+      Value<DateTime> startedAt,
+      Value<DateTime?> endedAt,
+      Value<double> distanceM,
+      Value<int> durationS,
+      Value<double> avgPaceSPerKm,
+      Value<double> caloriesEst,
+      Value<bool> synced,
+      Value<int> rowid,
+    });
+
+final class $$RunsTableReferences
+    extends BaseReferences<_$AppDatabase, $RunsTable, RunRow> {
+  $$RunsTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static MultiTypedResultKey<$RunPointsTable, List<RunPointRow>>
+  _runPointsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.runPoints,
+    aliasName: $_aliasNameGenerator(db.runs.id, db.runPoints.runId),
+  );
+
+  $$RunPointsTableProcessedTableManager get runPointsRefs {
+    final manager = $$RunPointsTableTableManager(
+      $_db,
+      $_db.runPoints,
+    ).filter((f) => f.runId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_runPointsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+}
+
+class $$RunsTableFilterComposer extends Composer<_$AppDatabase, $RunsTable> {
+  $$RunsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get startedAt => $composableBuilder(
+    column: $table.startedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get endedAt => $composableBuilder(
+    column: $table.endedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get distanceM => $composableBuilder(
+    column: $table.distanceM,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get durationS => $composableBuilder(
+    column: $table.durationS,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get avgPaceSPerKm => $composableBuilder(
+    column: $table.avgPaceSPerKm,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get caloriesEst => $composableBuilder(
+    column: $table.caloriesEst,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get synced => $composableBuilder(
+    column: $table.synced,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  Expression<bool> runPointsRefs(
+    Expression<bool> Function($$RunPointsTableFilterComposer f) f,
+  ) {
+    final $$RunPointsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.runPoints,
+      getReferencedColumn: (t) => t.runId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$RunPointsTableFilterComposer(
+            $db: $db,
+            $table: $db.runPoints,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$RunsTableOrderingComposer extends Composer<_$AppDatabase, $RunsTable> {
+  $$RunsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get startedAt => $composableBuilder(
+    column: $table.startedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get endedAt => $composableBuilder(
+    column: $table.endedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get distanceM => $composableBuilder(
+    column: $table.distanceM,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get durationS => $composableBuilder(
+    column: $table.durationS,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get avgPaceSPerKm => $composableBuilder(
+    column: $table.avgPaceSPerKm,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get caloriesEst => $composableBuilder(
+    column: $table.caloriesEst,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get synced => $composableBuilder(
+    column: $table.synced,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$RunsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $RunsTable> {
+  $$RunsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get startedAt =>
+      $composableBuilder(column: $table.startedAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get endedAt =>
+      $composableBuilder(column: $table.endedAt, builder: (column) => column);
+
+  GeneratedColumn<double> get distanceM =>
+      $composableBuilder(column: $table.distanceM, builder: (column) => column);
+
+  GeneratedColumn<int> get durationS =>
+      $composableBuilder(column: $table.durationS, builder: (column) => column);
+
+  GeneratedColumn<double> get avgPaceSPerKm => $composableBuilder(
+    column: $table.avgPaceSPerKm,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get caloriesEst => $composableBuilder(
+    column: $table.caloriesEst,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get synced =>
+      $composableBuilder(column: $table.synced, builder: (column) => column);
+
+  Expression<T> runPointsRefs<T extends Object>(
+    Expression<T> Function($$RunPointsTableAnnotationComposer a) f,
+  ) {
+    final $$RunPointsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.runPoints,
+      getReferencedColumn: (t) => t.runId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$RunPointsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.runPoints,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$RunsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $RunsTable,
+          RunRow,
+          $$RunsTableFilterComposer,
+          $$RunsTableOrderingComposer,
+          $$RunsTableAnnotationComposer,
+          $$RunsTableCreateCompanionBuilder,
+          $$RunsTableUpdateCompanionBuilder,
+          (RunRow, $$RunsTableReferences),
+          RunRow,
+          PrefetchHooks Function({bool runPointsRefs})
+        > {
+  $$RunsTableTableManager(_$AppDatabase db, $RunsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$RunsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$RunsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$RunsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<DateTime> startedAt = const Value.absent(),
+                Value<DateTime?> endedAt = const Value.absent(),
+                Value<double> distanceM = const Value.absent(),
+                Value<int> durationS = const Value.absent(),
+                Value<double> avgPaceSPerKm = const Value.absent(),
+                Value<double> caloriesEst = const Value.absent(),
+                Value<bool> synced = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => RunsCompanion(
+                id: id,
+                startedAt: startedAt,
+                endedAt: endedAt,
+                distanceM: distanceM,
+                durationS: durationS,
+                avgPaceSPerKm: avgPaceSPerKm,
+                caloriesEst: caloriesEst,
+                synced: synced,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required DateTime startedAt,
+                Value<DateTime?> endedAt = const Value.absent(),
+                Value<double> distanceM = const Value.absent(),
+                Value<int> durationS = const Value.absent(),
+                Value<double> avgPaceSPerKm = const Value.absent(),
+                Value<double> caloriesEst = const Value.absent(),
+                Value<bool> synced = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => RunsCompanion.insert(
+                id: id,
+                startedAt: startedAt,
+                endedAt: endedAt,
+                distanceM: distanceM,
+                durationS: durationS,
+                avgPaceSPerKm: avgPaceSPerKm,
+                caloriesEst: caloriesEst,
+                synced: synced,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) =>
+                    (e.readTable(table), $$RunsTableReferences(db, table, e)),
+              )
+              .toList(),
+          prefetchHooksCallback: ({runPointsRefs = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [if (runPointsRefs) db.runPoints],
+              addJoins: null,
+              getPrefetchedDataCallback: (items) async {
+                return [
+                  if (runPointsRefs)
+                    await $_getPrefetchedData<RunRow, $RunsTable, RunPointRow>(
+                      currentTable: table,
+                      referencedTable: $$RunsTableReferences
+                          ._runPointsRefsTable(db),
+                      managerFromTypedResult: (p0) =>
+                          $$RunsTableReferences(db, table, p0).runPointsRefs,
+                      referencedItemsForCurrentItem: (item, referencedItems) =>
+                          referencedItems.where((e) => e.runId == item.id),
+                      typedResults: items,
+                    ),
+                ];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$RunsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $RunsTable,
+      RunRow,
+      $$RunsTableFilterComposer,
+      $$RunsTableOrderingComposer,
+      $$RunsTableAnnotationComposer,
+      $$RunsTableCreateCompanionBuilder,
+      $$RunsTableUpdateCompanionBuilder,
+      (RunRow, $$RunsTableReferences),
+      RunRow,
+      PrefetchHooks Function({bool runPointsRefs})
+    >;
+typedef $$RunPointsTableCreateCompanionBuilder =
+    RunPointsCompanion Function({
+      Value<int> id,
+      required String runId,
+      required double lat,
+      required double lng,
+      Value<double?> elevation,
+      required DateTime timestamp,
+      Value<double?> speed,
+      Value<double?> accuracy,
+    });
+typedef $$RunPointsTableUpdateCompanionBuilder =
+    RunPointsCompanion Function({
+      Value<int> id,
+      Value<String> runId,
+      Value<double> lat,
+      Value<double> lng,
+      Value<double?> elevation,
+      Value<DateTime> timestamp,
+      Value<double?> speed,
+      Value<double?> accuracy,
+    });
+
+final class $$RunPointsTableReferences
+    extends BaseReferences<_$AppDatabase, $RunPointsTable, RunPointRow> {
+  $$RunPointsTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $RunsTable _runIdTable(_$AppDatabase db) =>
+      db.runs.createAlias($_aliasNameGenerator(db.runPoints.runId, db.runs.id));
+
+  $$RunsTableProcessedTableManager get runId {
+    final $_column = $_itemColumn<String>('run_id')!;
+
+    final manager = $$RunsTableTableManager(
+      $_db,
+      $_db.runs,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_runIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$RunPointsTableFilterComposer
+    extends Composer<_$AppDatabase, $RunPointsTable> {
+  $$RunPointsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get lat => $composableBuilder(
+    column: $table.lat,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get lng => $composableBuilder(
+    column: $table.lng,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get elevation => $composableBuilder(
+    column: $table.elevation,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get timestamp => $composableBuilder(
+    column: $table.timestamp,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get speed => $composableBuilder(
+    column: $table.speed,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get accuracy => $composableBuilder(
+    column: $table.accuracy,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$RunsTableFilterComposer get runId {
+    final $$RunsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.runId,
+      referencedTable: $db.runs,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$RunsTableFilterComposer(
+            $db: $db,
+            $table: $db.runs,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$RunPointsTableOrderingComposer
+    extends Composer<_$AppDatabase, $RunPointsTable> {
+  $$RunPointsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get lat => $composableBuilder(
+    column: $table.lat,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get lng => $composableBuilder(
+    column: $table.lng,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get elevation => $composableBuilder(
+    column: $table.elevation,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get timestamp => $composableBuilder(
+    column: $table.timestamp,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get speed => $composableBuilder(
+    column: $table.speed,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get accuracy => $composableBuilder(
+    column: $table.accuracy,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$RunsTableOrderingComposer get runId {
+    final $$RunsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.runId,
+      referencedTable: $db.runs,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$RunsTableOrderingComposer(
+            $db: $db,
+            $table: $db.runs,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$RunPointsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $RunPointsTable> {
+  $$RunPointsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<double> get lat =>
+      $composableBuilder(column: $table.lat, builder: (column) => column);
+
+  GeneratedColumn<double> get lng =>
+      $composableBuilder(column: $table.lng, builder: (column) => column);
+
+  GeneratedColumn<double> get elevation =>
+      $composableBuilder(column: $table.elevation, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get timestamp =>
+      $composableBuilder(column: $table.timestamp, builder: (column) => column);
+
+  GeneratedColumn<double> get speed =>
+      $composableBuilder(column: $table.speed, builder: (column) => column);
+
+  GeneratedColumn<double> get accuracy =>
+      $composableBuilder(column: $table.accuracy, builder: (column) => column);
+
+  $$RunsTableAnnotationComposer get runId {
+    final $$RunsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.runId,
+      referencedTable: $db.runs,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$RunsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.runs,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$RunPointsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $RunPointsTable,
+          RunPointRow,
+          $$RunPointsTableFilterComposer,
+          $$RunPointsTableOrderingComposer,
+          $$RunPointsTableAnnotationComposer,
+          $$RunPointsTableCreateCompanionBuilder,
+          $$RunPointsTableUpdateCompanionBuilder,
+          (RunPointRow, $$RunPointsTableReferences),
+          RunPointRow,
+          PrefetchHooks Function({bool runId})
+        > {
+  $$RunPointsTableTableManager(_$AppDatabase db, $RunPointsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$RunPointsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$RunPointsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$RunPointsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<String> runId = const Value.absent(),
+                Value<double> lat = const Value.absent(),
+                Value<double> lng = const Value.absent(),
+                Value<double?> elevation = const Value.absent(),
+                Value<DateTime> timestamp = const Value.absent(),
+                Value<double?> speed = const Value.absent(),
+                Value<double?> accuracy = const Value.absent(),
+              }) => RunPointsCompanion(
+                id: id,
+                runId: runId,
+                lat: lat,
+                lng: lng,
+                elevation: elevation,
+                timestamp: timestamp,
+                speed: speed,
+                accuracy: accuracy,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required String runId,
+                required double lat,
+                required double lng,
+                Value<double?> elevation = const Value.absent(),
+                required DateTime timestamp,
+                Value<double?> speed = const Value.absent(),
+                Value<double?> accuracy = const Value.absent(),
+              }) => RunPointsCompanion.insert(
+                id: id,
+                runId: runId,
+                lat: lat,
+                lng: lng,
+                elevation: elevation,
+                timestamp: timestamp,
+                speed: speed,
+                accuracy: accuracy,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$RunPointsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({runId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (runId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.runId,
+                                referencedTable: $$RunPointsTableReferences
+                                    ._runIdTable(db),
+                                referencedColumn: $$RunPointsTableReferences
+                                    ._runIdTable(db)
+                                    .id,
+                              )
+                              as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$RunPointsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $RunPointsTable,
+      RunPointRow,
+      $$RunPointsTableFilterComposer,
+      $$RunPointsTableOrderingComposer,
+      $$RunPointsTableAnnotationComposer,
+      $$RunPointsTableCreateCompanionBuilder,
+      $$RunPointsTableUpdateCompanionBuilder,
+      (RunPointRow, $$RunPointsTableReferences),
+      RunPointRow,
+      PrefetchHooks Function({bool runId})
+    >;
+typedef $$SettingsTableCreateCompanionBuilder =
+    SettingsCompanion Function({
+      Value<int> id,
+      Value<double> weightKg,
+      Value<String> unit,
+    });
+typedef $$SettingsTableUpdateCompanionBuilder =
+    SettingsCompanion Function({
+      Value<int> id,
+      Value<double> weightKg,
+      Value<String> unit,
+    });
+
+class $$SettingsTableFilterComposer
+    extends Composer<_$AppDatabase, $SettingsTable> {
+  $$SettingsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get weightKg => $composableBuilder(
+    column: $table.weightKg,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get unit => $composableBuilder(
+    column: $table.unit,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$SettingsTableOrderingComposer
+    extends Composer<_$AppDatabase, $SettingsTable> {
+  $$SettingsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get weightKg => $composableBuilder(
+    column: $table.weightKg,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get unit => $composableBuilder(
+    column: $table.unit,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$SettingsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $SettingsTable> {
+  $$SettingsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<double> get weightKg =>
+      $composableBuilder(column: $table.weightKg, builder: (column) => column);
+
+  GeneratedColumn<String> get unit =>
+      $composableBuilder(column: $table.unit, builder: (column) => column);
+}
+
+class $$SettingsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $SettingsTable,
+          Setting,
+          $$SettingsTableFilterComposer,
+          $$SettingsTableOrderingComposer,
+          $$SettingsTableAnnotationComposer,
+          $$SettingsTableCreateCompanionBuilder,
+          $$SettingsTableUpdateCompanionBuilder,
+          (Setting, BaseReferences<_$AppDatabase, $SettingsTable, Setting>),
+          Setting,
+          PrefetchHooks Function()
+        > {
+  $$SettingsTableTableManager(_$AppDatabase db, $SettingsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$SettingsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$SettingsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$SettingsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<double> weightKg = const Value.absent(),
+                Value<String> unit = const Value.absent(),
+              }) => SettingsCompanion(id: id, weightKg: weightKg, unit: unit),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<double> weightKg = const Value.absent(),
+                Value<String> unit = const Value.absent(),
+              }) => SettingsCompanion.insert(
+                id: id,
+                weightKg: weightKg,
+                unit: unit,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$SettingsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $SettingsTable,
+      Setting,
+      $$SettingsTableFilterComposer,
+      $$SettingsTableOrderingComposer,
+      $$SettingsTableAnnotationComposer,
+      $$SettingsTableCreateCompanionBuilder,
+      $$SettingsTableUpdateCompanionBuilder,
+      (Setting, BaseReferences<_$AppDatabase, $SettingsTable, Setting>),
+      Setting,
+      PrefetchHooks Function()
+    >;
+typedef $$GoalsTableCreateCompanionBuilder =
+    GoalsCompanion Function({
+      required String id,
+      required String metric,
+      required double targetValue,
+      Value<String> period,
+      Value<bool> synced,
+      Value<int> rowid,
+    });
+typedef $$GoalsTableUpdateCompanionBuilder =
+    GoalsCompanion Function({
+      Value<String> id,
+      Value<String> metric,
+      Value<double> targetValue,
+      Value<String> period,
+      Value<bool> synced,
+      Value<int> rowid,
+    });
+
+class $$GoalsTableFilterComposer extends Composer<_$AppDatabase, $GoalsTable> {
+  $$GoalsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get metric => $composableBuilder(
+    column: $table.metric,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get targetValue => $composableBuilder(
+    column: $table.targetValue,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get period => $composableBuilder(
+    column: $table.period,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get synced => $composableBuilder(
+    column: $table.synced,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$GoalsTableOrderingComposer
+    extends Composer<_$AppDatabase, $GoalsTable> {
+  $$GoalsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get metric => $composableBuilder(
+    column: $table.metric,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get targetValue => $composableBuilder(
+    column: $table.targetValue,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get period => $composableBuilder(
+    column: $table.period,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get synced => $composableBuilder(
+    column: $table.synced,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$GoalsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $GoalsTable> {
+  $$GoalsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get metric =>
+      $composableBuilder(column: $table.metric, builder: (column) => column);
+
+  GeneratedColumn<double> get targetValue => $composableBuilder(
+    column: $table.targetValue,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get period =>
+      $composableBuilder(column: $table.period, builder: (column) => column);
+
+  GeneratedColumn<bool> get synced =>
+      $composableBuilder(column: $table.synced, builder: (column) => column);
+}
+
+class $$GoalsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $GoalsTable,
+          GoalRow,
+          $$GoalsTableFilterComposer,
+          $$GoalsTableOrderingComposer,
+          $$GoalsTableAnnotationComposer,
+          $$GoalsTableCreateCompanionBuilder,
+          $$GoalsTableUpdateCompanionBuilder,
+          (GoalRow, BaseReferences<_$AppDatabase, $GoalsTable, GoalRow>),
+          GoalRow,
+          PrefetchHooks Function()
+        > {
+  $$GoalsTableTableManager(_$AppDatabase db, $GoalsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$GoalsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$GoalsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$GoalsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> metric = const Value.absent(),
+                Value<double> targetValue = const Value.absent(),
+                Value<String> period = const Value.absent(),
+                Value<bool> synced = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => GoalsCompanion(
+                id: id,
+                metric: metric,
+                targetValue: targetValue,
+                period: period,
+                synced: synced,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String metric,
+                required double targetValue,
+                Value<String> period = const Value.absent(),
+                Value<bool> synced = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => GoalsCompanion.insert(
+                id: id,
+                metric: metric,
+                targetValue: targetValue,
+                period: period,
+                synced: synced,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$GoalsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $GoalsTable,
+      GoalRow,
+      $$GoalsTableFilterComposer,
+      $$GoalsTableOrderingComposer,
+      $$GoalsTableAnnotationComposer,
+      $$GoalsTableCreateCompanionBuilder,
+      $$GoalsTableUpdateCompanionBuilder,
+      (GoalRow, BaseReferences<_$AppDatabase, $GoalsTable, GoalRow>),
+      GoalRow,
+      PrefetchHooks Function()
+    >;
+
+class $AppDatabaseManager {
+  final _$AppDatabase _db;
+  $AppDatabaseManager(this._db);
+  $$RunsTableTableManager get runs => $$RunsTableTableManager(_db, _db.runs);
+  $$RunPointsTableTableManager get runPoints =>
+      $$RunPointsTableTableManager(_db, _db.runPoints);
+  $$SettingsTableTableManager get settings =>
+      $$SettingsTableTableManager(_db, _db.settings);
+  $$GoalsTableTableManager get goals =>
+      $$GoalsTableTableManager(_db, _db.goals);
+}

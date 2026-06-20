@@ -1,0 +1,39 @@
+name: runtrack_app
+description: "A mobile running tracker app."
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.10.8
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  cupertino_icons: ^1.0.8
+  flutter_riverpod: ^2.6.1
+  go_router: ^14.8.1
+  drift: ^2.23.1
+  drift_flutter: ^0.2.4
+  geolocator: ^13.0.2
+  flutter_foreground_task: ^8.16.0
+  flutter_map: ^7.0.2
+  latlong2: ^0.9.1
+  supabase_flutter: ^2.8.4
+  intl: ^0.20.2
+  uuid: ^4.5.1
+  google_sign_in: ^7.2.0
+  sign_in_with_apple: ^7.0.1
+  crypto: ^3.0.7
+  flutter_screenutil: ^5.9.3
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+  build_runner: ^2.4.14
+  drift_dev: ^2.23.1
+
+flutter:
+  uses-material-design: true
