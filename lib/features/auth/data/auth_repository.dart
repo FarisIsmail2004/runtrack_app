@@ -316,11 +316,34 @@ class SupabaseAuthRepository implements AuthRepository {
     String newPassword,
   ) async {
     try {
-      // verifyOTP creates a session; updateUser then sets the new password.
-      // The password is forwarded over TLS and then discarded.
+      // ORDERING HAZARD: verifyOTP signs the user IN before updateUser runs.
+      // If updateUser then throws, the caller (and the router redirect) would
+      // observe a signed-in session and route to /home — leaving the user
+      // believing the reset succeeded while the password was never changed.
+      //
+      // Guard: on any updateUser failure we sign the user back out (best-effort)
+      // so the router redirect sees "signed-out" and sends them to /login, then
+      // rethrow as an AuthFailure so the UI surfaces the error.
+      // The password is forwarded over TLS and then discarded; it is never
+      // stored locally.
       await _auth.verifyOTP(email: email, token: code, type: OtpType.recovery);
-      await _auth.updateUser(UserAttributes(password: newPassword));
+      try {
+        await _auth.updateUser(UserAttributes(password: newPassword));
+      } on AuthException catch (e) {
+        // updateUser failed after a successful verifyOTP — user is signed in
+        // but password unchanged. Sign them back out to avoid a false-success
+        // state, then surface the error.
+        await _auth.signOut().onError((_, _) => null); // best-effort
+        throw AuthFailure(e.message);
+      } catch (_) {
+        // Same safety net for non-AuthException failures.
+        await _auth.signOut().onError((_, _) => null); // best-effort
+        throw const AuthFailure('Could not reset password. Please try again.');
+      }
+    } on AuthFailure {
+      rethrow;
     } on AuthException catch (e) {
+      // verifyOTP itself failed — no session was created, nothing to sign out.
       throw AuthFailure(e.message);
     } catch (_) {
       throw const AuthFailure('Could not reset password. Please try again.');
