@@ -17,12 +17,18 @@ class FakeAuthRepository implements AuthRepository {
   bool throwOnSignUp = false;
   bool throwOnGoogle = false;
   bool throwOnApple = false;
+  bool throwOnSendCode = false;
+  bool throwOnResetPassword = false;
   String? lastSignInEmail;
   String? lastSignInPassword;
   String? lastSignUpEmail;
+  String? lastResetEmail;
+  String? lastResetCode;
+  String? lastResetPassword;
   int googleCalls = 0;
   int appleCalls = 0;
   int signOutCalls = 0;
+  int sendCodeCalls = 0;
 
   void dispose() => _controller.close();
 
@@ -71,14 +77,6 @@ class FakeAuthRepository implements AuthRepository {
     signOutCalls++;
     _emit(null);
   }
-
-  // (FakeAuthRepository spy fields, near the other spy fields)
-  bool throwOnSendCode = false;
-  bool throwOnResetPassword = false;
-  String? lastResetEmail;
-  String? lastResetCode;
-  String? lastResetPassword;
-  int sendCodeCalls = 0;
 
   @override
   Future<void> sendPasswordResetCode(String email) async {
