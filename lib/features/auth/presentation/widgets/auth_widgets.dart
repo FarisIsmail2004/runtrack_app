@@ -323,3 +323,47 @@ class AuthSwitchPrompt extends StatelessWidget {
     );
   }
 }
+
+/// Live, per-rule password checklist shown under the signup password field.
+/// Rebuilt by the parent on every keystroke; each rule flips its icon/colour
+/// as [password] satisfies it.
+class PasswordRequirementsChecklist extends StatelessWidget {
+  const PasswordRequirementsChecklist({required this.password, super.key});
+
+  final String password;
+
+  @override
+  Widget build(BuildContext context) {
+    final rules = PasswordPolicy.evaluate(password);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        for (final rule in rules)
+          Padding(
+            padding: EdgeInsets.symmetric(vertical: 2.h),
+            child: Row(
+              children: [
+                Icon(
+                  rule.satisfied
+                      ? Icons.check_circle
+                      : Icons.radio_button_unchecked,
+                  size: 16.sp,
+                  color: rule.satisfied
+                      ? const Color(0xFFFF6A00)
+                      : Colors.white38,
+                ),
+                SizedBox(width: 8.w),
+                Text(
+                  rule.label,
+                  style: TextStyle(
+                    fontSize: 12.sp,
+                    color: rule.satisfied ? Colors.white : Colors.white54,
+                  ),
+                ),
+              ],
+            ),
+          ),
+      ],
+    );
+  }
+}
