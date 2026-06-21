@@ -48,7 +48,10 @@ class SpyAuthRepository implements AuthRepository {
 
   @override
   Future<void> resetPasswordWithCode(
-      String email, String code, String newPassword) async {}
+    String email,
+    String code,
+    String newPassword,
+  ) async {}
 }
 
 void main() {
@@ -61,10 +64,14 @@ void main() {
     final router = GoRouter(
       initialLocation: '/login',
       routes: [
-        GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
+        GoRoute(
+          path: '/login',
+          builder: (context, state) => const LoginScreen(),
+        ),
         GoRoute(
           path: '/signup',
-          builder: (context, state) => const Scaffold(body: Text('Signup stub')),
+          builder: (context, state) =>
+              const Scaffold(body: Text('Signup stub')),
         ),
         GoRoute(
           path: '/forgot-password',
@@ -82,8 +89,9 @@ void main() {
     );
   }
 
-  testWidgets('renders email, password, Log In, and Google buttons',
-      (tester) async {
+  testWidgets('renders email, password, Log In, and Google buttons', (
+    tester,
+  ) async {
     await tester.pumpWidget(buildLogin());
     await tester.pumpAndSettle();
 
@@ -96,8 +104,9 @@ void main() {
     expect(find.text('Continue with Apple'), findsNothing);
   });
 
-  testWidgets('short password shows a validation error and does not submit',
-      (tester) async {
+  testWidgets('empty password shows a validation error and does not submit', (
+    tester,
+  ) async {
     await tester.pumpWidget(buildLogin());
     await tester.pumpAndSettle();
 
@@ -107,17 +116,18 @@ void main() {
     );
     await tester.enterText(
       find.widgetWithText(TextFormField, 'Password'),
-      '123', // too short
+      '', // empty
     );
     await tester.tap(find.widgetWithText(ElevatedButton, 'Log In'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Min. 6 characters'), findsOneWidget);
+    expect(find.text('Enter your password'), findsOneWidget);
     expect(repo.signInCalls, 0);
   });
 
-  testWidgets('valid input calls signInWithEmail on the repository',
-      (tester) async {
+  testWidgets('valid input calls signInWithEmail on the repository', (
+    tester,
+  ) async {
     await tester.pumpWidget(buildLogin());
     await tester.pumpAndSettle();
 
@@ -137,8 +147,9 @@ void main() {
     expect(repo.lastPassword, 'secret123');
   });
 
-  testWidgets('tapping "Forgot password?" navigates to /forgot-password',
-      (tester) async {
+  testWidgets('tapping "Forgot password?" navigates to /forgot-password', (
+    tester,
+  ) async {
     await tester.pumpWidget(buildLogin());
     await tester.pumpAndSettle();
 

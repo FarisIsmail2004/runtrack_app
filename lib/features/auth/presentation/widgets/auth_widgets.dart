@@ -17,6 +17,14 @@ class AuthValidators {
 
   static String? password(String? value) => PasswordPolicy.validate(value);
 
+  /// Lenient validator for the LOGIN form: only requires a non-empty value, so
+  /// existing accounts with passwords predating the signup complexity policy
+  /// are never blocked at the form (the server authenticates them).
+  static String? loginPassword(String? value) {
+    if ((value ?? '').isEmpty) return 'Enter your password';
+    return null;
+  }
+
   static final _codeRegExp = RegExp(r'^\d{6}$');
 
   static String? code(String? value) {
