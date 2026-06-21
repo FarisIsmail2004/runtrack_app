@@ -39,6 +39,11 @@ class RunPoints extends Table {
   DateTimeColumn get timestamp => dateTime()();
   RealColumn get speed => real().nullable()();
   RealColumn get accuracy => real().nullable()();
+
+  @override
+  List<String> get customConstraints => const [
+    'FOREIGN KEY (run_id) REFERENCES runs (id) ON DELETE CASCADE',
+  ];
 }
 
 /// Single-row table holding user preferences that feed the rest of the app:
