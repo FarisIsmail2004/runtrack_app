@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+import '../../onboarding/presentation/widgets/brand_wordmark.dart';
+
 /// Becomes true once the splash's minimum display window has elapsed. The
 /// router's redirect waits on this so the brand mark is shown for a beat before
 /// gating decisions move the user on to /login or /home.
@@ -49,20 +51,12 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
           children: [
             Icon(Icons.directions_run, color: orange, size: 72.sp),
             SizedBox(height: 16.h),
-            RichText(
-              text: TextSpan(
-                style: TextStyle(fontSize: 48.sp, fontWeight: FontWeight.bold),
-                children: const [
-                  TextSpan(
-                    text: 'RUN',
-                    style: TextStyle(color: Colors.white),
-                  ),
-                  TextSpan(
-                    text: 'TRACK',
-                    style: TextStyle(color: orange),
-                  ),
-                ],
-              ),
+            const BrandWordmark(),
+            SizedBox(height: 16.h),
+            Text(
+              'Track every run.\nImprove every day.',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 16.sp, color: Colors.white70),
             ),
           ],
         ),
