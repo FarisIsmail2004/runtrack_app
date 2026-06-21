@@ -34,15 +34,19 @@ const _authRoutes = <String>['/login', '/signup', '/forgot-password'];
 class _RouterRefreshNotifier extends ChangeNotifier {
   _RouterRefreshNotifier(Ref ref) {
     // Fire a refresh on every auth-state emission...
-    _cancelAuth = ref.listen<AsyncValue<AuthUser?>>(
-      authStateProvider,
-      (previous, next) => notifyListeners(),
-    ).close;
+    _cancelAuth = ref
+        .listen<AsyncValue<AuthUser?>>(
+          authStateProvider,
+          (previous, next) => notifyListeners(),
+        )
+        .close;
     // ...and once the splash's minimum display window has elapsed.
-    _cancelSplash = ref.listen<bool>(
-      splashReadyProvider,
-      (previous, next) => notifyListeners(),
-    ).close;
+    _cancelSplash = ref
+        .listen<bool>(
+          splashReadyProvider,
+          (previous, next) => notifyListeners(),
+        )
+        .close;
   }
 
   late final void Function() _cancelAuth;
@@ -84,8 +88,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       final authState = ref.read(authStateProvider);
       final loggedIn = authState.valueOrNull != null;
       final onAuthRoute = _authRoutes.contains(location);
-      final onProtected =
-          _protectedPrefixes.any((p) => location.startsWith(p));
+      final onProtected = _protectedPrefixes.any((p) => location.startsWith(p));
 
       // While the very first auth value is resolving, hold on splash.
       if (authState.isLoading && !authState.hasValue) {
@@ -108,10 +111,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/splash',
         builder: (context, state) => const SplashScreen(),
       ),
-      GoRoute(
-        path: '/login',
-        builder: (context, state) => const LoginScreen(),
-      ),
+      GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
       GoRoute(
         path: '/signup',
         builder: (context, state) => const SignupScreen(),
@@ -121,15 +121,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const ForgotPasswordScreen(),
       ),
       // Full-screen routes outside the bottom-nav shell
-      GoRoute(
-        path: '/run',
-        builder: (context, state) => const LiveRunScreen(),
-      ),
+      GoRoute(path: '/run', builder: (context, state) => const LiveRunScreen()),
       GoRoute(
         path: '/summary/:runId',
-        builder: (context, state) => RunSummaryScreen(
-          runId: state.pathParameters['runId']!,
-        ),
+        builder: (context, state) =>
+            RunSummaryScreen(runId: state.pathParameters['runId']!),
       ),
       // Bottom-nav shell
       StatefulShellRoute.indexedStack(
@@ -152,9 +148,8 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                 routes: [
                   GoRoute(
                     path: ':runId',
-                    builder: (context, state) => RunDetailScreen(
-                      runId: state.pathParameters['runId']!,
-                    ),
+                    builder: (context, state) =>
+                        RunDetailScreen(runId: state.pathParameters['runId']!),
                   ),
                 ],
               ),

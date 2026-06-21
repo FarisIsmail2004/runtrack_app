@@ -56,11 +56,11 @@ String distanceUnitLabel(UnitSystem unit) =>
 /// it is scaled to seconds-per-mile (× 1.609344) before formatting.
 /// e.g. 300 s/km → "5:00" /km or "8:03" /mi.
 String formatPaceUnit(double secPerKm, UnitSystem unit) {
-  final scaled =
-      unit == UnitSystem.mi ? secPerKm * (metersPerMile / 1000.0) : secPerKm;
+  final scaled = unit == UnitSystem.mi
+      ? secPerKm * (metersPerMile / 1000.0)
+      : secPerKm;
   return formatPace(scaled);
 }
 
 /// Bare pace unit label, e.g. for "5:00 /km".
-String paceUnitLabel(UnitSystem unit) =>
-    unit == UnitSystem.mi ? '/mi' : '/km';
+String paceUnitLabel(UnitSystem unit) => unit == UnitSystem.mi ? '/mi' : '/km';

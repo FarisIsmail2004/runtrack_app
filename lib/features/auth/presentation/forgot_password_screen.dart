@@ -72,7 +72,9 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
   Future<void> _resetPassword() async {
     FocusScope.of(context).unfocus();
     if (!(_formKey.currentState?.validate() ?? false)) return;
-    await ref.read(authControllerProvider.notifier).resetPasswordWithCode(
+    await ref
+        .read(authControllerProvider.notifier)
+        .resetPasswordWithCode(
           _emailController.text,
           _codeController.text,
           _passwordController.text,

@@ -7,7 +7,8 @@ part 'settings_dao.g.dart';
 /// row (id = 1) has been created by [AppDatabase]'s `beforeOpen`; reads fall
 /// back to drift defaults (70 kg, 'km') if it somehow does not yet exist.
 @DriftAccessor(tables: [Settings])
-class SettingsDao extends DatabaseAccessor<AppDatabase> with _$SettingsDaoMixin {
+class SettingsDao extends DatabaseAccessor<AppDatabase>
+    with _$SettingsDaoMixin {
   SettingsDao(super.db);
 
   static const _rowId = 1;
@@ -21,8 +22,9 @@ class SettingsDao extends DatabaseAccessor<AppDatabase> with _$SettingsDaoMixin 
 
   /// One-shot read of the current settings row (defaulted if absent).
   Future<Setting> getSettings() async {
-    final row = await (select(settings)..where((s) => s.id.equals(_rowId)))
-        .getSingleOrNull();
+    final row = await (select(
+      settings,
+    )..where((s) => s.id.equals(_rowId))).getSingleOrNull();
     return row ?? _defaultRow;
   }
 
@@ -32,8 +34,8 @@ class SettingsDao extends DatabaseAccessor<AppDatabase> with _$SettingsDaoMixin 
       );
 
   Future<void> setUnit(String unit) => into(settings).insertOnConflictUpdate(
-        SettingsCompanion(id: const Value(_rowId), unit: Value(unit)),
-      );
+    SettingsCompanion(id: const Value(_rowId), unit: Value(unit)),
+  );
 
   static const _defaultRow = Setting(id: _rowId, weightKg: 70.0, unit: 'km');
 }

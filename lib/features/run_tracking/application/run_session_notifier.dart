@@ -18,7 +18,8 @@ import 'package:uuid/uuid.dart';
 
 /// 1 Hz tick source. Tests override with a manually pumped stream.
 final tickerProvider = Provider<Stream<void> Function()>(
-  (ref) => () => Stream<void>.periodic(const Duration(seconds: 1)),
+  (ref) =>
+      () => Stream<void>.periodic(const Duration(seconds: 1)),
 );
 
 /// Wall-clock source, overridable in tests.
@@ -27,13 +28,14 @@ final clockProvider = Provider<DateTime Function()>((ref) => DateTime.now);
 /// Weight (kg) used for calorie estimation, sourced from the user's persisted
 /// profile settings (drift) via [weightKgProvider], falling back to 70 kg while
 /// settings load. Kept as a named provider so tests can override it directly.
-final profileWeightProvider =
-    Provider<double>((ref) => ref.watch(weightKgProvider));
+final profileWeightProvider = Provider<double>(
+  (ref) => ref.watch(weightKgProvider),
+);
 
 final runSessionProvider =
     NotifierProvider<RunSessionNotifier, RunSessionState>(
-  RunSessionNotifier.new,
-);
+      RunSessionNotifier.new,
+    );
 
 /// Live-run state machine: idle → acquiringGps → ready → running ⇄ paused →
 /// finished → (reset) idle.
@@ -59,8 +61,7 @@ class RunSessionNotifier extends Notifier<RunSessionState> {
 
   LocationService get _location => ref.read(locationServiceProvider);
   RunDao get _dao => ref.read(databaseProvider).runDao;
-  RunForegroundService get _fgService =>
-      ref.read(runForegroundServiceProvider);
+  RunForegroundService get _fgService => ref.read(runForegroundServiceProvider);
   DateTime Function() get _now => ref.read(clockProvider);
 
   @override
@@ -87,21 +88,21 @@ class RunSessionNotifier extends Notifier<RunSessionState> {
     if (!granted) {
       state = state.copyWith(
         phase: RunPhase.idle,
-        error: 'Location permission denied. Enable it in Settings to track '
+        error:
+            'Location permission denied. Enable it in Settings to track '
             'your run.',
       );
       return;
     }
 
     _positionSub = _location.positionStream().listen(
-          _onPoint,
-          onError: _onStreamError,
-        );
+      _onPoint,
+      onError: _onStreamError,
+    );
   }
 
   Future<void> start() async {
-    if (state.phase != RunPhase.ready &&
-        state.phase != RunPhase.acquiringGps) {
+    if (state.phase != RunPhase.ready && state.phase != RunPhase.acquiringGps) {
       return;
     }
     final runId = const Uuid().v4();
@@ -115,14 +116,16 @@ class RunSessionNotifier extends Notifier<RunSessionState> {
       error: null,
     );
 
-    await _dao.insertRun(Run(
-      id: runId,
-      startedAt: _now(),
-      distanceM: 0,
-      durationS: 0,
-      avgPaceSPerKm: 0,
-      caloriesEst: 0,
-    ));
+    await _dao.insertRun(
+      Run(
+        id: runId,
+        startedAt: _now(),
+        distanceM: 0,
+        durationS: 0,
+        avgPaceSPerKm: 0,
+        caloriesEst: 0,
+      ),
+    );
     await _fgService.start();
 
     _tickerSub = ref.read(tickerProvider)().listen((_) => _onTick());
@@ -221,8 +224,10 @@ class RunSessionNotifier extends Notifier<RunSessionState> {
 
         // O(n) per point over the full session; fine for runs of a few
         // thousand points. Make incremental if it ever shows up in profiles.
-        final distanceM =
-            _segments.fold(0.0, (sum, s) => sum + accumulateDistance(s));
+        final distanceM = _segments.fold(
+          0.0,
+          (sum, s) => sum + accumulateDistance(s),
+        );
 
         _allPoints.add(point);
         state = state.copyWith(
@@ -271,14 +276,17 @@ class RunSessionNotifier extends Notifier<RunSessionState> {
     final segment = _segments.last;
     final latest = segment.last.timestamp;
     final window = segment
-        .where((p) =>
-            latest.difference(p.timestamp).inSeconds <= _currentPaceWindowS)
+        .where(
+          (p) =>
+              latest.difference(p.timestamp).inSeconds <= _currentPaceWindowS,
+        )
         .toList();
     if (window.length < 2) return 0.0;
     final windowDistance = accumulateDistance(window);
     // Millisecond precision: .inSeconds truncates (sub-second spans → 0) and
     // identical timestamps would otherwise divide by zero.
-    final windowSeconds = window.last.timestamp
+    final windowSeconds =
+        window.last.timestamp
             .difference(window.first.timestamp)
             .inMilliseconds /
         1000.0;

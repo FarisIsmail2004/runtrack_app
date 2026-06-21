@@ -31,9 +31,9 @@ class GoalDao extends DatabaseAccessor<AppDatabase> with _$GoalDaoMixin {
   GoalDao(super.db);
 
   /// Emits the active goal (or null when none is set) on every change.
-  Stream<Goal?> watchGoal() => select(goals).watch().map(
-    (rows) => rows.isEmpty ? null : rows.first.toDomain(),
-  );
+  Stream<Goal?> watchGoal() => select(
+    goals,
+  ).watch().map((rows) => rows.isEmpty ? null : rows.first.toDomain());
 
   /// One-shot read of the active goal, or null.
   Future<Goal?> getGoal() async {
@@ -59,8 +59,9 @@ class GoalDao extends DatabaseAccessor<AppDatabase> with _$GoalDaoMixin {
 
   /// The active goal if it is awaiting upload, else null.
   Future<Goal?> getUnsyncedGoal() async {
-    final rows =
-        await (select(goals)..where((g) => g.synced.equals(false))).get();
+    final rows = await (select(
+      goals,
+    )..where((g) => g.synced.equals(false))).get();
     return rows.isEmpty ? null : rows.first.toDomain();
   }
 }

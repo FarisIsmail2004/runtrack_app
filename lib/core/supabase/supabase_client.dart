@@ -46,5 +46,4 @@ Future<void> initSupabase() async {
 /// Exposes whether this build has Supabase configured, so widgets/router can
 /// branch on it without reading the top-level getter directly (and so tests can
 /// override it).
-final supabaseConfiguredProvider =
-    Provider<bool>((_) => isSupabaseConfigured);
+final supabaseConfiguredProvider = Provider<bool>((_) => isSupabaseConfigured);

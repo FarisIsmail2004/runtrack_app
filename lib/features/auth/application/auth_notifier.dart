@@ -75,9 +75,12 @@ class AuthController extends Notifier<AuthControllerState> {
       _run(() => _repo.sendPasswordResetCode(email.trim()));
 
   Future<bool> resetPasswordWithCode(
-          String email, String code, String newPassword) =>
-      _run(() => _repo.resetPasswordWithCode(
-          email.trim(), code.trim(), newPassword));
+    String email,
+    String code,
+    String newPassword,
+  ) => _run(
+    () => _repo.resetPasswordWithCode(email.trim(), code.trim(), newPassword),
+  );
 
   /// Clears a displayed error after the SnackBar has been shown.
   void clearError() {

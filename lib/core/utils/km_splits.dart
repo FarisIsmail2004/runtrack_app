@@ -33,8 +33,7 @@ List<Split> kmSplits(List<RunPoint> points) {
   for (final seg in acceptedSegments(points)) {
     double remainingDist = seg.distM;
     final segTime =
-        seg.to.timestamp.difference(seg.from.timestamp).inMilliseconds /
-            1000.0;
+        seg.to.timestamp.difference(seg.from.timestamp).inMilliseconds / 1000.0;
     double remainingTime = segTime;
 
     // A single segment may cross one or more km boundaries.
@@ -48,11 +47,13 @@ List<Split> kmSplits(List<RunPoint> points) {
         distInKmM += spaceInKm;
         timeInKmS += timeForChunk;
 
-        splits.add(Split(
-          km: kmNumber,
-          distanceM: distInKmM,
-          paceSPerKm: timeInKmS / (distInKmM / 1000.0),
-        ));
+        splits.add(
+          Split(
+            km: kmNumber,
+            distanceM: distInKmM,
+            paceSPerKm: timeInKmS / (distInKmM / 1000.0),
+          ),
+        );
 
         kmNumber++;
         remainingDist -= spaceInKm;
@@ -71,12 +72,14 @@ List<Split> kmSplits(List<RunPoint> points) {
 
   // Emit any partial final km (must have at least 1 m to be meaningful).
   if (distInKmM >= 1.0) {
-    splits.add(Split(
-      km: kmNumber,
-      distanceM: distInKmM,
-      paceSPerKm: timeInKmS / (distInKmM / 1000.0),
-      isPartial: true,
-    ));
+    splits.add(
+      Split(
+        km: kmNumber,
+        distanceM: distInKmM,
+        paceSPerKm: timeInKmS / (distInKmM / 1000.0),
+        isPartial: true,
+      ),
+    );
   }
 
   return splits;

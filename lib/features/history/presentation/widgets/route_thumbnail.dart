@@ -10,8 +10,11 @@ import 'package:runtrack_app/features/run_tracking/domain/run_point.dart';
 /// toward the top). A degenerate axis (all points share the same lng or lat)
 /// is centred on that axis instead of dividing by a zero range, which would
 /// otherwise yield NaN/Infinity offsets and a blank canvas.
-List<Offset> projectRoute(List<RunPoint> points, Size size,
-    {double padding = 6.0}) {
+List<Offset> projectRoute(
+  List<RunPoint> points,
+  Size size, {
+  double padding = 6.0,
+}) {
   if (points.isEmpty) return const [];
 
   double minLat = points.first.lat;

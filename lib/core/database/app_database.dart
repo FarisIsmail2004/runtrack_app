@@ -84,51 +84,47 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase(super.e);
 
   /// Production factory — opens a persistent file-backed database.
-  factory AppDatabase.open() => AppDatabase(
-        driftDatabase(name: 'runtrack'),
-      );
+  factory AppDatabase.open() => AppDatabase(driftDatabase(name: 'runtrack'));
 
   @override
   int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
-        onCreate: (m) async {
-          await m.createAll();
-          // Index on run_points.run_id for fast per-run queries.
-          await customStatement(
-            'CREATE INDEX IF NOT EXISTS idx_run_points_run_id '
-            'ON run_points(run_id)',
-          );
-        },
-        onUpgrade: (m, from, to) async {
-          // v1 → v2 introduced the Settings table.
-          if (from < 2) {
-            await m.createTable(settings);
-          }
-          // v2 → v3 introduced the Goals table.
-          if (from < 3) {
-            await m.createTable(goals);
-          }
-        },
-        beforeOpen: (details) async {
-          await customStatement('PRAGMA foreign_keys = ON');
-          // Ensure the single settings row exists (defaults: 70 kg, km).
-          await into(settings).insertOnConflictUpdate(
-            const SettingsCompanion(id: Value(1)),
-          );
-        },
+    onCreate: (m) async {
+      await m.createAll();
+      // Index on run_points.run_id for fast per-run queries.
+      await customStatement(
+        'CREATE INDEX IF NOT EXISTS idx_run_points_run_id '
+        'ON run_points(run_id)',
       );
+    },
+    onUpgrade: (m, from, to) async {
+      // v1 → v2 introduced the Settings table.
+      if (from < 2) {
+        await m.createTable(settings);
+      }
+      // v2 → v3 introduced the Goals table.
+      if (from < 3) {
+        await m.createTable(goals);
+      }
+    },
+    beforeOpen: (details) async {
+      await customStatement('PRAGMA foreign_keys = ON');
+      // Ensure the single settings row exists (defaults: 70 kg, km).
+      await into(
+        settings,
+      ).insertOnConflictUpdate(const SettingsCompanion(id: Value(1)));
+    },
+  );
 }
 
 // ---------------------------------------------------------------------------
 // Riverpod provider
 // ---------------------------------------------------------------------------
 
-final databaseProvider = Provider<AppDatabase>(
-  (ref) {
-    final db = AppDatabase.open();
-    ref.onDispose(db.close);
-    return db;
-  },
-);
+final databaseProvider = Provider<AppDatabase>((ref) {
+  final db = AppDatabase.open();
+  ref.onDispose(db.close);
+  return db;
+});

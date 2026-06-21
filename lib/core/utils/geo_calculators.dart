@@ -8,7 +8,8 @@ double haversineMeters(RunPoint a, RunPoint b) {
   final dLng = _toRad(b.lng - a.lng);
   final sinDLat = sin(dLat / 2);
   final sinDLng = sin(dLng / 2);
-  final h = sinDLat * sinDLat +
+  final h =
+      sinDLat * sinDLat +
       cos(_toRad(a.lat)) * cos(_toRad(b.lat)) * sinDLng * sinDLng;
   return 2 * _earthRadiusM * asin(sqrt(h));
 }
@@ -38,8 +39,7 @@ Iterable<({RunPoint from, RunPoint to, double distM})> acceptedSegments(
     final p = points[i];
     if (p.accuracy != null && p.accuracy! > 25) continue;
 
-    final dt =
-        p.timestamp.difference(anchor.timestamp).inMilliseconds / 1000.0;
+    final dt = p.timestamp.difference(anchor.timestamp).inMilliseconds / 1000.0;
     if (dt <= 0) continue;
 
     final segDist = haversineMeters(anchor, p);

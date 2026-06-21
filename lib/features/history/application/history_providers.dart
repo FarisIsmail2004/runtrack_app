@@ -18,9 +18,9 @@ final runsStreamProvider = StreamProvider<List<Run>>((ref) {
 
 /// The most recent run, or null.
 final lastRunProvider = Provider<AsyncValue<Run?>>((ref) {
-  return ref.watch(runsStreamProvider).whenData(
-        (runs) => runs.isEmpty ? null : runs.first,
-      );
+  return ref
+      .watch(runsStreamProvider)
+      .whenData((runs) => runs.isEmpty ? null : runs.first);
 });
 
 // ---------------------------------------------------------------------------
@@ -46,11 +46,15 @@ final weeklySummaryProvider = Provider<AsyncValue<WeeklySummary>>((ref) {
     // Monday 00:00 of the current week. Subtract whole days from midnight today
     // rather than relying on DateTime's negative-day overflow (which is correct
     // but obscure and breaks readability across month boundaries).
-    final weekStart = DateTime(now.year, now.month, now.day)
-        .subtract(Duration(days: now.weekday - 1));
+    final weekStart = DateTime(
+      now.year,
+      now.month,
+      now.day,
+    ).subtract(Duration(days: now.weekday - 1));
 
-    final thisWeek =
-        allRuns.where((r) => !r.startedAt.isBefore(weekStart)).toList();
+    final thisWeek = allRuns
+        .where((r) => !r.startedAt.isBefore(weekStart))
+        .toList();
 
     return WeeklySummary(
       runs: thisWeek.length,
@@ -74,12 +78,13 @@ final weeklySummaryProvider = Provider<AsyncValue<WeeklySummary>>((ref) {
 ///
 /// TODO(perf): store a simplified/downsampled polyline per run so thumbnails
 /// don't load full point streams.
-final lastRunPointsProvider = FutureProvider.family<List<RunPoint>, String>(
-  (ref, runId) async {
-    final result = await ref.watch(runWithPointsProvider(runId).future);
-    return result?.$2 ?? [];
-  },
-);
+final lastRunPointsProvider = FutureProvider.family<List<RunPoint>, String>((
+  ref,
+  runId,
+) async {
+  final result = await ref.watch(runWithPointsProvider(runId).future);
+  return result?.$2 ?? [];
+});
 
 // ---------------------------------------------------------------------------
 // Grouping

@@ -60,6 +60,7 @@ class RunTrackApp extends ConsumerWidget {
       designSize: const Size(390, 844),
       minTextAdapt: true,
       builder: (context, child) => MaterialApp.router(
+        debugShowCheckedModeBanner: false,
         title: 'RunTrack',
         theme: AppTheme.dark,
         darkTheme: AppTheme.dark,
