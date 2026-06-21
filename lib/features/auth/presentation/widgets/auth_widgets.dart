@@ -15,12 +15,7 @@ class AuthValidators {
     return null;
   }
 
-  static String? password(String? value) {
-    final v = value ?? '';
-    if (v.isEmpty) return 'Enter your password';
-    if (v.length < 6) return 'Min. 6 characters';
-    return null;
-  }
+  static String? password(String? value) => PasswordPolicy.validate(value);
 
   static final _codeRegExp = RegExp(r'^\d{6}$');
 
@@ -28,6 +23,46 @@ class AuthValidators {
     final v = value?.trim() ?? '';
     if (v.isEmpty) return 'Enter the 6-digit code';
     if (!_codeRegExp.hasMatch(v)) return 'Enter the 6-digit code';
+    return null;
+  }
+}
+
+/// One password requirement and whether the current input satisfies it.
+class PasswordRule {
+  const PasswordRule(this.label, this.satisfied);
+  final String label;
+  final bool satisfied;
+}
+
+/// Centralizes the signup / password-reset complexity rules: min length plus
+/// at least one lowercase, uppercase, digit, and symbol. Used both as a form
+/// validator and as the source for the live requirements checklist.
+class PasswordPolicy {
+  PasswordPolicy._();
+
+  static const int minLength = 8;
+
+  static final _lower = RegExp(r'[a-z]');
+  static final _upper = RegExp(r'[A-Z]');
+  static final _digit = RegExp(r'\d');
+  static final _symbol = RegExp(r'[^A-Za-z0-9]');
+
+  /// Rules in a fixed display order (length, lowercase, uppercase, digit, symbol).
+  static List<PasswordRule> evaluate(String value) => [
+    PasswordRule('At least $minLength characters', value.length >= minLength),
+    PasswordRule('One lowercase letter', _lower.hasMatch(value)),
+    PasswordRule('One uppercase letter', _upper.hasMatch(value)),
+    PasswordRule('One number', _digit.hasMatch(value)),
+    PasswordRule('One symbol', _symbol.hasMatch(value)),
+  ];
+
+  /// Form validator: empty → prompt; otherwise the first unmet rule's message.
+  static String? validate(String? value) {
+    final v = value ?? '';
+    if (v.isEmpty) return 'Enter your password';
+    for (final rule in evaluate(v)) {
+      if (!rule.satisfied) return 'Password needs ${rule.label.toLowerCase()}';
+    }
     return null;
   }
 }
