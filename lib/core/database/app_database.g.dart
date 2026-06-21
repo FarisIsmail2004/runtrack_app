@@ -543,9 +543,6 @@ class $RunPointsTable extends RunPoints
     false,
     type: DriftSqlType.string,
     requiredDuringInsert: true,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'REFERENCES runs (id) ON DELETE CASCADE',
-    ),
   );
   static const VerificationMeta _latMeta = const VerificationMeta('lat');
   @override
@@ -1045,8 +1042,23 @@ class $SettingsTable extends Settings with TableInfo<$SettingsTable, Setting> {
     requiredDuringInsert: false,
     defaultValue: const Constant('km'),
   );
+  static const VerificationMeta _onboardingSeenMeta = const VerificationMeta(
+    'onboardingSeen',
+  );
   @override
-  List<GeneratedColumn> get $columns => [id, weightKg, unit];
+  late final GeneratedColumn<bool> onboardingSeen = GeneratedColumn<bool>(
+    'onboarding_seen',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("onboarding_seen" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [id, weightKg, unit, onboardingSeen];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -1074,6 +1086,15 @@ class $SettingsTable extends Settings with TableInfo<$SettingsTable, Setting> {
         unit.isAcceptableOrUnknown(data['unit']!, _unitMeta),
       );
     }
+    if (data.containsKey('onboarding_seen')) {
+      context.handle(
+        _onboardingSeenMeta,
+        onboardingSeen.isAcceptableOrUnknown(
+          data['onboarding_seen']!,
+          _onboardingSeenMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -1095,6 +1116,10 @@ class $SettingsTable extends Settings with TableInfo<$SettingsTable, Setting> {
         DriftSqlType.string,
         data['${effectivePrefix}unit'],
       )!,
+      onboardingSeen: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}onboarding_seen'],
+      )!,
     );
   }
 
@@ -1108,13 +1133,20 @@ class Setting extends DataClass implements Insertable<Setting> {
   final int id;
   final double weightKg;
   final String unit;
-  const Setting({required this.id, required this.weightKg, required this.unit});
+  final bool onboardingSeen;
+  const Setting({
+    required this.id,
+    required this.weightKg,
+    required this.unit,
+    required this.onboardingSeen,
+  });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
     map['weight_kg'] = Variable<double>(weightKg);
     map['unit'] = Variable<String>(unit);
+    map['onboarding_seen'] = Variable<bool>(onboardingSeen);
     return map;
   }
 
@@ -1123,6 +1155,7 @@ class Setting extends DataClass implements Insertable<Setting> {
       id: Value(id),
       weightKg: Value(weightKg),
       unit: Value(unit),
+      onboardingSeen: Value(onboardingSeen),
     );
   }
 
@@ -1135,6 +1168,7 @@ class Setting extends DataClass implements Insertable<Setting> {
       id: serializer.fromJson<int>(json['id']),
       weightKg: serializer.fromJson<double>(json['weightKg']),
       unit: serializer.fromJson<String>(json['unit']),
+      onboardingSeen: serializer.fromJson<bool>(json['onboardingSeen']),
     );
   }
   @override
@@ -1144,19 +1178,29 @@ class Setting extends DataClass implements Insertable<Setting> {
       'id': serializer.toJson<int>(id),
       'weightKg': serializer.toJson<double>(weightKg),
       'unit': serializer.toJson<String>(unit),
+      'onboardingSeen': serializer.toJson<bool>(onboardingSeen),
     };
   }
 
-  Setting copyWith({int? id, double? weightKg, String? unit}) => Setting(
+  Setting copyWith({
+    int? id,
+    double? weightKg,
+    String? unit,
+    bool? onboardingSeen,
+  }) => Setting(
     id: id ?? this.id,
     weightKg: weightKg ?? this.weightKg,
     unit: unit ?? this.unit,
+    onboardingSeen: onboardingSeen ?? this.onboardingSeen,
   );
   Setting copyWithCompanion(SettingsCompanion data) {
     return Setting(
       id: data.id.present ? data.id.value : this.id,
       weightKg: data.weightKg.present ? data.weightKg.value : this.weightKg,
       unit: data.unit.present ? data.unit.value : this.unit,
+      onboardingSeen: data.onboardingSeen.present
+          ? data.onboardingSeen.value
+          : this.onboardingSeen,
     );
   }
 
@@ -1165,45 +1209,52 @@ class Setting extends DataClass implements Insertable<Setting> {
     return (StringBuffer('Setting(')
           ..write('id: $id, ')
           ..write('weightKg: $weightKg, ')
-          ..write('unit: $unit')
+          ..write('unit: $unit, ')
+          ..write('onboardingSeen: $onboardingSeen')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(id, weightKg, unit);
+  int get hashCode => Object.hash(id, weightKg, unit, onboardingSeen);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is Setting &&
           other.id == this.id &&
           other.weightKg == this.weightKg &&
-          other.unit == this.unit);
+          other.unit == this.unit &&
+          other.onboardingSeen == this.onboardingSeen);
 }
 
 class SettingsCompanion extends UpdateCompanion<Setting> {
   final Value<int> id;
   final Value<double> weightKg;
   final Value<String> unit;
+  final Value<bool> onboardingSeen;
   const SettingsCompanion({
     this.id = const Value.absent(),
     this.weightKg = const Value.absent(),
     this.unit = const Value.absent(),
+    this.onboardingSeen = const Value.absent(),
   });
   SettingsCompanion.insert({
     this.id = const Value.absent(),
     this.weightKg = const Value.absent(),
     this.unit = const Value.absent(),
+    this.onboardingSeen = const Value.absent(),
   });
   static Insertable<Setting> custom({
     Expression<int>? id,
     Expression<double>? weightKg,
     Expression<String>? unit,
+    Expression<bool>? onboardingSeen,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (weightKg != null) 'weight_kg': weightKg,
       if (unit != null) 'unit': unit,
+      if (onboardingSeen != null) 'onboarding_seen': onboardingSeen,
     });
   }
 
@@ -1211,11 +1262,13 @@ class SettingsCompanion extends UpdateCompanion<Setting> {
     Value<int>? id,
     Value<double>? weightKg,
     Value<String>? unit,
+    Value<bool>? onboardingSeen,
   }) {
     return SettingsCompanion(
       id: id ?? this.id,
       weightKg: weightKg ?? this.weightKg,
       unit: unit ?? this.unit,
+      onboardingSeen: onboardingSeen ?? this.onboardingSeen,
     );
   }
 
@@ -1231,6 +1284,9 @@ class SettingsCompanion extends UpdateCompanion<Setting> {
     if (unit.present) {
       map['unit'] = Variable<String>(unit.value);
     }
+    if (onboardingSeen.present) {
+      map['onboarding_seen'] = Variable<bool>(onboardingSeen.value);
+    }
     return map;
   }
 
@@ -1239,7 +1295,8 @@ class SettingsCompanion extends UpdateCompanion<Setting> {
     return (StringBuffer('SettingsCompanion(')
           ..write('id: $id, ')
           ..write('weightKg: $weightKg, ')
-          ..write('unit: $unit')
+          ..write('unit: $unit, ')
+          ..write('onboardingSeen: $onboardingSeen')
           ..write(')'))
         .toString();
   }
@@ -1624,16 +1681,6 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     settings,
     goals,
   ];
-  @override
-  StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
-    WritePropagation(
-      on: TableUpdateQuery.onTableName(
-        'runs',
-        limitUpdateKind: UpdateKind.delete,
-      ),
-      result: [TableUpdate('run_points', kind: UpdateKind.delete)],
-    ),
-  ]);
 }
 
 typedef $$RunsTableCreateCompanionBuilder =
@@ -1660,29 +1707,6 @@ typedef $$RunsTableUpdateCompanionBuilder =
       Value<bool> synced,
       Value<int> rowid,
     });
-
-final class $$RunsTableReferences
-    extends BaseReferences<_$AppDatabase, $RunsTable, RunRow> {
-  $$RunsTableReferences(super.$_db, super.$_table, super.$_typedResult);
-
-  static MultiTypedResultKey<$RunPointsTable, List<RunPointRow>>
-  _runPointsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
-    db.runPoints,
-    aliasName: $_aliasNameGenerator(db.runs.id, db.runPoints.runId),
-  );
-
-  $$RunPointsTableProcessedTableManager get runPointsRefs {
-    final manager = $$RunPointsTableTableManager(
-      $_db,
-      $_db.runPoints,
-    ).filter((f) => f.runId.id.sqlEquals($_itemColumn<String>('id')!));
-
-    final cache = $_typedResult.readTableOrNull(_runPointsRefsTable($_db));
-    return ProcessedTableManager(
-      manager.$state.copyWith(prefetchedData: cache),
-    );
-  }
-}
 
 class $$RunsTableFilterComposer extends Composer<_$AppDatabase, $RunsTable> {
   $$RunsTableFilterComposer({
@@ -1731,31 +1755,6 @@ class $$RunsTableFilterComposer extends Composer<_$AppDatabase, $RunsTable> {
     column: $table.synced,
     builder: (column) => ColumnFilters(column),
   );
-
-  Expression<bool> runPointsRefs(
-    Expression<bool> Function($$RunPointsTableFilterComposer f) f,
-  ) {
-    final $$RunPointsTableFilterComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.id,
-      referencedTable: $db.runPoints,
-      getReferencedColumn: (t) => t.runId,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$RunPointsTableFilterComposer(
-            $db: $db,
-            $table: $db.runPoints,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return f(composer);
-  }
 }
 
 class $$RunsTableOrderingComposer extends Composer<_$AppDatabase, $RunsTable> {
@@ -1843,31 +1842,6 @@ class $$RunsTableAnnotationComposer
 
   GeneratedColumn<bool> get synced =>
       $composableBuilder(column: $table.synced, builder: (column) => column);
-
-  Expression<T> runPointsRefs<T extends Object>(
-    Expression<T> Function($$RunPointsTableAnnotationComposer a) f,
-  ) {
-    final $$RunPointsTableAnnotationComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.id,
-      referencedTable: $db.runPoints,
-      getReferencedColumn: (t) => t.runId,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$RunPointsTableAnnotationComposer(
-            $db: $db,
-            $table: $db.runPoints,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return f(composer);
-  }
 }
 
 class $$RunsTableTableManager
@@ -1881,9 +1855,9 @@ class $$RunsTableTableManager
           $$RunsTableAnnotationComposer,
           $$RunsTableCreateCompanionBuilder,
           $$RunsTableUpdateCompanionBuilder,
-          (RunRow, $$RunsTableReferences),
+          (RunRow, BaseReferences<_$AppDatabase, $RunsTable, RunRow>),
           RunRow,
-          PrefetchHooks Function({bool runPointsRefs})
+          PrefetchHooks Function()
         > {
   $$RunsTableTableManager(_$AppDatabase db, $RunsTable table)
     : super(
@@ -1941,33 +1915,9 @@ class $$RunsTableTableManager
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
-              .map(
-                (e) =>
-                    (e.readTable(table), $$RunsTableReferences(db, table, e)),
-              )
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
               .toList(),
-          prefetchHooksCallback: ({runPointsRefs = false}) {
-            return PrefetchHooks(
-              db: db,
-              explicitlyWatchedTables: [if (runPointsRefs) db.runPoints],
-              addJoins: null,
-              getPrefetchedDataCallback: (items) async {
-                return [
-                  if (runPointsRefs)
-                    await $_getPrefetchedData<RunRow, $RunsTable, RunPointRow>(
-                      currentTable: table,
-                      referencedTable: $$RunsTableReferences
-                          ._runPointsRefsTable(db),
-                      managerFromTypedResult: (p0) =>
-                          $$RunsTableReferences(db, table, p0).runPointsRefs,
-                      referencedItemsForCurrentItem: (item, referencedItems) =>
-                          referencedItems.where((e) => e.runId == item.id),
-                      typedResults: items,
-                    ),
-                ];
-              },
-            );
-          },
+          prefetchHooksCallback: null,
         ),
       );
 }
@@ -1982,9 +1932,9 @@ typedef $$RunsTableProcessedTableManager =
       $$RunsTableAnnotationComposer,
       $$RunsTableCreateCompanionBuilder,
       $$RunsTableUpdateCompanionBuilder,
-      (RunRow, $$RunsTableReferences),
+      (RunRow, BaseReferences<_$AppDatabase, $RunsTable, RunRow>),
       RunRow,
-      PrefetchHooks Function({bool runPointsRefs})
+      PrefetchHooks Function()
     >;
 typedef $$RunPointsTableCreateCompanionBuilder =
     RunPointsCompanion Function({
@@ -2009,28 +1959,6 @@ typedef $$RunPointsTableUpdateCompanionBuilder =
       Value<double?> accuracy,
     });
 
-final class $$RunPointsTableReferences
-    extends BaseReferences<_$AppDatabase, $RunPointsTable, RunPointRow> {
-  $$RunPointsTableReferences(super.$_db, super.$_table, super.$_typedResult);
-
-  static $RunsTable _runIdTable(_$AppDatabase db) =>
-      db.runs.createAlias($_aliasNameGenerator(db.runPoints.runId, db.runs.id));
-
-  $$RunsTableProcessedTableManager get runId {
-    final $_column = $_itemColumn<String>('run_id')!;
-
-    final manager = $$RunsTableTableManager(
-      $_db,
-      $_db.runs,
-    ).filter((f) => f.id.sqlEquals($_column));
-    final item = $_typedResult.readTableOrNull(_runIdTable($_db));
-    if (item == null) return manager;
-    return ProcessedTableManager(
-      manager.$state.copyWith(prefetchedData: [item]),
-    );
-  }
-}
-
 class $$RunPointsTableFilterComposer
     extends Composer<_$AppDatabase, $RunPointsTable> {
   $$RunPointsTableFilterComposer({
@@ -2042,6 +1970,11 @@ class $$RunPointsTableFilterComposer
   });
   ColumnFilters<int> get id => $composableBuilder(
     column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get runId => $composableBuilder(
+    column: $table.runId,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -2074,29 +2007,6 @@ class $$RunPointsTableFilterComposer
     column: $table.accuracy,
     builder: (column) => ColumnFilters(column),
   );
-
-  $$RunsTableFilterComposer get runId {
-    final $$RunsTableFilterComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.runId,
-      referencedTable: $db.runs,
-      getReferencedColumn: (t) => t.id,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$RunsTableFilterComposer(
-            $db: $db,
-            $table: $db.runs,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return composer;
-  }
 }
 
 class $$RunPointsTableOrderingComposer
@@ -2110,6 +2020,11 @@ class $$RunPointsTableOrderingComposer
   });
   ColumnOrderings<int> get id => $composableBuilder(
     column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get runId => $composableBuilder(
+    column: $table.runId,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -2142,29 +2057,6 @@ class $$RunPointsTableOrderingComposer
     column: $table.accuracy,
     builder: (column) => ColumnOrderings(column),
   );
-
-  $$RunsTableOrderingComposer get runId {
-    final $$RunsTableOrderingComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.runId,
-      referencedTable: $db.runs,
-      getReferencedColumn: (t) => t.id,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$RunsTableOrderingComposer(
-            $db: $db,
-            $table: $db.runs,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return composer;
-  }
 }
 
 class $$RunPointsTableAnnotationComposer
@@ -2178,6 +2070,9 @@ class $$RunPointsTableAnnotationComposer
   });
   GeneratedColumn<int> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get runId =>
+      $composableBuilder(column: $table.runId, builder: (column) => column);
 
   GeneratedColumn<double> get lat =>
       $composableBuilder(column: $table.lat, builder: (column) => column);
@@ -2196,29 +2091,6 @@ class $$RunPointsTableAnnotationComposer
 
   GeneratedColumn<double> get accuracy =>
       $composableBuilder(column: $table.accuracy, builder: (column) => column);
-
-  $$RunsTableAnnotationComposer get runId {
-    final $$RunsTableAnnotationComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.runId,
-      referencedTable: $db.runs,
-      getReferencedColumn: (t) => t.id,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$RunsTableAnnotationComposer(
-            $db: $db,
-            $table: $db.runs,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return composer;
-  }
 }
 
 class $$RunPointsTableTableManager
@@ -2232,9 +2104,12 @@ class $$RunPointsTableTableManager
           $$RunPointsTableAnnotationComposer,
           $$RunPointsTableCreateCompanionBuilder,
           $$RunPointsTableUpdateCompanionBuilder,
-          (RunPointRow, $$RunPointsTableReferences),
+          (
+            RunPointRow,
+            BaseReferences<_$AppDatabase, $RunPointsTable, RunPointRow>,
+          ),
           RunPointRow,
-          PrefetchHooks Function({bool runId})
+          PrefetchHooks Function()
         > {
   $$RunPointsTableTableManager(_$AppDatabase db, $RunPointsTable table)
     : super(
@@ -2288,54 +2163,9 @@ class $$RunPointsTableTableManager
                 accuracy: accuracy,
               ),
           withReferenceMapper: (p0) => p0
-              .map(
-                (e) => (
-                  e.readTable(table),
-                  $$RunPointsTableReferences(db, table, e),
-                ),
-              )
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
               .toList(),
-          prefetchHooksCallback: ({runId = false}) {
-            return PrefetchHooks(
-              db: db,
-              explicitlyWatchedTables: [],
-              addJoins:
-                  <
-                    T extends TableManagerState<
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic
-                    >
-                  >(state) {
-                    if (runId) {
-                      state =
-                          state.withJoin(
-                                currentTable: table,
-                                currentColumn: table.runId,
-                                referencedTable: $$RunPointsTableReferences
-                                    ._runIdTable(db),
-                                referencedColumn: $$RunPointsTableReferences
-                                    ._runIdTable(db)
-                                    .id,
-                              )
-                              as T;
-                    }
-
-                    return state;
-                  },
-              getPrefetchedDataCallback: (items) async {
-                return [];
-              },
-            );
-          },
+          prefetchHooksCallback: null,
         ),
       );
 }
@@ -2350,21 +2180,26 @@ typedef $$RunPointsTableProcessedTableManager =
       $$RunPointsTableAnnotationComposer,
       $$RunPointsTableCreateCompanionBuilder,
       $$RunPointsTableUpdateCompanionBuilder,
-      (RunPointRow, $$RunPointsTableReferences),
+      (
+        RunPointRow,
+        BaseReferences<_$AppDatabase, $RunPointsTable, RunPointRow>,
+      ),
       RunPointRow,
-      PrefetchHooks Function({bool runId})
+      PrefetchHooks Function()
     >;
 typedef $$SettingsTableCreateCompanionBuilder =
     SettingsCompanion Function({
       Value<int> id,
       Value<double> weightKg,
       Value<String> unit,
+      Value<bool> onboardingSeen,
     });
 typedef $$SettingsTableUpdateCompanionBuilder =
     SettingsCompanion Function({
       Value<int> id,
       Value<double> weightKg,
       Value<String> unit,
+      Value<bool> onboardingSeen,
     });
 
 class $$SettingsTableFilterComposer
@@ -2388,6 +2223,11 @@ class $$SettingsTableFilterComposer
 
   ColumnFilters<String> get unit => $composableBuilder(
     column: $table.unit,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get onboardingSeen => $composableBuilder(
+    column: $table.onboardingSeen,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -2415,6 +2255,11 @@ class $$SettingsTableOrderingComposer
     column: $table.unit,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<bool> get onboardingSeen => $composableBuilder(
+    column: $table.onboardingSeen,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$SettingsTableAnnotationComposer
@@ -2434,6 +2279,11 @@ class $$SettingsTableAnnotationComposer
 
   GeneratedColumn<String> get unit =>
       $composableBuilder(column: $table.unit, builder: (column) => column);
+
+  GeneratedColumn<bool> get onboardingSeen => $composableBuilder(
+    column: $table.onboardingSeen,
+    builder: (column) => column,
+  );
 }
 
 class $$SettingsTableTableManager
@@ -2467,16 +2317,24 @@ class $$SettingsTableTableManager
                 Value<int> id = const Value.absent(),
                 Value<double> weightKg = const Value.absent(),
                 Value<String> unit = const Value.absent(),
-              }) => SettingsCompanion(id: id, weightKg: weightKg, unit: unit),
+                Value<bool> onboardingSeen = const Value.absent(),
+              }) => SettingsCompanion(
+                id: id,
+                weightKg: weightKg,
+                unit: unit,
+                onboardingSeen: onboardingSeen,
+              ),
           createCompanionCallback:
               ({
                 Value<int> id = const Value.absent(),
                 Value<double> weightKg = const Value.absent(),
                 Value<String> unit = const Value.absent(),
+                Value<bool> onboardingSeen = const Value.absent(),
               }) => SettingsCompanion.insert(
                 id: id,
                 weightKg: weightKg,
                 unit: unit,
+                onboardingSeen: onboardingSeen,
               ),
           withReferenceMapper: (p0) => p0
               .map((e) => (e.readTable(table), BaseReferences(db, table, e)))

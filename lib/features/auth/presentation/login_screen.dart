@@ -90,6 +90,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       obscure: _obscurePassword,
                       onToggleObscure: () =>
                           setState(() => _obscurePassword = !_obscurePassword),
+                      validator: AuthValidators.loginPassword,
                       textInputAction: TextInputAction.done,
                       onFieldSubmitted: (_) => _submit(),
                     ),

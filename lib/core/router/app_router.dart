@@ -8,6 +8,8 @@ import '../../features/auth/presentation/forgot_password_screen.dart';
 import '../../features/auth/presentation/login_screen.dart';
 import '../../features/auth/presentation/signup_screen.dart';
 import '../../features/auth/presentation/splash_screen.dart';
+import '../../features/onboarding/application/onboarding_providers.dart';
+import '../../features/onboarding/presentation/onboarding_screen.dart';
 import '../../features/history/presentation/history_screen.dart';
 import '../../features/history/presentation/run_detail_screen.dart';
 import '../../features/home/presentation/home_screen.dart';
@@ -17,17 +19,13 @@ import '../../features/run_tracking/presentation/run_summary_screen.dart';
 import '../../shared/widgets/app_scaffold.dart';
 import '../supabase/supabase_client.dart';
 
-/// Routes that require an authenticated session when Supabase is configured.
-const _protectedPrefixes = <String>[
-  '/home',
-  '/history',
-  '/profile',
-  '/run',
-  '/summary',
-];
-
 /// Public auth routes — a signed-in user is bounced off these to /home.
-const _authRoutes = <String>['/login', '/signup', '/forgot-password'];
+const _authRoutes = <String>[
+  '/login',
+  '/signup',
+  '/forgot-password',
+  '/onboarding',
+];
 
 /// Bridges a Riverpod listenable into a [ChangeNotifier] so GoRouter's
 /// `refreshListenable` re-evaluates `redirect` whenever auth state changes.
@@ -47,15 +45,24 @@ class _RouterRefreshNotifier extends ChangeNotifier {
           (previous, next) => notifyListeners(),
         )
         .close;
+    // ...and when the onboarding-seen flag resolves from drift.
+    _cancelOnboarding = ref
+        .listen<bool?>(
+          onboardingSeenProvider,
+          (previous, next) => notifyListeners(),
+        )
+        .close;
   }
 
   late final void Function() _cancelAuth;
   late final void Function() _cancelSplash;
+  late final void Function() _cancelOnboarding;
 
   @override
   void dispose() {
     _cancelAuth();
     _cancelSplash();
+    _cancelOnboarding();
     super.dispose();
   }
 }
@@ -63,6 +70,7 @@ class _RouterRefreshNotifier extends ChangeNotifier {
 final appRouterProvider = Provider<GoRouter>((ref) {
   final refresh = _RouterRefreshNotifier(ref);
   ref.onDispose(refresh.dispose);
+  ref.watch(onboardingLoaderProvider);
 
   return GoRouter(
     initialLocation: '/splash',
@@ -88,7 +96,6 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       final authState = ref.read(authStateProvider);
       final loggedIn = authState.valueOrNull != null;
       final onAuthRoute = _authRoutes.contains(location);
-      final onProtected = _protectedPrefixes.any((p) => location.startsWith(p));
 
       // While the very first auth value is resolving, hold on splash.
       if (authState.isLoading && !authState.hasValue) {
@@ -101,10 +108,19 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         return null;
       }
 
-      // Signed-out users may only reach the auth routes; everything protected
-      // (and the splash holding screen) redirects to login.
-      if (onProtected || onSplash) return '/login';
-      return null;
+      // Signed-out: public auth routes are always reachable (don't gate them on
+      // the onboarding flag still loading), so deep links and the splash hold
+      // never strand a user away from /login or /forgot-password.
+      if (onAuthRoute) return null;
+
+      // From splash or a protected route, pick the entry point. First-launch
+      // users (flag false) see onboarding; afterwards, login.
+      final seen = ref.read(onboardingSeenProvider);
+      if (seen == null) {
+        // Flag still loading — hold on splash rather than guess a destination.
+        return onSplash ? null : '/splash';
+      }
+      return seen ? '/login' : '/onboarding';
     },
     routes: [
       GoRoute(
@@ -119,6 +135,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/forgot-password',
         builder: (context, state) => const ForgotPasswordScreen(),
+      ),
+      GoRoute(
+        path: '/onboarding',
+        builder: (context, state) => const OnboardingScreen(),
       ),
       // Full-screen routes outside the bottom-nav shell
       GoRoute(path: '/run', builder: (context, state) => const LiveRunScreen()),

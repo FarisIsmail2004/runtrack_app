@@ -43,7 +43,10 @@ class FakeAuthRepository implements AuthRepository {
 
   @override
   Future<void> resetPasswordWithCode(
-      String email, String code, String newPassword) async {}
+    String email,
+    String code,
+    String newPassword,
+  ) async {}
 }
 
 void main() {
@@ -56,7 +59,12 @@ void main() {
   late AppDatabase db;
   late FakeAuthRepository auth;
   late StreamController<Setting> settings;
-  Setting current = const Setting(id: 1, weightKg: 70, unit: 'km');
+  Setting current = const Setting(
+    id: 1,
+    weightKg: 70,
+    unit: 'km',
+    onboardingSeen: false,
+  );
 
   setUp(() {
     db = AppDatabase(
@@ -66,7 +74,12 @@ void main() {
       ),
     );
     auth = FakeAuthRepository();
-    current = const Setting(id: 1, weightKg: 70, unit: 'km');
+    current = const Setting(
+      id: 1,
+      weightKg: 70,
+      unit: 'km',
+      onboardingSeen: false,
+    );
     settings = StreamController<Setting>.broadcast();
   });
 
@@ -101,12 +114,10 @@ void main() {
         authRepositoryProvider.overrideWithValue(auth),
         supabaseConfiguredProvider.overrideWithValue(supabaseConfigured),
         // Seed the stream with the current value, then forward live updates.
-        settingsStreamProvider.overrideWith(
-          (ref) async* {
-            yield current;
-            yield* settings.stream;
-          },
-        ),
+        settingsStreamProvider.overrideWith((ref) async* {
+          yield current;
+          yield* settings.stream;
+        }),
       ],
       child: MaterialApp.router(theme: AppTheme.dark, routerConfig: router),
     );
@@ -141,8 +152,9 @@ void main() {
     expect(find.text('Runner'), findsOneWidget);
   });
 
-  testWidgets('tapping weight opens dialog and saving updates the value',
-      (tester) async {
+  testWidgets('tapping weight opens dialog and saving updates the value', (
+    tester,
+  ) async {
     await tester.pumpWidget(buildApp());
     await tester.pumpAndSettle();
 
@@ -218,8 +230,9 @@ void main() {
     expect(auth.signOutCalls, 1);
   });
 
-  testWidgets('offline Log Out shows the offline-mode snackbar',
-      (tester) async {
+  testWidgets('offline Log Out shows the offline-mode snackbar', (
+    tester,
+  ) async {
     await tester.pumpWidget(buildApp(supabaseConfigured: false));
     await tester.pumpAndSettle();
 

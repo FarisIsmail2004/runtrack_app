@@ -39,6 +39,11 @@ class RunPoints extends Table {
   DateTimeColumn get timestamp => dateTime()();
   RealColumn get speed => real().nullable()();
   RealColumn get accuracy => real().nullable()();
+
+  @override
+  List<String> get customConstraints => const [
+    'FOREIGN KEY (run_id) REFERENCES runs (id) ON DELETE CASCADE',
+  ];
 }
 
 /// Single-row table holding user preferences that feed the rest of the app:
@@ -51,6 +56,8 @@ class Settings extends Table {
   IntColumn get id => integer().withDefault(const Constant(1))();
   RealColumn get weightKg => real().withDefault(const Constant(70.0))();
   TextColumn get unit => text().withDefault(const Constant('km'))();
+  BoolColumn get onboardingSeen =>
+      boolean().withDefault(const Constant(false))();
 
   @override
   Set<Column> get primaryKey => {id};
@@ -87,7 +94,7 @@ class AppDatabase extends _$AppDatabase {
   factory AppDatabase.open() => AppDatabase(driftDatabase(name: 'runtrack'));
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 4;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -107,6 +114,10 @@ class AppDatabase extends _$AppDatabase {
       // v2 → v3 introduced the Goals table.
       if (from < 3) {
         await m.createTable(goals);
+      }
+      // v3 → v4 added Settings.onboarding_seen (first-launch onboarding flag).
+      if (from < 4) {
+        await m.addColumn(settings, settings.onboardingSeen);
       }
     },
     beforeOpen: (details) async {

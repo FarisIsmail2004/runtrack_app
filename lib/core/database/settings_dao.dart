@@ -37,5 +37,18 @@ class SettingsDao extends DatabaseAccessor<AppDatabase>
     SettingsCompanion(id: const Value(_rowId), unit: Value(unit)),
   );
 
-  static const _defaultRow = Setting(id: _rowId, weightKg: 70.0, unit: 'km');
+  Future<void> setOnboardingSeen(bool value) =>
+      into(settings).insertOnConflictUpdate(
+        SettingsCompanion(
+          id: const Value(_rowId),
+          onboardingSeen: Value(value),
+        ),
+      );
+
+  static const _defaultRow = Setting(
+    id: _rowId,
+    weightKg: 70.0,
+    unit: 'km',
+    onboardingSeen: false,
+  );
 }

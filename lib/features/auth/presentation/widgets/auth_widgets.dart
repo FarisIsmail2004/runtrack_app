@@ -15,10 +15,13 @@ class AuthValidators {
     return null;
   }
 
-  static String? password(String? value) {
-    final v = value ?? '';
-    if (v.isEmpty) return 'Enter your password';
-    if (v.length < 6) return 'Min. 6 characters';
+  static String? password(String? value) => PasswordPolicy.validate(value);
+
+  /// Lenient validator for the LOGIN form: only requires a non-empty value, so
+  /// existing accounts with passwords predating the signup complexity policy
+  /// are never blocked at the form (the server authenticates them).
+  static String? loginPassword(String? value) {
+    if ((value ?? '').isEmpty) return 'Enter your password';
     return null;
   }
 
@@ -28,6 +31,46 @@ class AuthValidators {
     final v = value?.trim() ?? '';
     if (v.isEmpty) return 'Enter the 6-digit code';
     if (!_codeRegExp.hasMatch(v)) return 'Enter the 6-digit code';
+    return null;
+  }
+}
+
+/// One password requirement and whether the current input satisfies it.
+class PasswordRule {
+  const PasswordRule(this.label, this.satisfied);
+  final String label;
+  final bool satisfied;
+}
+
+/// Centralizes the signup / password-reset complexity rules: min length plus
+/// at least one lowercase, uppercase, digit, and symbol. Used both as a form
+/// validator and as the source for the live requirements checklist.
+class PasswordPolicy {
+  PasswordPolicy._();
+
+  static const int minLength = 8;
+
+  static final _lower = RegExp(r'[a-z]');
+  static final _upper = RegExp(r'[A-Z]');
+  static final _digit = RegExp(r'\d');
+  static final _symbol = RegExp(r'[^A-Za-z0-9]');
+
+  /// Rules in a fixed display order (length, lowercase, uppercase, digit, symbol).
+  static List<PasswordRule> evaluate(String value) => [
+    PasswordRule('At least $minLength characters', value.length >= minLength),
+    PasswordRule('One lowercase letter', _lower.hasMatch(value)),
+    PasswordRule('One uppercase letter', _upper.hasMatch(value)),
+    PasswordRule('One number', _digit.hasMatch(value)),
+    PasswordRule('One symbol', _symbol.hasMatch(value)),
+  ];
+
+  /// Form validator: empty → prompt; otherwise the first unmet rule's message.
+  static String? validate(String? value) {
+    final v = value ?? '';
+    if (v.isEmpty) return 'Enter your password';
+    for (final rule in evaluate(v)) {
+      if (!rule.satisfied) return 'Password needs ${rule.label.toLowerCase()}';
+    }
     return null;
   }
 }
@@ -94,6 +137,7 @@ class AuthPasswordField extends StatelessWidget {
     required this.obscure,
     required this.onToggleObscure,
     this.helperText,
+    this.onChanged,
     this.validator,
     this.textInputAction = TextInputAction.next,
     this.onFieldSubmitted,
@@ -105,6 +149,7 @@ class AuthPasswordField extends StatelessWidget {
   final bool obscure;
   final VoidCallback onToggleObscure;
   final String? helperText;
+  final void Function(String)? onChanged;
   final String? Function(String?)? validator;
   final TextInputAction textInputAction;
   final void Function(String)? onFieldSubmitted;
@@ -116,6 +161,7 @@ class AuthPasswordField extends StatelessWidget {
       obscureText: obscure,
       textInputAction: textInputAction,
       onFieldSubmitted: onFieldSubmitted,
+      onChanged: onChanged,
       autocorrect: false,
       enableSuggestions: false,
       decoration: InputDecoration(
@@ -285,6 +331,50 @@ class AuthSwitchPrompt extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+/// Live, per-rule password checklist shown under the signup password field.
+/// Rebuilt by the parent on every keystroke; each rule flips its icon/colour
+/// as [password] satisfies it.
+class PasswordRequirementsChecklist extends StatelessWidget {
+  const PasswordRequirementsChecklist({required this.password, super.key});
+
+  final String password;
+
+  @override
+  Widget build(BuildContext context) {
+    final rules = PasswordPolicy.evaluate(password);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        for (final rule in rules)
+          Padding(
+            padding: EdgeInsets.symmetric(vertical: 2.h),
+            child: Row(
+              children: [
+                Icon(
+                  rule.satisfied
+                      ? Icons.check_circle
+                      : Icons.radio_button_unchecked,
+                  size: 16.sp,
+                  color: rule.satisfied
+                      ? const Color(0xFFFF6A00)
+                      : Colors.white38,
+                ),
+                SizedBox(width: 8.w),
+                Text(
+                  rule.label,
+                  style: TextStyle(
+                    fontSize: 12.sp,
+                    color: rule.satisfied ? Colors.white : Colors.white54,
+                  ),
+                ),
+              ],
+            ),
+          ),
+      ],
     );
   }
 }
