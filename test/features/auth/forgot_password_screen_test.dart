@@ -41,7 +41,10 @@ class SpyAuthRepository implements AuthRepository {
 
   @override
   Future<void> resetPasswordWithCode(
-      String email, String code, String newPassword) async {
+    String email,
+    String code,
+    String newPassword,
+  ) async {
     resetCalls++;
     lastEmail = email;
     lastCode = code;
@@ -77,12 +80,16 @@ void main() {
     );
   }
 
-  testWidgets('phase 1 rejects invalid email and does not send', (tester) async {
+  testWidgets('phase 1 rejects invalid email and does not send', (
+    tester,
+  ) async {
     await tester.pumpWidget(build());
     await tester.pumpAndSettle();
 
     await tester.enterText(
-        find.widgetWithText(TextFormField, 'Email'), 'not-an-email');
+      find.widgetWithText(TextFormField, 'Email'),
+      'not-an-email',
+    );
     await tester.tap(find.widgetWithText(ElevatedButton, 'Send reset code'));
     await tester.pumpAndSettle();
 
@@ -95,30 +102,43 @@ void main() {
     await tester.pumpAndSettle();
 
     await tester.enterText(
-        find.widgetWithText(TextFormField, 'Email'), 'runner@example.com');
+      find.widgetWithText(TextFormField, 'Email'),
+      'runner@example.com',
+    );
     await tester.tap(find.widgetWithText(ElevatedButton, 'Send reset code'));
     await tester.pumpAndSettle();
 
     expect(repo.sendCodeCalls, 1);
     expect(repo.lastEmail, 'runner@example.com');
     expect(find.widgetWithText(TextFormField, '6-digit code'), findsOneWidget);
-    expect(find.widgetWithText(ElevatedButton, 'Reset password'), findsOneWidget);
+    expect(
+      find.widgetWithText(ElevatedButton, 'Reset password'),
+      findsOneWidget,
+    );
   });
 
   testWidgets('phase 2 rejects mismatched passwords', (tester) async {
     await tester.pumpWidget(build());
     await tester.pumpAndSettle();
     await tester.enterText(
-        find.widgetWithText(TextFormField, 'Email'), 'runner@example.com');
+      find.widgetWithText(TextFormField, 'Email'),
+      'runner@example.com',
+    );
     await tester.tap(find.widgetWithText(ElevatedButton, 'Send reset code'));
     await tester.pumpAndSettle();
 
     await tester.enterText(
-        find.widgetWithText(TextFormField, '6-digit code'), '123456');
+      find.widgetWithText(TextFormField, '6-digit code'),
+      '123456',
+    );
     await tester.enterText(
-        find.widgetWithText(TextFormField, 'New password'), 'secret123');
+      find.widgetWithText(TextFormField, 'New password'),
+      'secret123',
+    );
     await tester.enterText(
-        find.widgetWithText(TextFormField, 'Confirm new password'), 'different1');
+      find.widgetWithText(TextFormField, 'Confirm new password'),
+      'different1',
+    );
     await tester.tap(find.widgetWithText(ElevatedButton, 'Reset password'));
     await tester.pumpAndSettle();
 
@@ -130,16 +150,24 @@ void main() {
     await tester.pumpWidget(build());
     await tester.pumpAndSettle();
     await tester.enterText(
-        find.widgetWithText(TextFormField, 'Email'), 'runner@example.com');
+      find.widgetWithText(TextFormField, 'Email'),
+      'runner@example.com',
+    );
     await tester.tap(find.widgetWithText(ElevatedButton, 'Send reset code'));
     await tester.pumpAndSettle();
 
     await tester.enterText(
-        find.widgetWithText(TextFormField, '6-digit code'), '123456');
+      find.widgetWithText(TextFormField, '6-digit code'),
+      '123456',
+    );
     await tester.enterText(
-        find.widgetWithText(TextFormField, 'New password'), 'Secret123!');
+      find.widgetWithText(TextFormField, 'New password'),
+      'Secret123!',
+    );
     await tester.enterText(
-        find.widgetWithText(TextFormField, 'Confirm new password'), 'Secret123!');
+      find.widgetWithText(TextFormField, 'Confirm new password'),
+      'Secret123!',
+    );
     await tester.tap(find.widgetWithText(ElevatedButton, 'Reset password'));
     await tester.pumpAndSettle();
 
@@ -153,19 +181,25 @@ void main() {
   // Finding #2b — Resend code calls sendPasswordResetCode a second time
   // ---------------------------------------------------------------------------
 
-  testWidgets('resend code button calls sendPasswordResetCode again',
-      (tester) async {
+  testWidgets('resend code button calls sendPasswordResetCode again', (
+    tester,
+  ) async {
     await tester.pumpWidget(build());
     await tester.pumpAndSettle();
 
     // Phase 1: send the first code.
     await tester.enterText(
-        find.widgetWithText(TextFormField, 'Email'), 'runner@example.com');
+      find.widgetWithText(TextFormField, 'Email'),
+      'runner@example.com',
+    );
     await tester.tap(find.widgetWithText(ElevatedButton, 'Send reset code'));
     await tester.pumpAndSettle();
 
     // Should be in phase 2 now.
-    expect(find.widgetWithText(ElevatedButton, 'Reset password'), findsOneWidget);
+    expect(
+      find.widgetWithText(ElevatedButton, 'Reset password'),
+      findsOneWidget,
+    );
     expect(repo.sendCodeCalls, 1);
 
     // Tap "Resend code" — should fire sendPasswordResetCode a second time.
@@ -185,7 +219,9 @@ void main() {
 
     // Advance to phase 2.
     await tester.enterText(
-        find.widgetWithText(TextFormField, 'Email'), 'runner@example.com');
+      find.widgetWithText(TextFormField, 'Email'),
+      'runner@example.com',
+    );
     await tester.tap(find.widgetWithText(ElevatedButton, 'Send reset code'));
     await tester.pumpAndSettle();
 

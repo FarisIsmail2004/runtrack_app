@@ -42,7 +42,10 @@ class _ControllableAuthRepository implements AuthRepository {
   Future<void> sendPasswordResetCode(String email) async {}
   @override
   Future<void> resetPasswordWithCode(
-      String email, String code, String newPassword) async {
+    String email,
+    String code,
+    String newPassword,
+  ) async {
     // Simulate verifyOTP succeeding — emits a signed-in user, exactly as the
     // real SupabaseAuthRepository does after a successful verifyOTP call.
     emit(AuthUser(id: 'r1', email: email));
@@ -88,61 +91,73 @@ void main() {
   }
 
   testWidgets(
-      'redirect: signing in from /forgot-password bounces router to /home',
-      (tester) async {
-    final container = ProviderContainer(
-      overrides: [
-        // Mark Supabase as configured so the router uses auth-gating.
-        supabaseConfiguredProvider.overrideWithValue(true),
-        // Skip the 1 500 ms splash delay.
-        splashReadyProvider.overrideWith((ref) => true),
-        // Inject the controllable fake.
-        authRepositoryProvider.overrideWithValue(repo),
-      ],
-    );
-    addTearDown(container.dispose);
+    'redirect: signing in from /forgot-password bounces router to /home',
+    (tester) async {
+      final container = ProviderContainer(
+        overrides: [
+          // Mark Supabase as configured so the router uses auth-gating.
+          supabaseConfiguredProvider.overrideWithValue(true),
+          // Skip the 1 500 ms splash delay.
+          splashReadyProvider.overrideWith((ref) => true),
+          // Inject the controllable fake.
+          authRepositoryProvider.overrideWithValue(repo),
+        ],
+      );
+      addTearDown(container.dispose);
 
-    await tester.pumpWidget(buildWithRealRouter(container));
+      await tester.pumpWidget(buildWithRealRouter(container));
 
-    // Emit a signed-out value so authStateProvider has a value (not loading).
-    // Without this the router holds on /splash waiting for the first emission.
-    repo.emit(null);
-    await tester.pump(); // let the StreamProvider pick up the emission
-    await tester.pumpAndSettle(); // router redirect: splash → /login
+      // Emit a signed-out value so authStateProvider has a value (not loading).
+      // Without this the router holds on /splash waiting for the first emission.
+      repo.emit(null);
+      await tester.pump(); // let the StreamProvider pick up the emission
+      await tester.pumpAndSettle(); // router redirect: splash → /login
 
-    // Navigate to /forgot-password — allowed because user is signed-out.
-    container.read(appRouterProvider).go('/forgot-password');
-    await tester.pumpAndSettle();
+      // Navigate to /forgot-password — allowed because user is signed-out.
+      container.read(appRouterProvider).go('/forgot-password');
+      await tester.pumpAndSettle();
 
-    // Confirm we are on the ForgotPassword screen (phase 1 visible).
-    expect(find.text('Send reset code'), findsOneWidget);
+      // Confirm we are on the ForgotPassword screen (phase 1 visible).
+      expect(find.text('Send reset code'), findsOneWidget);
 
-    // Phase 1: enter email and send code.
-    await tester.enterText(
-        find.widgetWithText(TextFormField, 'Email'), 'runner@example.com');
-    await tester.tap(find.text('Send reset code'));
-    await tester.pumpAndSettle();
+      // Phase 1: enter email and send code.
+      await tester.enterText(
+        find.widgetWithText(TextFormField, 'Email'),
+        'runner@example.com',
+      );
+      await tester.tap(find.text('Send reset code'));
+      await tester.pumpAndSettle();
 
-    // Phase 2 should now be visible.
-    expect(find.widgetWithText(ElevatedButton, 'Reset password'), findsOneWidget);
+      // Phase 2 should now be visible.
+      expect(
+        find.widgetWithText(ElevatedButton, 'Reset password'),
+        findsOneWidget,
+      );
 
-    // Fill in the code and new password, then submit.
-    await tester.enterText(
-        find.widgetWithText(TextFormField, '6-digit code'), '123456');
-    await tester.enterText(
-        find.widgetWithText(TextFormField, 'New password'), 'Secret123!');
-    await tester.enterText(
-        find.widgetWithText(TextFormField, 'Confirm new password'), 'Secret123!');
-    await tester.tap(find.widgetWithText(ElevatedButton, 'Reset password'));
-    // resetPasswordWithCode emits a signed-in user; let the router redirect run.
-    await tester.pumpAndSettle();
+      // Fill in the code and new password, then submit.
+      await tester.enterText(
+        find.widgetWithText(TextFormField, '6-digit code'),
+        '123456',
+      );
+      await tester.enterText(
+        find.widgetWithText(TextFormField, 'New password'),
+        'Secret123!',
+      );
+      await tester.enterText(
+        find.widgetWithText(TextFormField, 'Confirm new password'),
+        'Secret123!',
+      );
+      await tester.tap(find.widgetWithText(ElevatedButton, 'Reset password'));
+      // resetPasswordWithCode emits a signed-in user; let the router redirect run.
+      await tester.pumpAndSettle();
 
-    // The router redirect must have bounced /forgot-password → /home because
-    // the user is now signed in (loggedIn == true, onAuthRoute == true).
-    final router = container.read(appRouterProvider);
-    expect(
-      router.routerDelegate.currentConfiguration.uri.toString(),
-      '/home',
-    );
-  });
+      // The router redirect must have bounced /forgot-password → /home because
+      // the user is now signed in (loggedIn == true, onAuthRoute == true).
+      final router = container.read(appRouterProvider);
+      expect(
+        router.routerDelegate.currentConfiguration.uri.toString(),
+        '/home',
+      );
+    },
+  );
 }
