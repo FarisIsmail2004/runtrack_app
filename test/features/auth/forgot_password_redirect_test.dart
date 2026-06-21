@@ -130,9 +130,9 @@ void main() {
     await tester.enterText(
         find.widgetWithText(TextFormField, '6-digit code'), '123456');
     await tester.enterText(
-        find.widgetWithText(TextFormField, 'New password'), 'secret123');
+        find.widgetWithText(TextFormField, 'New password'), 'Secret123!');
     await tester.enterText(
-        find.widgetWithText(TextFormField, 'Confirm new password'), 'secret123');
+        find.widgetWithText(TextFormField, 'Confirm new password'), 'Secret123!');
     await tester.tap(find.widgetWithText(ElevatedButton, 'Reset password'));
     // resetPasswordWithCode emits a signed-in user; let the router redirect run.
     await tester.pumpAndSettle();

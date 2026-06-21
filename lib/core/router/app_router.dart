@@ -19,15 +19,6 @@ import '../../features/run_tracking/presentation/run_summary_screen.dart';
 import '../../shared/widgets/app_scaffold.dart';
 import '../supabase/supabase_client.dart';
 
-/// Routes that require an authenticated session when Supabase is configured.
-const _protectedPrefixes = <String>[
-  '/home',
-  '/history',
-  '/profile',
-  '/run',
-  '/summary',
-];
-
 /// Public auth routes — a signed-in user is bounced off these to /home.
 const _authRoutes = <String>[
   '/login',
@@ -105,7 +96,6 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       final authState = ref.read(authStateProvider);
       final loggedIn = authState.valueOrNull != null;
       final onAuthRoute = _authRoutes.contains(location);
-      final onProtected = _protectedPrefixes.any((p) => location.startsWith(p));
 
       // While the very first auth value is resolving, hold on splash.
       if (authState.isLoading && !authState.hasValue) {
@@ -118,17 +108,19 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         return null;
       }
 
-      // Signed-out: first-launch users see onboarding; afterwards, login.
+      // Signed-out: public auth routes are always reachable (don't gate them on
+      // the onboarding flag still loading), so deep links and the splash hold
+      // never strand a user away from /login or /forgot-password.
+      if (onAuthRoute) return null;
+
+      // From splash or a protected route, pick the entry point. First-launch
+      // users (flag false) see onboarding; afterwards, login.
       final seen = ref.read(onboardingSeenProvider);
       if (seen == null) {
-        // Flag still loading — hold on splash rather than guess.
+        // Flag still loading — hold on splash rather than guess a destination.
         return onSplash ? null : '/splash';
       }
-      final dest = seen ? '/login' : '/onboarding';
-      if (location == dest) return null;
-      if (onProtected || onSplash) return dest;
-      // Allow movement between the public auth routes (login/signup/etc).
-      return null;
+      return seen ? '/login' : '/onboarding';
     },
     routes: [
       GoRoute(
