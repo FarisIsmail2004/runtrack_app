@@ -7,6 +7,7 @@ import 'core/router/app_router.dart';
 import 'core/supabase/supabase_client.dart';
 import 'features/auth/application/auth_notifier.dart';
 import 'features/goals/application/goal_sync_providers.dart';
+import 'features/onboarding/application/onboarding_providers.dart';
 import 'features/profile/application/profile_sync_providers.dart';
 import 'features/run_tracking/application/sync_providers.dart';
 import 'shared/theme/app_theme.dart';
@@ -41,6 +42,7 @@ class RunTrackApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final router = ref.watch(appRouterProvider);
+    ref.watch(onboardingLoaderProvider);
 
     // When a signed-in user appears (login, or a session restored at app
     // start): first hydrate local from the remote (restores a fresh install),

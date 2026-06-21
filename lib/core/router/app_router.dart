@@ -8,6 +8,8 @@ import '../../features/auth/presentation/forgot_password_screen.dart';
 import '../../features/auth/presentation/login_screen.dart';
 import '../../features/auth/presentation/signup_screen.dart';
 import '../../features/auth/presentation/splash_screen.dart';
+import '../../features/onboarding/application/onboarding_providers.dart';
+import '../../features/onboarding/presentation/onboarding_screen.dart';
 import '../../features/history/presentation/history_screen.dart';
 import '../../features/history/presentation/run_detail_screen.dart';
 import '../../features/home/presentation/home_screen.dart';
@@ -27,7 +29,12 @@ const _protectedPrefixes = <String>[
 ];
 
 /// Public auth routes — a signed-in user is bounced off these to /home.
-const _authRoutes = <String>['/login', '/signup', '/forgot-password'];
+const _authRoutes = <String>[
+  '/login',
+  '/signup',
+  '/forgot-password',
+  '/onboarding',
+];
 
 /// Bridges a Riverpod listenable into a [ChangeNotifier] so GoRouter's
 /// `refreshListenable` re-evaluates `redirect` whenever auth state changes.
@@ -47,15 +54,24 @@ class _RouterRefreshNotifier extends ChangeNotifier {
           (previous, next) => notifyListeners(),
         )
         .close;
+    // ...and when the onboarding-seen flag resolves from drift.
+    _cancelOnboarding = ref
+        .listen<bool?>(
+          onboardingSeenProvider,
+          (previous, next) => notifyListeners(),
+        )
+        .close;
   }
 
   late final void Function() _cancelAuth;
   late final void Function() _cancelSplash;
+  late final void Function() _cancelOnboarding;
 
   @override
   void dispose() {
     _cancelAuth();
     _cancelSplash();
+    _cancelOnboarding();
     super.dispose();
   }
 }
@@ -63,6 +79,7 @@ class _RouterRefreshNotifier extends ChangeNotifier {
 final appRouterProvider = Provider<GoRouter>((ref) {
   final refresh = _RouterRefreshNotifier(ref);
   ref.onDispose(refresh.dispose);
+  ref.watch(onboardingLoaderProvider);
 
   return GoRouter(
     initialLocation: '/splash',
@@ -101,9 +118,16 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         return null;
       }
 
-      // Signed-out users may only reach the auth routes; everything protected
-      // (and the splash holding screen) redirects to login.
-      if (onProtected || onSplash) return '/login';
+      // Signed-out: first-launch users see onboarding; afterwards, login.
+      final seen = ref.read(onboardingSeenProvider);
+      if (seen == null) {
+        // Flag still loading — hold on splash rather than guess.
+        return onSplash ? null : '/splash';
+      }
+      final dest = seen ? '/login' : '/onboarding';
+      if (location == dest) return null;
+      if (onProtected || onSplash) return dest;
+      // Allow movement between the public auth routes (login/signup/etc).
       return null;
     },
     routes: [
@@ -119,6 +143,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/forgot-password',
         builder: (context, state) => const ForgotPasswordScreen(),
+      ),
+      GoRoute(
+        path: '/onboarding',
+        builder: (context, state) => const OnboardingScreen(),
       ),
       // Full-screen routes outside the bottom-nav shell
       GoRoute(path: '/run', builder: (context, state) => const LiveRunScreen()),
