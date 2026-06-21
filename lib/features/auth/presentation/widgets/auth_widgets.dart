@@ -129,6 +129,7 @@ class AuthPasswordField extends StatelessWidget {
     required this.obscure,
     required this.onToggleObscure,
     this.helperText,
+    this.onChanged,
     this.validator,
     this.textInputAction = TextInputAction.next,
     this.onFieldSubmitted,
@@ -140,6 +141,7 @@ class AuthPasswordField extends StatelessWidget {
   final bool obscure;
   final VoidCallback onToggleObscure;
   final String? helperText;
+  final void Function(String)? onChanged;
   final String? Function(String?)? validator;
   final TextInputAction textInputAction;
   final void Function(String)? onFieldSubmitted;
@@ -151,6 +153,7 @@ class AuthPasswordField extends StatelessWidget {
       obscureText: obscure,
       textInputAction: textInputAction,
       onFieldSubmitted: onFieldSubmitted,
+      onChanged: onChanged,
       autocorrect: false,
       enableSuggestions: false,
       decoration: InputDecoration(

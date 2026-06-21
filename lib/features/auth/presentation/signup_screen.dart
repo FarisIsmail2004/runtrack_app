@@ -27,6 +27,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
   final _confirmController = TextEditingController();
   bool _obscurePassword = true;
   bool _obscureConfirm = true;
+  String _password = '';
 
   @override
   void dispose() {
@@ -108,11 +109,13 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                     AuthPasswordField(
                       controller: _passwordController,
                       label: 'Password',
-                      helperText: 'Min. 6 characters',
                       obscure: _obscurePassword,
+                      onChanged: (v) => setState(() => _password = v),
                       onToggleObscure: () =>
                           setState(() => _obscurePassword = !_obscurePassword),
                     ),
+                    SizedBox(height: 8.h),
+                    PasswordRequirementsChecklist(password: _password),
                     SizedBox(height: 16.h),
                     AuthPasswordField(
                       controller: _confirmController,

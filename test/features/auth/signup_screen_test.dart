@@ -53,7 +53,10 @@ class SpyAuthRepository implements AuthRepository {
 
   @override
   Future<void> resetPasswordWithCode(
-      String email, String code, String newPassword) async {}
+    String email,
+    String code,
+    String newPassword,
+  ) async {}
 }
 
 void main() {
@@ -67,8 +70,7 @@ void main() {
         ),
         GoRoute(
           path: '/login',
-          builder: (context, state) =>
-              const Scaffold(body: Text('Login stub')),
+          builder: (context, state) => const Scaffold(body: Text('Login stub')),
         ),
         GoRoute(
           path: '/home',
@@ -106,36 +108,41 @@ void main() {
     );
     await tester.enterText(
       find.widgetWithText(TextFormField, 'Password'),
-      'secret123',
+      'Secret123!',
     );
     await tester.enterText(
       find.widgetWithText(TextFormField, 'Confirm Password'),
-      'secret123',
+      'Secret123!',
     );
     await tester.tap(find.widgetWithText(ElevatedButton, 'Sign Up'));
     await tester.pumpAndSettle();
   }
 
   testWidgets(
-      'sign-up needing email confirmation (no session) shows the confirm '
-      'SnackBar', (tester) async {
-    final repo = SpyAuthRepository(); // currentUser stays null afterwards.
-    addTearDown(repo.dispose);
+    'sign-up needing email confirmation (no session) shows the confirm '
+    'SnackBar',
+    (tester) async {
+      final repo = SpyAuthRepository(); // currentUser stays null afterwards.
+      addTearDown(repo.dispose);
 
-    ignoreFooterOverflow();
-    await tester.pumpWidget(buildSignup(repo));
-    await tester.pumpAndSettle();
-    await fillAndSubmit(tester);
+      ignoreFooterOverflow();
+      await tester.pumpWidget(buildSignup(repo));
+      await tester.pumpAndSettle();
+      await fillAndSubmit(tester);
 
-    expect(repo.signUpCalls, 1);
-    expect(
-      find.text('Account created — check your email to confirm, then log in.'),
-      findsOneWidget,
-    );
-  });
+      expect(repo.signUpCalls, 1);
+      expect(
+        find.text(
+          'Account created — check your email to confirm, then log in.',
+        ),
+        findsOneWidget,
+      );
+    },
+  );
 
-  testWidgets('sign-up that creates a session shows no confirm SnackBar',
-      (tester) async {
+  testWidgets('sign-up that creates a session shows no confirm SnackBar', (
+    tester,
+  ) async {
     final repo = SpyAuthRepository(
       userAfterSignUp: const AuthUser(id: 'u2', email: 'runner@example.com'),
     );
@@ -151,5 +158,31 @@ void main() {
       find.text('Account created — check your email to confirm, then log in.'),
       findsNothing,
     );
+  });
+
+  testWidgets('signup shows live password checklist that updates on input', (
+    tester,
+  ) async {
+    final repo = SpyAuthRepository();
+    addTearDown(repo.dispose);
+
+    ignoreFooterOverflow();
+    await tester.pumpWidget(buildSignup(repo));
+    await tester.pumpAndSettle();
+
+    // Static "Min. 6 characters" helper is gone; checklist rules are present.
+    expect(find.text('Min. 6 characters'), findsNothing);
+    expect(find.text('At least 8 characters'), findsOneWidget);
+
+    // All rules start unsatisfied.
+    expect(find.byIcon(Icons.radio_button_unchecked), findsNWidgets(5));
+
+    // Type a strong password → all satisfied.
+    await tester.enterText(
+      find.byType(TextFormField).at(1), // 0=email, 1=password
+      'Aa1!aaaa',
+    );
+    await tester.pump();
+    expect(find.byIcon(Icons.check_circle), findsNWidgets(5));
   });
 }
