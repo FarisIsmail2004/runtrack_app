@@ -45,10 +45,16 @@ class SettingsDao extends DatabaseAccessor<AppDatabase>
         ),
       );
 
+  Future<void> setThemeMode(String mode) =>
+      into(settings).insertOnConflictUpdate(
+        SettingsCompanion(id: const Value(_rowId), themeMode: Value(mode)),
+      );
+
   static const _defaultRow = Setting(
     id: _rowId,
     weightKg: 70.0,
     unit: 'km',
     onboardingSeen: false,
+    themeMode: 'system',
   );
 }

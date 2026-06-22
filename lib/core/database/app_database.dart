@@ -58,6 +58,7 @@ class Settings extends Table {
   TextColumn get unit => text().withDefault(const Constant('km'))();
   BoolColumn get onboardingSeen =>
       boolean().withDefault(const Constant(false))();
+  TextColumn get themeMode => text().withDefault(const Constant('system'))();
 
   @override
   Set<Column> get primaryKey => {id};
@@ -94,7 +95,7 @@ class AppDatabase extends _$AppDatabase {
   factory AppDatabase.open() => AppDatabase(driftDatabase(name: 'runtrack'));
 
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 5;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -118,6 +119,10 @@ class AppDatabase extends _$AppDatabase {
       // v3 → v4 added Settings.onboarding_seen (first-launch onboarding flag).
       if (from < 4) {
         await m.addColumn(settings, settings.onboardingSeen);
+      }
+      // v4 → v5 added Settings.theme_mode (light/dark/system).
+      if (from < 5) {
+        await m.addColumn(settings, settings.themeMode);
       }
     },
     beforeOpen: (details) async {

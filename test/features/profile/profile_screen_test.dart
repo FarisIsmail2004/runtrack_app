@@ -64,6 +64,7 @@ void main() {
     weightKg: 70,
     unit: 'km',
     onboardingSeen: false,
+    themeMode: 'system',
   );
 
   setUp(() {
@@ -79,6 +80,7 @@ void main() {
       weightKg: 70,
       unit: 'km',
       onboardingSeen: false,
+      themeMode: 'system',
     );
     settings = StreamController<Setting>.broadcast();
   });
