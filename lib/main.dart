@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import 'core/location/run_foreground_service.dart';
 import 'core/router/app_router.dart';
@@ -14,6 +15,10 @@ import 'shared/theme/app_theme.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Disable runtime font fetching — all fonts are bundled in assets/fonts/
+  // so the app renders correctly offline from first launch.
+  GoogleFonts.config.allowRuntimeFetching = false;
 
   // Initialise the foreground-task plugin before runApp so the notification
   // channel is registered before any platform channel calls occur.
