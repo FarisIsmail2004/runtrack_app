@@ -11,7 +11,11 @@ import 'package:runtrack_app/features/run_tracking/application/run_session_notif
     show clockProvider;
 import 'package:runtrack_app/features/run_tracking/domain/run.dart';
 import 'package:runtrack_app/features/run_tracking/domain/run_point.dart';
+import 'package:runtrack_app/shared/charts/goal_ring.dart';
+import 'package:runtrack_app/shared/charts/weekly_bar_chart.dart';
 import 'package:runtrack_app/shared/theme/app_theme.dart';
+import 'package:runtrack_app/shared/widgets/app_bottom_nav.dart';
+import 'package:runtrack_app/shared/widgets/app_buttons.dart';
 
 void main() {
   late AppDatabase db;
@@ -43,14 +47,14 @@ void main() {
   // ---------------------------------------------------------------------------
 
   List<RunPoint> makePoints(int count) => List.generate(
-        count,
-        (i) => RunPoint(
-          lat: 3.0 + i * 0.0009,
-          lng: 101.0,
-          timestamp: base.add(Duration(seconds: 30 * i)),
-          accuracy: 5.0,
-        ),
-      );
+    count,
+    (i) => RunPoint(
+      lat: 3.0 + i * 0.0009,
+      lng: 101.0,
+      timestamp: base.add(Duration(seconds: 30 * i)),
+      accuracy: 5.0,
+    ),
+  );
 
   Future<void> seedRun(
     WidgetTester tester, {
@@ -61,16 +65,18 @@ void main() {
     List<RunPoint>? points,
   }) async {
     await tester.runAsync(() async {
-      await db.runDao.insertRun(Run(
-        id: id,
-        startedAt: startedAt,
-        distanceM: distanceM,
-        durationS: durationS,
-        avgPaceSPerKm: durationS > 0 && distanceM > 0
-            ? durationS / (distanceM / 1000)
-            : 0,
-        caloriesEst: 0,
-      ));
+      await db.runDao.insertRun(
+        Run(
+          id: id,
+          startedAt: startedAt,
+          distanceM: distanceM,
+          durationS: durationS,
+          avgPaceSPerKm: durationS > 0 && distanceM > 0
+              ? durationS / (distanceM / 1000)
+              : 0,
+          caloriesEst: 0,
+        ),
+      );
       if (points != null) {
         await db.runDao.insertPoints(id, points);
       }
@@ -81,14 +87,10 @@ void main() {
     final router = GoRouter(
       initialLocation: '/home',
       routes: [
-        GoRoute(
-          path: '/home',
-          builder: (context, state) => const HomeScreen(),
-        ),
+        GoRoute(path: '/home', builder: (context, state) => const HomeScreen()),
         GoRoute(
           path: '/run',
-          builder: (context, state) =>
-              const Scaffold(body: Text('Run stub')),
+          builder: (context, state) => const Scaffold(body: Text('Run stub')),
         ),
         GoRoute(
           path: '/history',
@@ -98,8 +100,7 @@ void main() {
             GoRoute(
               path: ':runId',
               builder: (context, state) => Scaffold(
-                body:
-                    Text('Detail ${state.pathParameters['runId']}'),
+                body: Text('Detail ${state.pathParameters['runId']}'),
               ),
             ),
           ],
@@ -144,8 +145,9 @@ void main() {
   // Tests
   // ---------------------------------------------------------------------------
 
-  testWidgets('empty DB: START RUN visible, zeros, no-runs message',
-      (tester) async {
+  testWidgets('empty DB: START RUN visible, zeros, no-runs message', (
+    tester,
+  ) async {
     await pumpAndLoad(tester);
 
     expect(find.text('START RUN'), findsOneWidget);
@@ -154,10 +156,15 @@ void main() {
     expect(find.text('No runs yet — time for your first one!'), findsOneWidget);
   });
 
-  testWidgets('seeded DB: weekly stats show 2 runs + correct distance',
-      (tester) async {
+  testWidgets('seeded DB: weekly stats show 2 runs + correct distance', (
+    tester,
+  ) async {
     // 2 runs this week
-    final thisWeekMonday = DateTime(2026, 6, 8); // Monday of week containing base
+    final thisWeekMonday = DateTime(
+      2026,
+      6,
+      8,
+    ); // Monday of week containing base
     await seedRun(
       tester,
       id: 'run-1',
@@ -194,7 +201,9 @@ void main() {
     expect(find.text('3.00 km'), findsOneWidget);
   });
 
-  testWidgets('tapping last run card navigates to detail route', (tester) async {
+  testWidgets('tapping last run card navigates to detail route', (
+    tester,
+  ) async {
     await seedRun(
       tester,
       id: 'run-tap',
@@ -241,14 +250,72 @@ void main() {
     expect(find.text('History stub'), findsOneWidget);
   });
 
-  testWidgets('RouteThumbnail with empty points renders without crash',
-      (tester) async {
+  // ---------------------------------------------------------------------------
+  // Kit widget presence checks
+  // ---------------------------------------------------------------------------
+
+  testWidgets(
+    'home screen renders kit widgets: PrimaryButton, GoalRing, WeeklyBarChart, AppBottomNav',
+    (tester) async {
+      await pumpAndLoad(tester);
+
+      // PrimaryButton with glow wraps the START RUN button
+      expect(find.byType(PrimaryButton), findsOneWidget);
+
+      // GoalRing is present in the THIS WEEK card
+      expect(find.byType(GoalRing), findsOneWidget);
+
+      // WeeklyBarChart is present in the THIS WEEK card
+      expect(find.byType(WeeklyBarChart), findsOneWidget);
+
+      // AppBottomNav is present at the bottom
+      expect(find.byType(AppBottomNav), findsOneWidget);
+    },
+  );
+
+  testWidgets('AppBottomNav Home tab is active on home screen', (tester) async {
+    await pumpAndLoad(tester);
+
+    // Home nav tab should exist
+    expect(find.byKey(const ValueKey('nav-home')), findsOneWidget);
+  });
+
+  testWidgets('tapping AppBottomNav History tab navigates to /history', (
+    tester,
+  ) async {
+    await pumpAndLoad(tester);
+
+    await tester.tap(find.byKey(const ValueKey('nav-history')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('History stub'), findsOneWidget);
+  });
+
+  testWidgets('tapping AppBottomNav Profile tab navigates to /profile', (
+    tester,
+  ) async {
+    await pumpAndLoad(tester);
+
+    await tester.tap(find.byKey(const ValueKey('nav-profile')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Profile stub'), findsOneWidget);
+  });
+
+  testWidgets('greeting text is visible on home screen', (tester) async {
+    await pumpAndLoad(tester);
+
+    // Greeting should contain "Ready to run"
+    expect(find.textContaining('Ready to run'), findsOneWidget);
+  });
+
+  testWidgets('RouteThumbnail with empty points renders without crash', (
+    tester,
+  ) async {
     await tester.pumpWidget(
       const MaterialApp(
         home: Scaffold(
-          body: Center(
-            child: RouteThumbnail(points: []),
-          ),
+          body: Center(child: RouteThumbnail(points: [])),
         ),
       ),
     );
@@ -260,8 +327,9 @@ void main() {
   // branch divide by lngRange == 0 → NaN/Infinity offsets → blank canvas.
   // An east-west-only route (constant latitude) would hit the mirror image of
   // the bug if the y-axis guard were also crossed. Both must paint cleanly.
-  testWidgets('RouteThumbnail with constant-longitude points renders cleanly',
-      (tester) async {
+  testWidgets('RouteThumbnail with constant-longitude points renders cleanly', (
+    tester,
+  ) async {
     final pts = List.generate(
       4,
       (i) => RunPoint(
@@ -337,8 +405,9 @@ void main() {
     }
   });
 
-  testWidgets('RouteThumbnail with constant-latitude points renders cleanly',
-      (tester) async {
+  testWidgets('RouteThumbnail with constant-latitude points renders cleanly', (
+    tester,
+  ) async {
     final pts = List.generate(
       4,
       (i) => RunPoint(

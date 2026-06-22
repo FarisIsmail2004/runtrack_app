@@ -5,151 +5,177 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import 'package:runtrack_app/core/utils/pace_format.dart';
-import 'package:runtrack_app/features/goals/presentation/goal_editor_sheet.dart';
-import 'package:runtrack_app/features/goals/presentation/weekly_goal_card.dart';
+import 'package:runtrack_app/features/goals/application/goal_providers.dart';
 import 'package:runtrack_app/features/history/application/history_providers.dart';
-import 'package:runtrack_app/features/history/presentation/widgets/route_thumbnail.dart';
 import 'package:runtrack_app/features/profile/application/profile_providers.dart';
 import 'package:runtrack_app/features/run_tracking/application/run_session_notifier.dart'
     show clockProvider;
 import 'package:runtrack_app/features/run_tracking/domain/run.dart';
+import 'package:runtrack_app/features/run_tracking/domain/run_point.dart';
+import 'package:runtrack_app/shared/charts/goal_ring.dart';
+import 'package:runtrack_app/shared/charts/route_sparkline.dart';
+import 'package:runtrack_app/shared/charts/weekly_bar_chart.dart';
+import 'package:runtrack_app/shared/theme/app_colors.dart';
+import 'package:runtrack_app/shared/widgets/app_bottom_nav.dart';
+import 'package:runtrack_app/shared/widgets/app_buttons.dart';
 import 'package:runtrack_app/shared/widgets/reveal_in.dart';
+import 'package:runtrack_app/shared/widgets/section_header.dart';
+import 'package:runtrack_app/shared/widgets/stat_grid.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = Theme.of(context);
-    final cs = theme.colorScheme;
-
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.black,
-        leading: const IconButton(
-          icon: Icon(Icons.menu),
-          onPressed: null,
-          tooltip: 'Menu',
-        ),
-        title: Text(
-          'RunTrack',
-          style: TextStyle(
-            color: cs.primary,
-            fontWeight: FontWeight.bold,
-            fontSize: 20.sp,
-          ),
-        ),
-        centerTitle: true,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.settings_outlined),
-            tooltip: 'Settings',
-            onPressed: () => context.go('/profile'),
-          ),
-        ],
-      ),
-      body: ListView(
-        padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 24.h),
-        children: [
-          // Headline
-          RevealIn(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Ready to run?',
-                  style: TextStyle(
-                    fontSize: 28.sp,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
-                SizedBox(height: 6.h),
-                Text(
-                  'Track your run. Beat your best.',
-                  style: TextStyle(fontSize: 15.sp, color: Colors.white54),
-                ),
-              ],
-            ),
-          ),
-          SizedBox(height: 28.h),
-
-          // START RUN button
-          RevealIn(
-            delay: const Duration(milliseconds: 80),
-            child: SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                onPressed: () => context.go('/run'),
-                icon: const Icon(Icons.play_arrow),
-                label: const Text('START RUN'),
-              ),
-            ),
-          ),
-          SizedBox(height: 36.h),
-
-          // THIS WEEK section
-          RevealIn(
-            delay: const Duration(milliseconds: 160),
-            child: _WeeklySection(),
-          ),
-          SizedBox(height: 28.h),
-
-          // WEEKLY GOAL section
-          RevealIn(
-            delay: const Duration(milliseconds: 240),
-            child: Builder(
-              builder: (context) =>
-                  WeeklyGoalCard(onTap: () => showGoalEditorSheet(context)),
-            ),
-          ),
-          SizedBox(height: 28.h),
-
-          // LAST RUN section
-          RevealIn(
-            delay: const Duration(milliseconds: 320),
-            child: _LastRunSection(),
-          ),
-          SizedBox(height: 16.h),
-
-          // VIEW HISTORY
-          RevealIn(
-            delay: const Duration(milliseconds: 400),
-            child: TextButton(
-              onPressed: () => context.go('/history'),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+      body: SafeArea(
+        child: Column(
+          children: [
+            Expanded(
+              child: ListView(
+                padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 16.h),
                 children: [
-                  const Text(
-                    'VIEW HISTORY',
-                    style: TextStyle(letterSpacing: 1.2),
+                  // Header row: greeting + avatar
+                  RevealIn(child: _HeaderRow()),
+                  SizedBox(height: 16.h),
+
+                  // Glowing START RUN button
+                  RevealIn(
+                    delay: const Duration(milliseconds: 80),
+                    child: PrimaryButton(
+                      label: 'START RUN',
+                      icon: Icons.play_arrow,
+                      glow: true,
+                      onPressed: () => context.go('/run'),
+                    ),
                   ),
-                  SizedBox(width: 4.w),
-                  Icon(Icons.arrow_forward, size: 16.sp),
+                  SizedBox(height: 20.h),
+
+                  // THIS WEEK section
+                  RevealIn(
+                    delay: const Duration(milliseconds: 160),
+                    child: _ThisWeekSection(),
+                  ),
+                  SizedBox(height: 16.h),
+
+                  // LAST RUN section
+                  RevealIn(
+                    delay: const Duration(milliseconds: 240),
+                    child: _LastRunSection(),
+                  ),
+                  SizedBox(height: 16.h),
+
+                  // VIEW HISTORY text button
+                  RevealIn(
+                    delay: const Duration(milliseconds: 320),
+                    child: TextButton(
+                      onPressed: () => context.go('/history'),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Text(
+                            'VIEW HISTORY',
+                            style: TextStyle(letterSpacing: 1.2),
+                          ),
+                          SizedBox(width: 4.w),
+                          Icon(Icons.arrow_forward, size: 16.sp),
+                        ],
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),
-          ),
-        ],
+
+            // Bottom navigation bar
+            _buildBottomNav(context),
+          ],
+        ),
       ),
+    );
+  }
+
+  Widget _buildBottomNav(BuildContext context) {
+    final borderColor =
+        Theme.of(context).extension<AppColors>()?.surfaceBorder ??
+        Colors.white12;
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Divider(height: 1, thickness: 1, color: borderColor),
+        AppBottomNav(
+          current: AppTab.home,
+          onSelect: (tab) {
+            switch (tab) {
+              case AppTab.home:
+                break; // already here
+              case AppTab.history:
+                context.go('/history');
+              case AppTab.profile:
+                context.go('/profile');
+            }
+          },
+        ),
+      ],
     );
   }
 }
 
 // ---------------------------------------------------------------------------
-// Weekly summary section
+// Header: greeting + avatar
 // ---------------------------------------------------------------------------
 
-class _WeeklySection extends ConsumerWidget {
+class _HeaderRow extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final cs = theme.colorScheme;
+
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(
+          child: Text(
+            'Ready to run?',
+            style: theme.textTheme.displaySmall?.copyWith(
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ),
+        SizedBox(width: 12.w),
+        // Circular avatar button (placeholder — no profile photo available yet)
+        GestureDetector(
+          onTap: () => Navigator.of(
+            context,
+            rootNavigator: true,
+          ).maybePop(), // no-op; navigating to profile via bottom nav
+          child: CircleAvatar(
+            radius: 22.r,
+            backgroundColor: cs.surface,
+            child: Icon(
+              Icons.person_outline,
+              color: AppColors.of(context).textMuted,
+              size: 22.sp,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// THIS WEEK section
+// ---------------------------------------------------------------------------
+
+class _ThisWeekSection extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final summaryAsync = ref.watch(weeklySummaryProvider);
     final unit = ref.watch(unitProvider);
-    final cs = Theme.of(context).colorScheme;
+    final goalProgress = ref.watch(goalProgressProvider);
+    final runsAsync = ref.watch(runsStreamProvider);
 
-    // Compute "Mon Apr 28 – Sun May 4" style range label. Uses the same
-    // overridable clock as weeklySummaryProvider so the label and the stats
-    // always describe the same week (and stay deterministic in tests).
     final now = ref.watch(clockProvider)();
     final monday = DateTime(
       now.year,
@@ -160,84 +186,40 @@ class _WeeklySection extends ConsumerWidget {
     final fmt = DateFormat('MMM d');
     final rangeLabel = '${fmt.format(monday)} – ${fmt.format(sunday)}';
 
+    // Build per-day distances for WeeklyBarChart (Mon=0 … Sun=6).
+    // Derived from runsStreamProvider — same data, no new provider.
+    final barValues = _buildWeeklyBars(runsAsync, monday);
+
+    // Highlight today's bar (weekday: Mon=1 → index 0 … Sun=7 → index 6).
+    final todayIndex = now.weekday - 1; // 0..6
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          crossAxisAlignment: CrossAxisAlignment.baseline,
-          textBaseline: TextBaseline.alphabetic,
-          children: [
-            Text(
-              'THIS WEEK',
-              style: TextStyle(
-                fontSize: 12.sp,
-                fontWeight: FontWeight.bold,
-                letterSpacing: 1.4,
-                color: cs.primary,
-              ),
-            ),
-            Text(
-              rangeLabel,
-              style: TextStyle(fontSize: 12.sp, color: Colors.white54),
-            ),
-          ],
-        ),
+        SectionHeader(title: 'This week', trailing: rangeLabel),
         SizedBox(height: 12.h),
         Card(
-          color: cs.surface,
+          color: Theme.of(context).colorScheme.surface,
           margin: EdgeInsets.zero,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12.r),
+            borderRadius: BorderRadius.circular(16.r),
           ),
           child: Padding(
-            padding: EdgeInsets.symmetric(vertical: 18.h, horizontal: 8.w),
+            padding: EdgeInsets.all(14.w),
             child: summaryAsync.when(
-              data: (s) => Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  _StatCell(
-                    icon: Icons.directions_run,
-                    value: '${s.runs}',
-                    label: 'Runs',
-                  ),
-                  _Divider(),
-                  _StatCell(
-                    icon: Icons.straighten,
-                    value: formatDistance(s.distanceM, unit),
-                    label: 'Distance',
-                    unit: distanceUnitLabel(unit),
-                  ),
-                  _Divider(),
-                  _StatCell(
-                    icon: Icons.timer_outlined,
-                    value: formatDuration(s.durationS),
-                    label: 'Time',
-                  ),
-                ],
+              data: (s) => _ThisWeekCardContent(
+                summary: s,
+                unit: unit,
+                goalFraction: goalProgress?.fraction ?? 0,
+                barValues: barValues,
+                todayIndex: todayIndex,
               ),
-              loading: () => Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  _StatCell(
-                    icon: Icons.directions_run,
-                    value: '0',
-                    label: 'Runs',
-                  ),
-                  _Divider(),
-                  _StatCell(
-                    icon: Icons.straighten,
-                    value: '0.00',
-                    label: 'Distance',
-                    unit: distanceUnitLabel(unit),
-                  ),
-                  _Divider(),
-                  _StatCell(
-                    icon: Icons.timer_outlined,
-                    value: '0:00',
-                    label: 'Time',
-                  ),
-                ],
+              loading: () => _ThisWeekCardContent(
+                summary: WeeklySummary(runs: 0, distanceM: 0, durationS: 0),
+                unit: unit,
+                goalFraction: goalProgress?.fraction ?? 0,
+                barValues: barValues,
+                todayIndex: todayIndex,
               ),
               error: (_, _) => const SizedBox.shrink(),
             ),
@@ -246,68 +228,87 @@ class _WeeklySection extends ConsumerWidget {
       ],
     );
   }
-}
 
-class _StatCell extends StatelessWidget {
-  final IconData icon;
-  final String value;
-  final String label;
-  final String? unit;
+  /// Compute per-day sum of distanceM for the 7 days Mon..Sun of this week.
+  List<double> _buildWeeklyBars(
+    AsyncValue<List<Run>> runsAsync,
+    DateTime monday,
+  ) {
+    final bars = List<double>.filled(7, 0);
+    final runs = runsAsync.valueOrNull;
+    if (runs == null) return bars;
 
-  const _StatCell({
-    required this.icon,
-    required this.value,
-    required this.label,
-    this.unit,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    return Column(
-      children: [
-        Icon(icon, color: cs.primary, size: 22.sp),
-        SizedBox(height: 6.h),
-        // Value and unit are kept as separate Text widgets (rather than a single
-        // RichText) so each is individually findable in tests and the value
-        // reads as plain text for accessibility.
-        Row(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.baseline,
-          textBaseline: TextBaseline.alphabetic,
-          children: [
-            Text(
-              value,
-              style: TextStyle(
-                fontSize: 20.sp,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
-            ),
-            if (unit != null)
-              Padding(
-                padding: EdgeInsets.only(left: 3.w),
-                child: Text(
-                  unit!,
-                  style: TextStyle(fontSize: 12.sp, color: Colors.white54),
-                ),
-              ),
-          ],
-        ),
-        SizedBox(height: 2.h),
-        Text(
-          label,
-          style: TextStyle(fontSize: 11.sp, color: Colors.white54),
-        ),
-      ],
-    );
+    for (final run in runs) {
+      final local = run.startedAt.toLocal();
+      // Only this week's runs
+      final dayStart = DateTime(local.year, local.month, local.day);
+      final diff = dayStart.difference(monday).inDays;
+      if (diff >= 0 && diff < 7) {
+        bars[diff] += run.distanceM;
+      }
+    }
+    return bars;
   }
 }
 
-class _Divider extends StatelessWidget {
+class _ThisWeekCardContent extends StatelessWidget {
+  const _ThisWeekCardContent({
+    required this.summary,
+    required this.unit,
+    required this.goalFraction,
+    required this.barValues,
+    required this.todayIndex,
+  });
+
+  final WeeklySummary summary;
+  final UnitSystem unit;
+  final double goalFraction;
+  final List<double> barValues;
+  final int todayIndex;
+
   @override
   Widget build(BuildContext context) {
-    return Container(height: 40.h, width: 1, color: Colors.white12);
+    final distanceLabel = formatDistance(summary.distanceM, unit);
+    final distanceUnit = distanceUnitLabel(unit);
+    final runsLabel = '${summary.runs}';
+    final timeLabel = formatDuration(summary.durationS);
+
+    final stats = [
+      StatItem(value: distanceLabel, unit: distanceUnit, label: 'Distance'),
+      StatItem(value: runsLabel, label: 'Runs'),
+      StatItem(value: timeLabel, label: 'Time'),
+    ];
+
+    final progressLabel = goalFraction > 0
+        ? '${(goalFraction * 100).round()}%'
+        : '0%';
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Stats column + GoalRing side by side
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Expanded(child: StatColumn(items: stats)),
+            SizedBox(width: 16.w),
+            GoalRing(
+              progress: GoalRing.clampProgress(goalFraction),
+              centerLabel: progressLabel,
+              subLabel: 'of goal',
+              size: 90,
+            ),
+          ],
+        ),
+        SizedBox(height: 10.h),
+        // Bar chart spanning the full width
+        WeeklyBarChart(
+          values: barValues,
+          highlightIndex: todayIndex,
+          height: 60,
+        ),
+      ],
+    );
   }
 }
 
@@ -324,15 +325,7 @@ class _LastRunSection extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'LAST RUN',
-          style: TextStyle(
-            fontSize: 12.sp,
-            fontWeight: FontWeight.bold,
-            letterSpacing: 1.4,
-            color: cs.primary,
-          ),
-        ),
+        SectionHeader(title: 'Last run'),
         SizedBox(height: 12.h),
         lastRunAsync.when(
           data: (run) => run == null
@@ -340,7 +333,7 @@ class _LastRunSection extends ConsumerWidget {
                   color: cs.surface,
                   margin: EdgeInsets.zero,
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12.r),
+                    borderRadius: BorderRadius.circular(16.r),
                   ),
                   child: Padding(
                     padding: EdgeInsets.all(24.w),
@@ -358,18 +351,9 @@ class _LastRunSection extends ConsumerWidget {
             color: cs.surface,
             margin: EdgeInsets.zero,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12.r),
+              borderRadius: BorderRadius.circular(16.r),
             ),
-            child: Padding(
-              padding: EdgeInsets.all(24.w),
-              child: Center(
-                child: SizedBox(
-                  width: 24.w,
-                  height: 24.w,
-                  child: const CircularProgressIndicator(strokeWidth: 2),
-                ),
-              ),
-            ),
+            child: SizedBox(height: 72.h),
           ),
           error: (_, _) => const SizedBox.shrink(),
         ),
@@ -395,18 +379,18 @@ class _LastRunCard extends ConsumerWidget {
         color: cs.surface,
         margin: EdgeInsets.zero,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12.r),
+          borderRadius: BorderRadius.circular(16.r),
         ),
         child: Padding(
           padding: EdgeInsets.all(16.w),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              // Route thumbnail
+              // RouteSparkline thumbnail (72×72)
               pointsAsync.when(
-                data: (pts) => RouteThumbnail(points: pts),
-                loading: () => RouteThumbnail(points: const []),
-                error: (_, _) => RouteThumbnail(points: const []),
+                data: (pts) => _SparklineThumbnail(points: pts),
+                loading: () => _SparklineThumbnail(points: const []),
+                error: (_, _) => _SparklineThumbnail(points: const []),
               ),
               SizedBox(width: 16.w),
               // Run details
@@ -458,6 +442,47 @@ class _LastRunCard extends ConsumerWidget {
               const Icon(Icons.chevron_right, color: Colors.white30),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+/// A 72×72 rounded box containing a [RouteSparkline] (or a placeholder icon
+/// when there are no GPS points).
+class _SparklineThumbnail extends StatelessWidget {
+  const _SparklineThumbnail({required this.points});
+
+  final List<RunPoint> points;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final sparkPoints = points
+        .map((p) => SparkPoint(lat: p.lat, lng: p.lng))
+        .toList();
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(10.r),
+      child: SizedBox(
+        width: 72,
+        height: 72,
+        child: ColoredBox(
+          color: cs.surface.withValues(alpha: 0.8),
+          child: sparkPoints.length >= 2
+              ? RouteSparkline(
+                  points: sparkPoints,
+                  showGrid: true,
+                  startMarker: true,
+                  endMarker: true,
+                )
+              : Center(
+                  child: Icon(
+                    Icons.route,
+                    color: AppColors.of(context).textMuted,
+                    size: 28,
+                  ),
+                ),
         ),
       ),
     );
