@@ -2,7 +2,7 @@
 
 **Date:** 2026-06-22
 **Status:** Approved (design); pending implementation plan
-**Scope:** Visual reskin + data-visualization layer over the existing, working app. **No behavior change.**
+**Scope:** Visual reskin + data-visualization layer over the existing, working app, plus a Light/Dark/System theme toggle. **No change to run/tracking behavior.**
 
 ## Context
 
@@ -20,23 +20,26 @@ This is **Spec A of two**. Spec B (Smart Notifications — hybrid local + server
 - **Build approach:** design-system-first — tokens + shared widget kit first, then screens compose them.
 - **Typography:** Fraunces (display/headlines/numbers, tabular figures) + Inter (body/labels), via `google_fonts`, self-hosted in `assets/fonts/` for offline reliability.
 - **Charts:** hand-rolled `CustomPainter` (no `fl_chart`).
-- **No behavior change:** only `lib/shared/theme/`, `lib/shared/widgets/`, `lib/shared/charts/`, and `presentation/` layers change. `application/`, `data/`, `domain/`, `core/` (outside theme) untouched. Routes/providers unchanged.
+- **Theme mode:** Light / Dark / System selector in Profile, **defaulting to System**. Both themes derived from one token set; widget kit is theme-aware (reads `Theme.of(context)` / `AppColors`, never hardcoded hex).
+- **Near-zero behavior change:** only `lib/shared/theme/`, `lib/shared/widgets/`, `lib/shared/charts/`, and `presentation/` layers change — **plus one allowed exception**: a persisted `themeMode` setting (new key in the existing `settings_dao`, a `themeModeProvider`, and `theme:`/`darkTheme:`/`themeMode:` on `MaterialApp.router`). `application/`, `data/`, `domain/`, and the rest of `core/` are otherwise untouched. Routes/run logic unchanged.
 
 ## Section 1 — Design tokens (`lib/shared/theme/`)
 
-Pixel-sampled from the mockups.
+Two palettes (dark sampled from the mockups; light derived — no light mockup exists). Both built from one token set; mode-specific custom tokens (`success`/`warning`/`destructive`/`surfaceBorder`) are carried in a `ThemeExtension` (`AppColors`) so widgets resolve them per-mode.
 
-| Token | Value | Use |
-|---|---|---|
-| `accent` | `#FF6A1A` | primary CTAs, active route, highlights (was `#FF6A00`) |
-| `base` | `#0B0B0C` | scaffold background (was pure black) |
-| `surface` | `#161618` | cards, sheets, list tiles |
-| `surfaceBorder` | white @ 8% | hairline card borders |
-| `success` (GPS OK) | `#2EBC51` | strong GPS, run-day bar, positive trend badge |
-| `warning` (GPS weak) | `#EFA31C` | weak GPS pill + banner, paused accent |
-| `destructive` | `#FF453A` | Discard, Log Out, Stop icon |
-| `textPrimary` | `#FFFFFF` | numbers, headlines |
-| `textMuted` | `#8A8A8E` | uppercase labels, secondary text |
+| Token | Dark | Light (derived) | Use |
+|---|---|---|---|
+| `accent` | `#FF6A1A` | `#FF6A1A` | primary CTAs, active route, highlights (was `#FF6A00`) |
+| `base` | `#0B0B0C` | `#F6F5F1` | scaffold background |
+| `surface` | `#161618` | `#FFFFFF` | cards, sheets, list tiles |
+| `surfaceBorder` | white @ 8% | black @ 8% | hairline card borders |
+| `success` (GPS OK) | `#2EBC51` | `#1FA847` | strong GPS, run-day bar, positive trend badge |
+| `warning` (GPS weak) | `#EFA31C` | `#B97700` | weak GPS pill + banner, paused accent |
+| `destructive` | `#FF453A` | `#E5392E` | Discard, Log Out, Stop icon |
+| `textPrimary` | `#FFFFFF` | `#0B0B0C` | numbers, headlines |
+| `textMuted` | `#8A8A8E` | `#6B6B70` | uppercase labels, secondary text |
+
+Light-mode semantic colors are darkened from their dark-mode values purely for legibility on white. Charts/route stay orange in both modes; the sparkline grid flips to faint dark-on-light.
 
 **Type scale** (Fraunces display + Inter body):
 
@@ -76,16 +79,17 @@ Every screen keeps its current logic, providers, and routes; only `build`/widget
 | Run Summary | `run_summary_view.dart`, `run_summary_screen.dart` | Back/title/delete app bar; `RouteSparkline` header; 2×2 `StatGrid` (Distance/Duration/Avg Pace/Calories); `PaceBars`; Save Run / Discard. |
 | History | `history_screen.dart`, `run_list_tile.dart`, `route_thumbnail.dart` | Title + filter; "182 km · this year" card with `TrendLine` + green `+12%` badge; month sections; tiles = sparkline + date + metadata + chevron. |
 | Run Detail | `run_detail_screen.dart` | Same composition as Summary, read-only. |
-| Profile | `profile_screen.dart` | Title + Edit; orange avatar with initials; name + email; `StatGrid` (Runs/Total/Avg); settings rows (Weight, Units, Weekly goal, **Notifications →**); Log Out. The **Notifications row routes to a placeholder screen** in Spec A; Spec B fills it in. |
+| Profile | `profile_screen.dart` | Title + Edit; orange avatar with initials; name + email; `StatGrid` (Runs/Total/Avg); settings rows (Weight, Units, Weekly goal, **Appearance →**, **Notifications →**); Log Out. **Appearance** opens a Light/Dark/System selector sheet (label + current value + chevron pattern). The **Notifications row routes to a placeholder screen** in Spec A; Spec B fills it in. |
 
 ## Section 4 — Constraints, dependencies, testing
 
-- **No behavior change.** No edits to `application/`, `data/`, `domain/`, or `core/` outside `theme/`. Routes/providers untouched.
+- **Near-zero behavior change.** The only logic addition is the persisted `themeMode` (new `settings_dao` key + `themeModeProvider` + `MaterialApp.router` wiring). Otherwise no edits to `application/`, `data/`, `domain/`, or `core/` outside `theme/`. Run logic / routes untouched.
+- **Theme-aware kit (mandatory).** Every shared widget and restyled screen resolves color from `Theme.of(context).colorScheme` / the `AppColors` `ThemeExtension` — no hardcoded hex outside the two theme definitions. This is what makes light mode work and is verified in review.
 - **New dependency:** `google_fonts` only. Charts are `CustomPainter`.
 - **Fonts:** bundle Fraunces + Inter in `assets/fonts/` (self-hosted, offline-safe — matches the offline-first rule). Declared in `pubspec.yaml`.
 - **`flutter_screenutil`** stays; tokens centralize magic numbers.
-- **Testing:** existing widget tests stay green; update any asserting on removed widgets (e.g. old `gps_status`). Add logic tests for new painters (`GoalRing` clamps 0–100%, `WeeklyBarChart` highlights correct day, `RouteSparkline` dashed/live-dot variants render without error). `flutter analyze` clean; `dart format .` applied.
-- **Scope guard (YAGNI):** no new screens beyond the Notifications placeholder; no theme toggle (dark-only as today); no animation beyond the live-position pulse and existing `reveal_in`.
+- **Testing:** existing widget tests stay green; update any asserting on removed widgets (e.g. old `gps_status`). Add logic tests for new painters (`GoalRing` clamps 0–100%, `WeeklyBarChart` highlights correct day, `RouteSparkline` dashed/live-dot variants render without error). Add a `themeMode` persistence test (set → read round-trips through `settings_dao`) and a smoke test that a key screen builds under both themes. `flutter analyze` clean; `dart format .` applied.
+- **Scope guard (YAGNI):** no new screens beyond the Notifications placeholder and the Appearance selector sheet; theme is Light/Dark/System only (no custom/per-screen themes); no animation beyond the live-position pulse and existing `reveal_in`.
 
 ## Out of scope (→ Spec B)
 
