@@ -146,9 +146,9 @@ void main() {
 
     // Stat labels still visible.
     expect(find.text('TIME'), findsOneWidget);
-    expect(find.text('DISTANCE (KM)'), findsOneWidget);
-    expect(find.text('CURRENT PACE (/KM)'), findsOneWidget);
-    expect(find.text('AVERAGE PACE (/KM)'), findsOneWidget);
+    expect(find.text('DISTANCE'), findsOneWidget);
+    expect(find.text('CURRENT PACE'), findsOneWidget);
+    expect(find.text('AVERAGE PACE'), findsOneWidget);
   });
 
   testWidgets('pause shows PAUSED + RESUME; resume returns to running', (
@@ -167,9 +167,9 @@ void main() {
     expect(find.byType(RunControlBar), findsOneWidget);
     expect(find.byType(kit.GpsPill), findsOneWidget);
 
-    // Paused affordance visible.
+    // Paused affordance visible; RESUME hint removed (misleading — no tap action).
     expect(find.text('PAUSED'), findsOneWidget);
-    expect(find.text('RESUME'), findsOneWidget);
+    expect(find.text('RESUME'), findsNothing);
 
     await tester.tap(find.byIcon(Icons.play_arrow));
     await tester.pump();

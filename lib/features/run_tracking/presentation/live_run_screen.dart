@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/location/location_service.dart' as loc;
 import '../../../core/utils/pace_format.dart';
+import '../../../shared/charts/trend_line.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_motion.dart';
 import '../../../shared/widgets/gps_pill.dart' as kit;
@@ -200,7 +201,9 @@ class _TrackingBody extends ConsumerWidget {
                       curve: AppMotion.standardCurve,
                       opacity: paused ? 1 : 0,
                       child: ColoredBox(
-                        color: Colors.black.withValues(alpha: 0.45),
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.scrim.withValues(alpha: 0.45),
                       ),
                     ),
                   ),
@@ -307,29 +310,14 @@ class _PausedChip extends StatelessWidget {
     final primary = Theme.of(context).colorScheme.primary;
     return Padding(
       padding: EdgeInsets.only(bottom: 4.h),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(
-            'PAUSED',
-            style: TextStyle(
-              color: primary,
-              fontSize: 16.sp,
-              fontWeight: FontWeight.bold,
-              letterSpacing: 3,
-            ),
-          ),
-          SizedBox(width: 12.w),
-          Text(
-            'RESUME',
-            style: TextStyle(
-              color: primary.withValues(alpha: 0.65),
-              fontSize: 12.sp,
-              fontWeight: FontWeight.w600,
-              letterSpacing: 1.5,
-            ),
-          ),
-        ],
+      child: Text(
+        'PAUSED',
+        style: TextStyle(
+          color: primary,
+          fontSize: 16.sp,
+          fontWeight: FontWeight.bold,
+          letterSpacing: 3,
+        ),
       ),
     );
   }
@@ -400,16 +388,18 @@ class _LiveStatRow extends ConsumerWidget {
         StatItem(
           value: formatDistance(distanceM, unit),
           unit: distanceUnitLabel(unit),
-          label: 'Distance (${distanceUnitLabel(unit)})',
+          label: 'Distance',
         ),
         StatItem(
           value: formatPaceUnit(currentPace, unit),
-          label: 'Current Pace (/${paceUnitLabel(unit).replaceAll('/', '')})',
+          unit: paceUnitLabel(unit),
+          label: 'Current Pace',
           accent: true,
         ),
         StatItem(
           value: formatPaceUnit(avgPace, unit),
-          label: 'Average Pace (/${paceUnitLabel(unit).replaceAll('/', '')})',
+          unit: paceUnitLabel(unit),
+          label: 'Average Pace',
         ),
       ],
     );
@@ -445,16 +435,29 @@ class _LiveRunMap extends ConsumerWidget {
 class _PaceTrendCard extends ConsumerWidget {
   const _PaceTrendCard();
 
+  /// Maximum samples to show in the trend line — keeps it readable.
+  static const int _maxSamples = 40;
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Build a pace sample list from recent elapsed seconds + avg pace.
-    // We use avgPaceSPerKm as a proxy for the trend value.
-    final avgPace = ref.watch(
-      runSessionProvider.select((s) => s.avgPaceSPerKm),
-    );
+    final points = ref.watch(runSessionProvider.select((s) => s.points));
 
-    // Use a minimal representation: if pace is 0 (not started), show nothing.
-    if (avgPace <= 0) return const SizedBox.shrink();
+    // Build a speed series from points that have a valid positive speed.
+    // Speed (m/s) gives the same trend shape as pace but without inversion.
+    final speedSeries = points
+        .where((p) => p.speed != null && p.speed! > 0)
+        .map((p) => p.speed!)
+        .toList();
+
+    // Downsample to the most recent _maxSamples to keep the line clean.
+    final series = speedSeries.length > _maxSamples
+        ? speedSeries.sublist(speedSeries.length - _maxSamples)
+        : speedSeries;
+
+    // Hide the card until there are at least 2 samples (TrendLine needs ≥2
+    // to draw a meaningful line; 0–1 samples handled gracefully but looks odd
+    // as an overlay on the map).
+    if (series.length < 2) return const SizedBox.shrink();
 
     final appColors = AppColors.of(context);
     final cs = Theme.of(context).colorScheme;
@@ -482,36 +485,9 @@ class _PaceTrendCard extends ConsumerWidget {
             ),
           ),
           SizedBox(height: 4.h),
-          SizedBox(
-            height: 28.h,
-            child: CustomPaint(
-              painter: _FlatTrendPainter(color: cs.primary),
-              size: Size(80.w, 28.h),
-            ),
-          ),
+          TrendLine(values: series, height: 28.h),
         ],
       ),
     );
   }
-}
-
-/// Simple single-line "trend" painter (placeholder when only one data point).
-class _FlatTrendPainter extends CustomPainter {
-  const _FlatTrendPainter({required this.color});
-
-  final Color color;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = color
-      ..strokeWidth = 1.5
-      ..style = PaintingStyle.stroke
-      ..strokeCap = StrokeCap.round;
-    final y = size.height / 2;
-    canvas.drawLine(Offset(0, y), Offset(size.width, y), paint);
-  }
-
-  @override
-  bool shouldRepaint(_FlatTrendPainter old) => old.color != color;
 }
