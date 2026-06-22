@@ -9,6 +9,8 @@ import 'package:runtrack_app/features/run_tracking/domain/run.dart';
 import 'package:runtrack_app/features/run_tracking/domain/run_point.dart';
 import 'package:runtrack_app/features/run_tracking/presentation/run_summary_screen.dart';
 import 'package:runtrack_app/shared/theme/app_theme.dart';
+import 'package:runtrack_app/shared/widgets/pace_bars.dart';
+import 'package:runtrack_app/shared/widgets/stat_grid.dart';
 
 void main() {
   late AppDatabase db;
@@ -22,13 +24,16 @@ void main() {
     const intervalM = 10.0;
     final pts = <RunPoint>[];
     for (double d = 0; d <= 2500; d += intervalM) {
-      pts.add(RunPoint(
-        lat: 3.0 + d / metersPerDegreeLat,
-        lng: 101.0,
-        timestamp:
-            base.add(Duration(milliseconds: (d / speedMps * 1000).round())),
-        accuracy: 5.0,
-      ));
+      pts.add(
+        RunPoint(
+          lat: 3.0 + d / metersPerDegreeLat,
+          lng: 101.0,
+          timestamp: base.add(
+            Duration(milliseconds: (d / speedMps * 1000).round()),
+          ),
+          accuracy: 5.0,
+        ),
+      );
     }
     return pts;
   }
@@ -54,15 +59,17 @@ void main() {
     const runId = 'test-run-1';
     final points = buildPoints();
     await tester.runAsync(() async {
-      await db.runDao.insertRun(Run(
-        id: runId,
-        startedAt: base,
-        endedAt: base.add(const Duration(minutes: 12, seconds: 30)),
-        distanceM: 2500,
-        durationS: 750,
-        avgPaceSPerKm: 300,
-        caloriesEst: 175,
-      ));
+      await db.runDao.insertRun(
+        Run(
+          id: runId,
+          startedAt: base,
+          endedAt: base.add(const Duration(minutes: 12, seconds: 30)),
+          distanceM: 2500,
+          durationS: 750,
+          avgPaceSPerKm: 300,
+          caloriesEst: 175,
+        ),
+      );
       await db.runDao.insertPoints(runId, points);
     });
     return runId;
@@ -74,14 +81,12 @@ void main() {
       routes: [
         GoRoute(
           path: '/summary/:runId',
-          builder: (context, state) => RunSummaryScreen(
-            runId: state.pathParameters['runId']!,
-          ),
+          builder: (context, state) =>
+              RunSummaryScreen(runId: state.pathParameters['runId']!),
         ),
         GoRoute(
           path: '/home',
-          builder: (context, state) =>
-              const Scaffold(body: Text('Home stub')),
+          builder: (context, state) => const Scaffold(body: Text('Home stub')),
         ),
       ],
     );
@@ -102,12 +107,17 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Run Summary'), findsOneWidget);
+    // StatGrid renders the four stat cells
+    expect(find.byType(StatGrid), findsOneWidget);
     expect(find.text('2.50'), findsOneWidget); // distance
     expect(find.text('12:30'), findsOneWidget); // duration
     expect(find.text('175'), findsOneWidget); // calories
+    // PaceBars replaces the old PaceByKmList
+    expect(find.byType(PaceBars), findsOneWidget);
     expect(find.text('PACE BY KM'), findsOneWidget);
-    expect(find.text('SAVE RUN'), findsOneWidget);
-    expect(find.text('DISCARD'), findsOneWidget);
+    // Buttons use the kit labels
+    expect(find.text('Save Run'), findsOneWidget);
+    expect(find.text('Discard'), findsOneWidget);
   });
 
   testWidgets('SAVE RUN navigates to /home with snackbar', (tester) async {
@@ -118,17 +128,18 @@ void main() {
     await tester.runAsync(() => Future<void>.delayed(Duration.zero));
     await tester.pumpAndSettle();
 
-    await tester.ensureVisible(find.text('SAVE RUN'));
+    await tester.ensureVisible(find.text('Save Run'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('SAVE RUN'));
+    await tester.tap(find.text('Save Run'));
     await tester.pumpAndSettle();
 
     expect(find.text('Home stub'), findsOneWidget);
     expect(find.text('Run saved'), findsOneWidget);
   });
 
-  testWidgets('DISCARD confirms then deletes run and navigates home',
-      (tester) async {
+  testWidgets('DISCARD confirms then deletes run and navigates home', (
+    tester,
+  ) async {
     final runId = await seedRun(tester);
 
     await tester.pumpWidget(buildApp(runId));
@@ -136,17 +147,17 @@ void main() {
     await tester.runAsync(() => Future<void>.delayed(Duration.zero));
     await tester.pumpAndSettle();
 
-    // Tap DISCARD text button (scroll into view first)
-    await tester.ensureVisible(find.text('DISCARD'));
+    // Tap Discard text button (scroll into view first)
+    await tester.ensureVisible(find.text('Discard'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('DISCARD'));
+    await tester.tap(find.text('Discard'));
     await tester.pumpAndSettle();
 
     // Confirm dialog appeared
     expect(find.text('Discard this run?'), findsOneWidget);
 
     // Tap DISCARD in dialog
-    await tester.tap(find.text('DISCARD').last);
+    await tester.tap(find.text('DISCARD'));
     await tester.pump();
 
     // DB delete is async

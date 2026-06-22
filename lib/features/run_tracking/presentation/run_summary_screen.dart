@@ -6,6 +6,7 @@ import 'package:runtrack_app/core/database/app_database.dart';
 import 'package:runtrack_app/features/run_tracking/application/run_providers.dart';
 import 'package:runtrack_app/features/run_tracking/application/sync_providers.dart';
 import 'package:runtrack_app/features/run_tracking/presentation/widgets/run_summary_view.dart';
+import 'package:runtrack_app/shared/widgets/app_buttons.dart';
 
 class RunSummaryScreen extends ConsumerWidget {
   const RunSummaryScreen({super.key, required this.runId});
@@ -46,23 +47,28 @@ class RunSummaryScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final async = ref.watch(runWithPointsProvider(runId));
+    final theme = Theme.of(context);
 
     return Scaffold(
-      backgroundColor: const Color(0xFF121212),
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: async.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(
           child: Text(
             'Error loading run: $e',
-            style: const TextStyle(color: Colors.white70),
+            style: TextStyle(
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+            ),
           ),
         ),
         data: (pair) {
           if (pair == null) {
-            return const Center(
+            return Center(
               child: Text(
                 'Run not found.',
-                style: TextStyle(color: Colors.white70),
+                style: TextStyle(
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+                ),
               ),
             );
           }
@@ -70,29 +76,40 @@ class RunSummaryScreen extends ConsumerWidget {
           return SafeArea(
             child: Column(
               children: [
-                // ── AppBar-like header ──────────────────────────────────
+                // ── App bar ─────────────────────────────────────────────
                 Padding(
                   padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 4.h),
                   child: Row(
                     children: [
                       IconButton(
-                        icon: const Icon(Icons.arrow_back, color: Colors.white),
+                        icon: Icon(
+                          Icons.arrow_back,
+                          color: theme.colorScheme.onSurface,
+                        ),
                         onPressed: () => context.go('/home'),
                       ),
                       Expanded(
-                        child: Text(
-                          'Run Summary',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 18.sp,
-                            fontWeight: FontWeight.bold,
-                          ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              'Run Summary',
+                              style: TextStyle(
+                                color: theme.colorScheme.onSurface,
+                                fontSize: 18.sp,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                       IconButton(
-                        icon: const Icon(
+                        icon: Icon(
                           Icons.delete_outline,
-                          color: Colors.white70,
+                          color: theme.colorScheme.onSurface.withValues(
+                            alpha: 0.7,
+                          ),
                         ),
                         tooltip: 'Discard run',
                         onPressed: () => _discard(context, ref),
@@ -141,34 +158,13 @@ class _FooterButtons extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final orange = Theme.of(context).colorScheme.primary;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        FilledButton(
-          onPressed: onSave,
-          style: FilledButton.styleFrom(
-            backgroundColor: orange,
-            padding: EdgeInsets.symmetric(vertical: 16.h),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12.r),
-            ),
-          ),
-          child: Text(
-            'SAVE RUN',
-            style: TextStyle(
-              fontSize: 16.sp,
-              fontWeight: FontWeight.bold,
-              color: Colors.black,
-            ),
-          ),
-        ),
-        TextButton(
-          onPressed: onDiscard,
-          child: Text(
-            'DISCARD',
-            style: TextStyle(color: Colors.white54, fontSize: 14.sp),
-          ),
+        PrimaryButton(label: 'Save Run', onPressed: onSave),
+        const SizedBox(height: 8),
+        Center(
+          child: DestructiveButton(label: 'Discard', onPressed: onDiscard),
         ),
       ],
     );

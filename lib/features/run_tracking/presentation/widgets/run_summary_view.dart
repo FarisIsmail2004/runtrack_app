@@ -7,17 +7,18 @@ import 'package:runtrack_app/core/utils/pace_format.dart';
 import 'package:runtrack_app/features/profile/application/profile_providers.dart';
 import 'package:runtrack_app/features/run_tracking/domain/run.dart';
 import 'package:runtrack_app/features/run_tracking/domain/run_point.dart';
-import 'package:runtrack_app/features/run_tracking/presentation/widgets/pace_by_km_list.dart';
-import 'package:runtrack_app/features/run_tracking/presentation/widgets/run_map.dart';
-import 'package:runtrack_app/features/run_tracking/presentation/widgets/stat_block.dart';
+import 'package:runtrack_app/shared/charts/route_sparkline.dart';
+import 'package:runtrack_app/shared/theme/app_colors.dart';
 import 'package:runtrack_app/shared/theme/app_motion.dart';
+import 'package:runtrack_app/shared/widgets/pace_bars.dart';
 import 'package:runtrack_app/shared/widgets/reveal_in.dart';
+import 'package:runtrack_app/shared/widgets/stat_grid.dart';
 
 /// Reusable summary body. Used by [RunSummaryScreen] (after finish) and the
 /// run detail screen.
 ///
 /// [footer] is typically the SAVE / DISCARD buttons on the post-run screen,
-/// or null when viewing history.
+/// or null when viewing history (Task 23).
 ///
 /// [animateReveal] plays the post-run reward sequence — the route draws itself,
 /// stats count up, and the pace bars grow in. The detail screen leaves it off
@@ -34,7 +35,13 @@ class RunSummaryView extends ConsumerStatefulWidget {
 
   final Run run;
   final List<RunPoint> points;
+
+  /// Optional footer widget (Save/Discard buttons). Pass null to hide actions
+  /// (e.g. Run Detail in Task 23 which is read-only).
   final Widget? footer;
+
+  /// Kept for API compatibility — tiles are not used by RouteSparkline.
+  // ignore: unused_field
   final bool showMapTiles;
   final bool animateReveal;
 
@@ -78,46 +85,68 @@ class _RunSummaryViewState extends ConsumerState<RunSummaryView>
     curve: Interval(begin, end, curve: AppMotion.emphasized),
   );
 
-  /// A stat whose numeric value counts up from zero as the reveal progresses.
-  Widget _countUp({
-    required Animation<double> t,
-    required double target,
-    required String Function(double) format,
-    required String label,
-  }) {
-    return AnimatedBuilder(
-      animation: t,
-      builder: (context, _) =>
-          StatBlock(value: format(target * t.value), label: label),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final run = widget.run;
     final splits = kmSplits(widget.points);
     final unit = ref.watch(unitProvider);
 
+    // Convert GPS points to SparkPoints (only when there are enough points).
+    final sparkPoints = widget.points.length >= 2
+        ? widget.points.map((p) => SparkPoint(lat: p.lat, lng: p.lng)).toList()
+        : <SparkPoint>[];
+
+    // Build PaceBarItems.
+    // Fraction sense: bars proportional to pace seconds-per-km relative to the
+    // SLOWEST split — i.e., slower km → fuller bar. This matches the design
+    // mockup where all bars are roughly the same length for an evenly-paced
+    // run, and faster kms show slightly shorter bars than slower ones.
+    List<PaceBarItem> buildPaceBars(List<Split> s) {
+      if (s.isEmpty) return [];
+      final slowest = s.fold(
+        0.0,
+        (m, x) => x.paceSPerKm > m ? x.paceSPerKm : m,
+      );
+      return s.map((split) {
+        final fraction = slowest > 0
+            ? (split.paceSPerKm / slowest).clamp(0.0, 1.0)
+            : 0.0;
+        return PaceBarItem(
+          km: split.km,
+          paceLabel: formatPaceUnit(split.paceSPerKm, unit),
+          fraction: fraction,
+        );
+      }).toList();
+    }
+
+    final paceBarItems = buildPaceBars(splits);
+
+    // ── Stat grid items ──────────────────────────────────────────────────────
+    // Distance and Calories animate via _countUp emitted as a StatItem value;
+    // for the static case (_reveal.value == 1) these resolve to final values
+    // instantly. Pace is static (no count-up: formatted string can't interpolate
+    // meaningfully).
     final barReveal = _seg(0.45, 1.0);
 
     return SingleChildScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // ── Map ──────────────────────────────────────────────────────────
-          SizedBox(
-            height: 220.h,
-            child: RunMap(
-              points: widget.points,
-              followLatest: false,
-              fitBounds: true,
-              showTiles: widget.showMapTiles,
-              animateDraw: widget.animateReveal,
+          // ── RouteSparkline header ─────────────────────────────────────────
+          if (sparkPoints.isNotEmpty)
+            Container(
+              height: 200.h,
+              color: Theme.of(context).colorScheme.surface,
+              child: RouteSparkline(
+                points: sparkPoints,
+                showGrid: true,
+                startMarker: true,
+                endMarker: true,
+              ),
             ),
-          ),
 
           Padding(
-            padding: EdgeInsets.fromLTRB(20.w, 24.h, 20.w, 8.h),
+            padding: EdgeInsets.fromLTRB(20.w, 20.h, 20.w, 8.h),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
@@ -128,58 +157,85 @@ class _RunSummaryViewState extends ConsumerState<RunSummaryView>
                   ).format(run.startedAt.toLocal()),
                   style: TextStyle(
                     fontSize: 13.sp,
-                    color: Colors.grey.shade400,
+                    color: AppColors.of(context).textMuted,
                   ),
                 ),
 
-                SizedBox(height: 24.h),
-
-                // ── Stats grid ────────────────────────────────────────────
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    _countUp(
-                      t: _seg(0.05, 0.45),
-                      target: run.distanceM,
-                      format: (v) => formatDistance(v, unit),
-                      label: 'Distance (${distanceUnitLabel(unit)})',
-                    ),
-                    _countUp(
-                      t: _seg(0.12, 0.52),
-                      target: run.durationS.toDouble(),
-                      format: (v) => formatDuration(v.round()),
-                      label: 'Duration',
-                    ),
-                  ],
-                ),
                 SizedBox(height: 20.h),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    StatBlock(
-                      value: formatPaceUnit(run.avgPaceSPerKm, unit),
-                      label: 'Average Pace (${paceUnitLabel(unit)})',
-                    ),
-                    _countUp(
-                      t: _seg(0.26, 0.66),
-                      target: run.caloriesEst,
-                      format: (v) => v.round().toString(),
-                      label: 'Calories',
-                    ),
-                  ],
+
+                // ── 2×2 StatGrid ──────────────────────────────────────────
+                AnimatedBuilder(
+                  animation: _reveal,
+                  builder: (context, _) {
+                    final distT = _seg(0.05, 0.45);
+                    final durT = _seg(0.12, 0.52);
+                    final calT = _seg(0.26, 0.66);
+
+                    return StatGrid(
+                      items: [
+                        StatItem(
+                          value: formatDistance(
+                            run.distanceM * distT.value,
+                            unit,
+                          ),
+                          unit: distanceUnitLabel(unit),
+                          label: 'Distance',
+                          accent: false,
+                        ),
+                        StatItem(
+                          value: formatDuration(
+                            (run.durationS.toDouble() * durT.value).round(),
+                          ),
+                          label: 'Duration',
+                        ),
+                        StatItem(
+                          value: formatPaceUnit(run.avgPaceSPerKm, unit),
+                          unit: paceUnitLabel(unit),
+                          label: 'Avg Pace',
+                          accent: true,
+                        ),
+                        StatItem(
+                          value: (run.caloriesEst * calT.value)
+                              .round()
+                              .toString(),
+                          unit: 'kcal',
+                          label: 'Calories',
+                        ),
+                      ],
+                    );
+                  },
                 ),
 
                 SizedBox(height: 32.h),
 
-                // ── Pace by km ────────────────────────────────────────────
-                AnimatedBuilder(
-                  animation: barReveal,
-                  builder: (context, _) => PaceByKmList(
-                    splits: splits,
-                    unit: unit,
-                    reveal: barReveal.value,
+                // ── PACE BY KM ────────────────────────────────────────────
+                if (paceBarItems.isNotEmpty) ...[
+                  Text(
+                    'PACE BY ${distanceUnitLabel(unit).toUpperCase()}',
+                    style: TextStyle(
+                      fontSize: 12.sp,
+                      letterSpacing: 1.4,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.of(context).textMuted,
+                    ),
                   ),
-                ),
+                  SizedBox(height: 12.h),
+                  AnimatedBuilder(
+                    animation: barReveal,
+                    builder: (context, _) {
+                      // Scale each bar's fraction by the reveal progress so
+                      // bars grow in during the post-run animation sequence.
+                      final revealedItems = paceBarItems.map((item) {
+                        return PaceBarItem(
+                          km: item.km,
+                          paceLabel: item.paceLabel,
+                          fraction: item.fraction * barReveal.value,
+                        );
+                      }).toList();
+                      return PaceBars(items: revealedItems);
+                    },
+                  ),
+                ],
 
                 if (widget.footer != null) ...[
                   SizedBox(height: 32.h),
