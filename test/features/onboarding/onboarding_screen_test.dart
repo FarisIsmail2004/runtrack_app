@@ -7,7 +7,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:runtrack_app/core/database/app_database.dart';
 import 'package:runtrack_app/features/onboarding/presentation/onboarding_screen.dart';
-import 'package:runtrack_app/features/onboarding/presentation/widgets/page_dots.dart';
+import 'package:runtrack_app/shared/theme/app_theme.dart';
+import 'package:runtrack_app/shared/widgets/page_dots.dart';
 
 Widget _harness(AppDatabase db) {
   final router = GoRouter(
@@ -28,7 +29,8 @@ Widget _harness(AppDatabase db) {
     overrides: [databaseProvider.overrideWithValue(db)],
     child: ScreenUtilInit(
       designSize: const Size(390, 844),
-      builder: (context, _) => MaterialApp.router(routerConfig: router),
+      builder: (context, _) =>
+          MaterialApp.router(theme: AppTheme.dark, routerConfig: router),
     ),
   );
 }

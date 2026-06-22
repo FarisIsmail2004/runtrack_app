@@ -5,16 +5,32 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 
 import '../application/onboarding_providers.dart';
-import 'widgets/bar_chart_illustration.dart';
 import 'widgets/brand_wordmark.dart';
 import 'widgets/onboarding_page.dart';
-import 'widgets/page_dots.dart';
-import 'widgets/route_illustration.dart';
-import 'widgets/stats_card_illustration.dart';
+import 'package:runtrack_app/shared/charts/route_sparkline.dart';
+import 'package:runtrack_app/shared/charts/weekly_bar_chart.dart';
+import 'package:runtrack_app/shared/widgets/app_buttons.dart';
+import 'package:runtrack_app/shared/widgets/page_dots.dart';
+import 'package:runtrack_app/shared/widgets/stat_grid.dart';
 
-/// First-launch onboarding carousel. Option A layout: the page dots and the
-/// Create Account / Log In CTA block stay fixed; only the middle page content
-/// swaps as the user swipes through the 4 pages.
+// Sample route points for the Tour·Map slide — a plausible running route shape.
+const _sampleRoute = [
+  SparkPoint(lat: 51.500, lng: -0.124),
+  SparkPoint(lat: 51.502, lng: -0.124),
+  SparkPoint(lat: 51.502, lng: -0.120),
+  SparkPoint(lat: 51.505, lng: -0.120),
+  SparkPoint(lat: 51.505, lng: -0.115),
+  SparkPoint(lat: 51.507, lng: -0.115),
+  SparkPoint(lat: 51.507, lng: -0.111),
+  SparkPoint(lat: 51.504, lng: -0.111),
+  SparkPoint(lat: 51.503, lng: -0.108),
+];
+
+// Sample weekly distances (km) for the Tour·Progress slide.
+const _weekValues = [3.2, 5.1, 4.0, 6.3, 4.8, 7.0, 5.5];
+
+/// First-launch onboarding carousel. Layout: page dots and persistent CTAs stay
+/// fixed; only the middle slide content swaps as the user swipes.
 class OnboardingScreen extends ConsumerStatefulWidget {
   const OnboardingScreen({super.key});
 
@@ -41,93 +57,101 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final cs = theme.colorScheme;
+
     return Scaffold(
       body: SafeArea(
-        child: Column(
+        child: Stack(
           children: [
-            Expanded(
-              child: PageView(
-                controller: _controller,
-                onPageChanged: (i) => setState(() => _page = i),
-                children: const [
-                  _WelcomePage(),
-                  OnboardingPage(
-                    heading: 'ALL YOUR RUNS.\nALL IN ONE PLACE.',
-                    illustration: RouteIllustration(),
-                    caption: 'Track your runs with accurate stats and maps.',
-                  ),
-                  OnboardingPage(
-                    heading: 'LIVE STATS THAT\nKEEP YOU GOING.',
-                    illustration: StatsCardIllustration(),
-                    caption: 'See real-time stats while you run.',
-                  ),
-                  OnboardingPage(
-                    heading: 'REVIEW. IMPROVE.\nKEEP MOVING.',
-                    illustration: BarChartIllustration(),
-                    caption:
-                        'Analyze your performance and track your progress.',
-                  ),
-                ],
+            // ── Skip button ───────────────────────────────────────────────
+            Positioned(
+              top: 8.h,
+              right: 16.w,
+              child: TextButton(
+                onPressed: () => _leave('/signup'),
+                child: Text(
+                  'Skip',
+                  style: TextStyle(color: cs.onSurface.withValues(alpha: 0.5)),
+                ),
               ),
             ),
-            Padding(
-              padding: EdgeInsets.fromLTRB(24.w, 8.h, 24.w, 24.h),
-              child: Column(
-                children: [
-                  PageDots(count: _pageCount, activeIndex: _page),
-                  SizedBox(height: 24.h),
-                  SizedBox(
-                    width: double.infinity,
-                    height: 52.h,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(padding: EdgeInsets.zero),
-                      onPressed: () => _leave('/signup'),
-                      child: const Text(
-                        'Create Account',
-                        style: TextStyle(fontWeight: FontWeight.bold),
+
+            // ── Main column ───────────────────────────────────────────────
+            Column(
+              children: [
+                Expanded(
+                  child: PageView(
+                    controller: _controller,
+                    onPageChanged: (i) => setState(() => _page = i),
+                    children: const [
+                      _WelcomePage(),
+                      OnboardingPage(
+                        heading: 'Every run,\nmapped & saved',
+                        illustration: _RouteSlide(),
+                        caption:
+                            'GPS traces your route in real time\n— all your runs in one place.',
                       ),
-                    ),
+                      OnboardingPage(
+                        heading: 'Live stats that\nkeep you going',
+                        illustration: _StatsSlide(),
+                        caption:
+                            'Time, distance and pace update\nevery second while you run.',
+                      ),
+                      OnboardingPage(
+                        heading: 'Review & improve\nevery run',
+                        illustration: _ProgressSlide(),
+                        caption:
+                            'Spot trends, beat your best,\nstay on track for your goals.',
+                      ),
+                    ],
                   ),
-                  SizedBox(height: 12.h),
-                  SizedBox(
-                    width: double.infinity,
-                    height: 52.h,
-                    child: OutlinedButton(
-                      onPressed: () => _leave('/login'),
-                      style: OutlinedButton.styleFrom(
-                        side: const BorderSide(color: Color(0xFFFF6A00)),
-                        shape: const StadiumBorder(),
+                ),
+
+                // ── Bottom dock ──────────────────────────────────────────
+                Padding(
+                  padding: EdgeInsets.fromLTRB(24.w, 8.h, 24.w, 24.h),
+                  child: Column(
+                    children: [
+                      PageDots(count: _pageCount, index: _page),
+                      SizedBox(height: 24.h),
+                      PrimaryButton(
+                        label: 'Create Account',
+                        onPressed: () => _leave('/signup'),
                       ),
-                      child: const Text(
-                        'Log In',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
+                      SizedBox(height: 12.h),
+                      SecondaryButton(
+                        label: 'Log In',
+                        onPressed: () => _leave('/login'),
                       ),
-                    ),
-                  ),
-                  SizedBox(height: 16.h),
-                  Text.rich(
-                    TextSpan(
-                      style: TextStyle(fontSize: 11.sp, color: Colors.white38),
-                      children: const [
-                        TextSpan(text: 'By continuing, you agree to our '),
+                      SizedBox(height: 16.h),
+                      Text.rich(
                         TextSpan(
-                          text: 'Terms of Service',
-                          style: TextStyle(color: Color(0xFFFF6A00)),
+                          style: TextStyle(
+                            fontSize: 11.sp,
+                            color: cs.onSurface.withValues(alpha: 0.35),
+                          ),
+                          children: [
+                            const TextSpan(
+                              text: 'By continuing, you agree to our ',
+                            ),
+                            TextSpan(
+                              text: 'Terms of Service',
+                              style: TextStyle(color: cs.primary),
+                            ),
+                            const TextSpan(text: ' and '),
+                            TextSpan(
+                              text: 'Privacy Policy',
+                              style: TextStyle(color: cs.primary),
+                            ),
+                          ],
                         ),
-                        TextSpan(text: ' and '),
-                        TextSpan(
-                          text: 'Privacy Policy',
-                          style: TextStyle(color: Color(0xFFFF6A00)),
-                        ),
-                      ],
-                    ),
-                    textAlign: TextAlign.center,
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ],
         ),
@@ -136,12 +160,14 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   }
 }
 
-/// Page 1: brand hero — running icon, wordmark, tagline.
+// ── Page 1: brand hero ────────────────────────────────────────────────────────
+
 class _WelcomePage extends StatelessWidget {
   const _WelcomePage();
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return LayoutBuilder(
       builder: (context, constraints) {
         return SingleChildScrollView(
@@ -150,24 +176,135 @@ class _WelcomePage extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(
-                  Icons.directions_run,
-                  color: const Color(0xFFFF6A00),
-                  size: 72.sp,
+                Container(
+                  width: 72.w,
+                  height: 72.w,
+                  decoration: BoxDecoration(
+                    color: cs.primary,
+                    borderRadius: BorderRadius.circular(18.r),
+                  ),
+                  child: Icon(
+                    Icons.play_arrow_rounded,
+                    color: Colors.white,
+                    size: 40.sp,
+                  ),
                 ),
-                SizedBox(height: 16.h),
+                SizedBox(height: 20.h),
                 const BrandWordmark(),
                 SizedBox(height: 16.h),
                 Text(
                   'Track every run.\nImprove every day.',
                   textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 16.sp, color: Colors.white70),
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onSurface.withValues(alpha: 0.65),
+                  ),
                 ),
               ],
             ),
           ),
         );
       },
+    );
+  }
+}
+
+// ── Page 2: Tour·Map — RouteSparkline ─────────────────────────────────────────
+
+class _RouteSlide extends StatelessWidget {
+  const _RouteSlide();
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 240.w,
+      height: 240.w,
+      child: const RouteSparkline(
+        points: _sampleRoute,
+        showGrid: true,
+        startMarker: true,
+        endMarker: true,
+      ),
+    );
+  }
+}
+
+// ── Page 3: Tour·Stats — StatRow card ─────────────────────────────────────────
+
+class _StatsSlide extends StatelessWidget {
+  const _StatsSlide();
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return Container(
+      width: 260.w,
+      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 20.h),
+      decoration: BoxDecoration(
+        color: cs.surface,
+        borderRadius: BorderRadius.circular(16.r),
+        border: Border.all(color: cs.onSurface.withValues(alpha: 0.08)),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('00:24:37', style: Theme.of(context).textTheme.displayMedium),
+          Text(
+            'ELAPSED TIME',
+            style: TextStyle(
+              fontSize: 10.sp,
+              letterSpacing: 1,
+              color: cs.onSurface.withValues(alpha: 0.45),
+            ),
+          ),
+          SizedBox(height: 12.h),
+          StatRow(
+            items: const [
+              StatItem(value: '4.21', unit: 'km', label: 'Dist'),
+              StatItem(value: '5:48', unit: '/km', label: 'Pace', accent: true),
+              StatItem(value: '5:42', unit: '/km', label: 'Avg'),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ── Page 4: Tour·Progress — WeeklyBarChart ────────────────────────────────────
+
+class _ProgressSlide extends StatelessWidget {
+  const _ProgressSlide();
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return Container(
+      width: 260.w,
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
+      decoration: BoxDecoration(
+        color: cs.surface,
+        borderRadius: BorderRadius.circular(16.r),
+        border: Border.all(color: cs.onSurface.withValues(alpha: 0.08)),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            'THIS WEEK',
+            style: TextStyle(
+              fontSize: 11.sp,
+              letterSpacing: 1.2,
+              fontWeight: FontWeight.w600,
+              color: cs.onSurface.withValues(alpha: 0.5),
+            ),
+          ),
+          SizedBox(height: 12.h),
+          WeeklyBarChart(values: _weekValues, height: 100),
+        ],
+      ),
     );
   }
 }

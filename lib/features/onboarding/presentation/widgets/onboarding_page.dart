@@ -17,26 +17,26 @@ class OnboardingPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final cs = theme.colorScheme;
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 24.w),
       child: Column(
         children: [
           SizedBox(height: 16.h),
+          Expanded(child: Center(child: illustration)),
           Text(
             heading,
             textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 24.sp,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-              height: 1.2,
-            ),
+            style: theme.textTheme.displaySmall,
           ),
-          Expanded(child: Center(child: illustration)),
+          SizedBox(height: 12.h),
           Text(
             caption,
             textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 15.sp, color: Colors.white70),
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: cs.onSurface.withValues(alpha: 0.6),
+            ),
           ),
           SizedBox(height: 16.h),
         ],
