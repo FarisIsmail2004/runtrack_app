@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:go_router/go_router.dart';
+import 'package:runtrack_app/shared/theme/app_colors.dart';
 
 /// Email/password validation helpers shared by the login & signup forms.
 class AuthValidators {
@@ -285,51 +285,18 @@ class AuthSocialButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final appColors = AppColors.of(context);
     return SizedBox(
       height: 52.h,
       child: OutlinedButton.icon(
         onPressed: enabled ? onPressed : null,
-        icon: Icon(icon, color: Colors.white),
-        label: Text(label, style: const TextStyle(color: Colors.white)),
+        icon: Icon(icon, color: cs.onSurface),
+        label: Text(label, style: TextStyle(color: cs.onSurface)),
         style: OutlinedButton.styleFrom(
-          backgroundColor: const Color(0xFF1A1A1A),
-          side: const BorderSide(color: Colors.white24),
+          backgroundColor: cs.surface,
+          side: BorderSide(color: appColors.surfaceBorder),
         ),
-      ),
-    );
-  }
-}
-
-/// "Don't have an account? Sign up" footer linking to another auth route.
-class AuthSwitchPrompt extends StatelessWidget {
-  const AuthSwitchPrompt({
-    required this.question,
-    required this.action,
-    required this.route,
-    this.enabled = true,
-    super.key,
-  });
-
-  final String question;
-  final String action;
-  final String route;
-  final bool enabled;
-
-  @override
-  Widget build(BuildContext context) {
-    // Scale the whole prompt down rather than overflow when the question +
-    // action don't fit on one line (narrow screens / large text scale).
-    return FittedBox(
-      fit: BoxFit.scaleDown,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(question, style: const TextStyle(color: Colors.white70)),
-          TextButton(
-            onPressed: enabled ? () => context.go(route) : null,
-            child: Text(action),
-          ),
-        ],
       ),
     );
   }
