@@ -4,9 +4,8 @@ import 'package:go_router/go_router.dart';
 
 import '../../features/auth/application/auth_notifier.dart';
 import '../../features/auth/data/auth_repository.dart';
+import '../../features/auth/presentation/auth_screen.dart';
 import '../../features/auth/presentation/forgot_password_screen.dart';
-import '../../features/auth/presentation/login_screen.dart';
-import '../../features/auth/presentation/signup_screen.dart';
 import '../../features/auth/presentation/splash_screen.dart';
 import '../../features/onboarding/application/onboarding_providers.dart';
 import '../../features/onboarding/presentation/onboarding_screen.dart';
@@ -127,10 +126,15 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/splash',
         builder: (context, state) => const SplashScreen(),
       ),
-      GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
+      GoRoute(
+        path: '/login',
+        builder: (context, state) =>
+            const AuthScreen(initialMode: AuthMode.login),
+      ),
       GoRoute(
         path: '/signup',
-        builder: (context, state) => const SignupScreen(),
+        builder: (context, state) =>
+            const AuthScreen(initialMode: AuthMode.signup),
       ),
       GoRoute(
         path: '/forgot-password',

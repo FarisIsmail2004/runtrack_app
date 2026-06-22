@@ -6,7 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:runtrack_app/core/supabase/supabase_client.dart';
 import 'package:runtrack_app/features/auth/data/auth_repository.dart';
-import 'package:runtrack_app/features/auth/presentation/signup_screen.dart';
+import 'package:runtrack_app/features/auth/presentation/auth_screen.dart';
 import 'package:runtrack_app/shared/theme/app_theme.dart';
 
 /// Spy repo whose [currentUser] after a sign-up models whether Supabase
@@ -66,11 +66,13 @@ void main() {
       routes: [
         GoRoute(
           path: '/signup',
-          builder: (context, state) => const SignupScreen(),
+          builder: (context, state) =>
+              const AuthScreen(initialMode: AuthMode.signup),
         ),
         GoRoute(
           path: '/login',
-          builder: (context, state) => const Scaffold(body: Text('Login stub')),
+          builder: (context, state) =>
+              const AuthScreen(initialMode: AuthMode.login),
         ),
         GoRoute(
           path: '/home',
@@ -87,20 +89,6 @@ void main() {
     );
   }
 
-  // The signup footer Row ("Already have an account?  Log in") overflows the
-  // form's 440px max width by ~11px in the test environment. That is a
-  // pre-existing layout sensitivity unrelated to the email-confirmation UX
-  // under test, so swallow only that specific overflow error.
-  void ignoreFooterOverflow() {
-    final original = FlutterError.onError;
-    FlutterError.onError = (details) {
-      final summary = details.exceptionAsString();
-      if (summary.contains('A RenderFlex overflowed')) return;
-      original?.call(details);
-    };
-    addTearDown(() => FlutterError.onError = original);
-  }
-
   Future<void> fillAndSubmit(WidgetTester tester) async {
     await tester.enterText(
       find.widgetWithText(TextFormField, 'Email'),
@@ -114,6 +102,10 @@ void main() {
       find.widgetWithText(TextFormField, 'Confirm Password'),
       'Secret123!',
     );
+    // The unified screen is taller (social buttons + divider above fields),
+    // so the submit button may be off-screen — scroll it into view first.
+    await tester.ensureVisible(find.widgetWithText(ElevatedButton, 'Sign Up'));
+    await tester.pumpAndSettle();
     await tester.tap(find.widgetWithText(ElevatedButton, 'Sign Up'));
     await tester.pumpAndSettle();
   }
@@ -125,7 +117,6 @@ void main() {
       final repo = SpyAuthRepository(); // currentUser stays null afterwards.
       addTearDown(repo.dispose);
 
-      ignoreFooterOverflow();
       await tester.pumpWidget(buildSignup(repo));
       await tester.pumpAndSettle();
       await fillAndSubmit(tester);
@@ -148,7 +139,6 @@ void main() {
     );
     addTearDown(repo.dispose);
 
-    ignoreFooterOverflow();
     await tester.pumpWidget(buildSignup(repo));
     await tester.pumpAndSettle();
     await fillAndSubmit(tester);
@@ -166,7 +156,6 @@ void main() {
     final repo = SpyAuthRepository();
     addTearDown(repo.dispose);
 
-    ignoreFooterOverflow();
     await tester.pumpWidget(buildSignup(repo));
     await tester.pumpAndSettle();
 
@@ -178,11 +167,25 @@ void main() {
     expect(find.byIcon(Icons.radio_button_unchecked), findsNWidgets(5));
 
     // Type a strong password → all satisfied.
+    // In the unified screen: 0=email, 1=password, 2=confirm password.
     await tester.enterText(
       find.byType(TextFormField).at(1), // 0=email, 1=password
       'Aa1!aaaa',
     );
     await tester.pump();
     expect(find.byIcon(Icons.check_circle), findsNWidgets(5));
+  });
+
+  testWidgets('segmented toggle is present in signup mode', (tester) async {
+    final repo = SpyAuthRepository();
+    addTearDown(repo.dispose);
+
+    await tester.pumpWidget(buildSignup(repo));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Sign up'), findsOneWidget);
+    expect(find.text('Log in'), findsOneWidget);
+    // In signup mode the submit button says "Sign Up".
+    expect(find.widgetWithText(ElevatedButton, 'Sign Up'), findsOneWidget);
   });
 }

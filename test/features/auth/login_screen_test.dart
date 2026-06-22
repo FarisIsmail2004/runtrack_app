@@ -6,7 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:runtrack_app/core/supabase/supabase_client.dart';
 import 'package:runtrack_app/features/auth/data/auth_repository.dart';
-import 'package:runtrack_app/features/auth/presentation/login_screen.dart';
+import 'package:runtrack_app/features/auth/presentation/auth_screen.dart';
 import 'package:runtrack_app/shared/theme/app_theme.dart';
 
 /// Spy repo for asserting which auth method the screen invokes.
@@ -66,12 +66,13 @@ void main() {
       routes: [
         GoRoute(
           path: '/login',
-          builder: (context, state) => const LoginScreen(),
+          builder: (context, state) =>
+              const AuthScreen(initialMode: AuthMode.login),
         ),
         GoRoute(
           path: '/signup',
           builder: (context, state) =>
-              const Scaffold(body: Text('Signup stub')),
+              const AuthScreen(initialMode: AuthMode.signup),
         ),
         GoRoute(
           path: '/forgot-password',
@@ -102,6 +103,16 @@ void main() {
     expect(find.text('Continue with Google'), findsOneWidget);
     // Default test platform is Android → Apple button hidden.
     expect(find.text('Continue with Apple'), findsNothing);
+  });
+
+  testWidgets('segmented toggle is present with Sign up and Log in labels', (
+    tester,
+  ) async {
+    await tester.pumpWidget(buildLogin());
+    await tester.pumpAndSettle();
+
+    expect(find.text('Sign up'), findsOneWidget);
+    expect(find.text('Log in'), findsOneWidget);
   });
 
   testWidgets('empty password shows a validation error and does not submit', (
@@ -168,5 +179,21 @@ void main() {
     await tester.tap(find.byTooltip('Show password'));
     await tester.pumpAndSettle();
     expect(find.byTooltip('Hide password'), findsOneWidget);
+  });
+
+  testWidgets('tapping Sign up segment switches to signup mode', (
+    tester,
+  ) async {
+    await tester.pumpWidget(buildLogin());
+    await tester.pumpAndSettle();
+
+    // Currently in login mode — submit button says "Log In".
+    expect(find.widgetWithText(ElevatedButton, 'Log In'), findsOneWidget);
+
+    await tester.tap(find.text('Sign up'));
+    await tester.pumpAndSettle();
+
+    // After switch, submit button says "Sign Up".
+    expect(find.widgetWithText(ElevatedButton, 'Sign Up'), findsOneWidget);
   });
 }
