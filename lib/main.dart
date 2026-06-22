@@ -10,6 +10,7 @@ import 'features/auth/application/auth_notifier.dart';
 import 'features/goals/application/goal_sync_providers.dart';
 import 'features/onboarding/application/onboarding_providers.dart';
 import 'features/profile/application/profile_sync_providers.dart';
+import 'features/profile/application/theme_mode_providers.dart';
 import 'features/run_tracking/application/sync_providers.dart';
 import 'shared/theme/app_theme.dart';
 
@@ -53,6 +54,8 @@ class RunTrackApp extends ConsumerWidget {
     // start): first hydrate local from the remote (restores a fresh install),
     // then flush anything recorded offline back up. All no-op in offline builds
     // and when signed out.
+    final themeMode = ref.watch(themeModeProvider);
+
     ref.listen(authStateProvider, (previous, next) {
       if (next.valueOrNull != null) {
         final runSync = ref.read(runSyncServiceProvider);
@@ -69,9 +72,9 @@ class RunTrackApp extends ConsumerWidget {
       builder: (context, child) => MaterialApp.router(
         debugShowCheckedModeBanner: false,
         title: 'RunTrack',
-        theme: AppTheme.dark,
+        theme: AppTheme.light,
         darkTheme: AppTheme.dark,
-        themeMode: ThemeMode.dark,
+        themeMode: themeMode,
         routerConfig: router,
       ),
     );

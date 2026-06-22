@@ -8,7 +8,9 @@ import 'package:runtrack_app/core/database/app_database.dart';
 import 'package:runtrack_app/main.dart';
 
 void main() {
-  testWidgets('RunTrack smoke test — splash then home', (WidgetTester tester) async {
+  testWidgets('RunTrack smoke test — splash then home', (
+    WidgetTester tester,
+  ) async {
     // Override the database with an empty in-memory DB so the home dashboard's
     // async sections resolve out of their loading state (whose
     // CircularProgressIndicator would otherwise animate forever and time out
@@ -51,7 +53,7 @@ void main() {
 
     // Theme assertions
     final app = tester.widget<MaterialApp>(find.byType(MaterialApp).first);
-    expect(app.themeMode, ThemeMode.dark);
+    expect(app.themeMode, ThemeMode.system);
     expect(app.darkTheme!.brightness, Brightness.dark);
   });
 }
