@@ -96,9 +96,7 @@ class HomeScreen extends ConsumerWidget {
   }
 
   Widget _buildBottomNav(BuildContext context) {
-    final borderColor =
-        Theme.of(context).extension<AppColors>()?.surfaceBorder ??
-        Colors.white12;
+    final borderColor = AppColors.of(context).surfaceBorder;
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -145,10 +143,7 @@ class _HeaderRow extends StatelessWidget {
         SizedBox(width: 12.w),
         // Circular avatar button (placeholder — no profile photo available yet)
         GestureDetector(
-          onTap: () => Navigator.of(
-            context,
-            rootNavigator: true,
-          ).maybePop(), // no-op; navigating to profile via bottom nav
+          onTap: () => context.go('/profile'),
           child: CircleAvatar(
             radius: 22.r,
             backgroundColor: cs.surface,
@@ -337,10 +332,12 @@ class _LastRunSection extends ConsumerWidget {
                   ),
                   child: Padding(
                     padding: EdgeInsets.all(24.w),
-                    child: const Center(
+                    child: Center(
                       child: Text(
                         'No runs yet — time for your first one!',
-                        style: TextStyle(color: Colors.white54),
+                        style: TextStyle(
+                          color: AppColors.of(context).textMuted,
+                        ),
                         textAlign: TextAlign.center,
                       ),
                     ),
@@ -353,7 +350,10 @@ class _LastRunSection extends ConsumerWidget {
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16.r),
             ),
-            child: SizedBox(height: 72.h),
+            child: SizedBox(
+              height: 72.h,
+              child: const Center(child: CircularProgressIndicator()),
+            ),
           ),
           error: (_, _) => const SizedBox.shrink(),
         ),
@@ -400,7 +400,10 @@ class _LastRunCard extends ConsumerWidget {
                   children: [
                     Text(
                       dateLabel,
-                      style: TextStyle(fontSize: 12.sp, color: Colors.white54),
+                      style: TextStyle(
+                        fontSize: 12.sp,
+                        color: AppColors.of(context).textMuted,
+                      ),
                     ),
                     SizedBox(height: 6.h),
                     Text(
@@ -409,7 +412,7 @@ class _LastRunCard extends ConsumerWidget {
                       style: TextStyle(
                         fontSize: 22.sp,
                         fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                        color: cs.onSurface,
                       ),
                     ),
                     SizedBox(height: 4.h),
@@ -420,18 +423,20 @@ class _LastRunCard extends ConsumerWidget {
                           '${paceUnitLabel(unit)}',
                           style: TextStyle(
                             fontSize: 13.sp,
-                            color: Colors.white70,
+                            color: cs.onSurface.withValues(alpha: 0.7),
                           ),
                         ),
-                        const Text(
+                        Text(
                           '  ·  ',
-                          style: TextStyle(color: Colors.white30),
+                          style: TextStyle(
+                            color: AppColors.of(context).surfaceBorder,
+                          ),
                         ),
                         Text(
                           formatDuration(run.durationS),
                           style: TextStyle(
                             fontSize: 13.sp,
-                            color: Colors.white70,
+                            color: cs.onSurface.withValues(alpha: 0.7),
                           ),
                         ),
                       ],
@@ -439,7 +444,10 @@ class _LastRunCard extends ConsumerWidget {
                   ],
                 ),
               ),
-              const Icon(Icons.chevron_right, color: Colors.white30),
+              Icon(
+                Icons.chevron_right,
+                color: AppColors.of(context).surfaceBorder,
+              ),
             ],
           ),
         ),

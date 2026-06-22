@@ -1,9 +1,12 @@
 import 'dart:async';
 
+import 'package:drift/drift.dart' show DatabaseConnection;
+import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:runtrack_app/core/database/app_database.dart';
 import 'package:runtrack_app/core/router/app_router.dart';
 import 'package:runtrack_app/core/supabase/supabase_client.dart';
 import 'package:runtrack_app/features/auth/data/auth_repository.dart';
@@ -67,9 +70,22 @@ class _ControllableAuthRepository implements AuthRepository {
 
 void main() {
   late _ControllableAuthRepository repo;
+  late AppDatabase db;
 
-  setUp(() => repo = _ControllableAuthRepository());
-  tearDown(() => repo.dispose());
+  setUp(() {
+    repo = _ControllableAuthRepository();
+    db = AppDatabase(
+      DatabaseConnection(
+        NativeDatabase.memory(),
+        closeStreamsSynchronously: true,
+      ),
+    );
+  });
+
+  tearDown(() async {
+    repo.dispose();
+    await db.close();
+  });
 
   Widget buildWithRealRouter(ProviderContainer container) {
     // ScreenUtilInit is required because several screens use .sp / .w / .h.
@@ -101,6 +117,10 @@ void main() {
           splashReadyProvider.overrideWith((ref) => true),
           // Inject the controllable fake.
           authRepositoryProvider.overrideWithValue(repo),
+          // Provide an in-memory DB so runsStreamProvider resolves immediately,
+          // preventing the CircularProgressIndicator in HomeScreen's loading
+          // state from animating forever and blocking pumpAndSettle.
+          databaseProvider.overrideWithValue(db),
         ],
       );
       addTearDown(container.dispose);
