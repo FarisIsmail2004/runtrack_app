@@ -1,10 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
+
+import 'package:runtrack_app/core/utils/pace_format.dart';
 import 'package:runtrack_app/features/history/application/history_providers.dart';
 import 'package:runtrack_app/features/history/presentation/widgets/run_list_tile.dart';
+import 'package:runtrack_app/features/profile/application/profile_providers.dart';
 import 'package:runtrack_app/features/run_tracking/domain/run.dart';
+import 'package:runtrack_app/shared/charts/trend_line.dart';
+import 'package:runtrack_app/shared/theme/app_colors.dart';
+import 'package:runtrack_app/shared/widgets/app_bottom_nav.dart';
 import 'package:runtrack_app/shared/widgets/reveal_in.dart';
+import 'package:runtrack_app/shared/widgets/section_header.dart';
 
 class HistoryScreen extends ConsumerWidget {
   const HistoryScreen({super.key});
@@ -14,69 +22,137 @@ class HistoryScreen extends ConsumerWidget {
     final runsAsync = ref.watch(runsStreamProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.menu),
-          tooltip: 'Menu',
-          onPressed: () {},
+      body: SafeArea(
+        child: Column(
+          children: [
+            Expanded(
+              child: runsAsync.when(
+                loading: () => const Center(child: CircularProgressIndicator()),
+                error: (e, _) => Center(
+                  child: Text(
+                    'Error loading history: $e',
+                    style: TextStyle(color: AppColors.of(context).textMuted),
+                  ),
+                ),
+                data: (runs) {
+                  if (runs.isEmpty) return const _EmptyState();
+                  return _HistoryList(runs: runs);
+                },
+              ),
+            ),
+            _BottomNav(),
+          ],
         ),
-        centerTitle: true,
-        title: const Text('History'),
-      ),
-      body: runsAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(
-          child: Text(
-            'Error loading history: $e',
-            style: const TextStyle(color: Colors.white70),
-          ),
-        ),
-        data: (runs) {
-          if (runs.isEmpty) return const _EmptyState();
-          return _HistoryList(runs: runs);
-        },
       ),
     );
   }
 }
+
+// ---------------------------------------------------------------------------
+// Bottom navigation
+// ---------------------------------------------------------------------------
+
+class _BottomNav extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final borderColor = AppColors.of(context).surfaceBorder;
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Divider(height: 1, thickness: 1, color: borderColor),
+        AppBottomNav(
+          current: AppTab.history,
+          onSelect: (tab) {
+            switch (tab) {
+              case AppTab.home:
+                context.go('/home');
+              case AppTab.history:
+                break; // already here
+              case AppTab.profile:
+                context.go('/profile');
+            }
+          },
+        ),
+      ],
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Empty state
+// ---------------------------------------------------------------------------
 
 class _EmptyState extends StatelessWidget {
   const _EmptyState();
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(Icons.directions_run, size: 64.sp, color: Colors.grey.shade700),
-          SizedBox(height: 16.h),
-          Text(
-            'No runs yet',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 18.sp,
-              fontWeight: FontWeight.w600,
+    final muted = AppColors.of(context).textMuted;
+    return Column(
+      children: [
+        _AppBar(),
+        Expanded(
+          child: Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.directions_run, size: 64.sp, color: muted),
+                SizedBox(height: 16.h),
+                Text(
+                  'No runs yet',
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.onSurface,
+                    fontSize: 18.sp,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                SizedBox(height: 8.h),
+                Text(
+                  'Your finished runs will show up here.',
+                  style: TextStyle(color: muted, fontSize: 14.sp),
+                ),
+              ],
             ),
           ),
-          SizedBox(height: 8.h),
-          Text(
-            'Your finished runs will show up here.',
-            style: TextStyle(color: Colors.grey.shade500, fontSize: 14.sp),
-          ),
+        ),
+      ],
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// App bar row
+// ---------------------------------------------------------------------------
+
+class _AppBar extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final muted = AppColors.of(context).textMuted;
+    return Padding(
+      padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 8.h),
+      child: Row(
+        children: [
+          Text('History', style: Theme.of(context).textTheme.headlineMedium),
+          const Spacer(),
+          Icon(Icons.tune_rounded, color: muted, size: 22.sp),
         ],
       ),
     );
   }
 }
 
-class _HistoryList extends StatelessWidget {
+// ---------------------------------------------------------------------------
+// Main list
+// ---------------------------------------------------------------------------
+
+class _HistoryList extends ConsumerWidget {
   const _HistoryList({required this.runs});
 
   final List<Run> runs;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final unit = ref.watch(unitProvider);
     final groups = groupRunsByMonth(runs);
 
     // Flatten groups into a single index space: a header item per group
@@ -90,12 +166,42 @@ class _HistoryList extends StatelessWidget {
       }
     }
 
+    // Derive "this year" summary from loaded runs — no new provider needed.
+    final now = DateTime.now();
+    final thisYearRuns = runs
+        .where((r) => r.startedAt.year == now.year)
+        .toList();
+    final totalDistanceM = thisYearRuns.fold(
+      0.0,
+      (sum, r) => sum + r.distanceM,
+    );
+    final totalDistanceDisplay = formatDistance(totalDistanceM, unit);
+    final distLabel = distanceUnitLabel(unit);
+    final runCount = thisYearRuns.length;
+
+    // TrendLine data: distance of each run in chronological order (oldest→newest).
+    final trendValues = runs.reversed.map((r) => r.distanceM / 1000.0).toList();
+
     return ListView.builder(
-      itemCount: items.length,
+      itemCount: items.length + 1, // +1 for the summary card at top
       itemBuilder: (context, index) {
-        final item = items[index];
+        if (index == 0) {
+          return RevealIn(
+            child: _SummaryCard(
+              totalDistance: totalDistanceDisplay,
+              distLabel: distLabel,
+              runCount: runCount,
+              trendValues: trendValues,
+            ),
+          );
+        }
+
+        final item = items[index - 1];
         final child = switch (item) {
-          _HeaderItem(:final label) => _MonthHeader(label: label),
+          _HeaderItem(:final label) => Padding(
+            padding: EdgeInsets.fromLTRB(20.w, 20.h, 20.w, 4.h),
+            child: SectionHeader(title: label),
+          ),
           _RunItem(:final run) => RunListTile(run: run),
         };
         // Stagger the entrance by position, capped so long lists don't lag.
@@ -107,6 +213,99 @@ class _HistoryList extends StatelessWidget {
     );
   }
 }
+
+// ---------------------------------------------------------------------------
+// Summary card
+// ---------------------------------------------------------------------------
+
+class _SummaryCard extends StatelessWidget {
+  const _SummaryCard({
+    required this.totalDistance,
+    required this.distLabel,
+    required this.runCount,
+    required this.trendValues,
+  });
+
+  final String totalDistance;
+  final String distLabel;
+  final int runCount;
+  final List<double> trendValues;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final appColors = AppColors.of(context);
+
+    return Padding(
+      padding: EdgeInsets.fromLTRB(20.w, 0, 20.w, 8.h),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Title row
+          _AppBar(),
+          SizedBox(height: 4.h),
+          // Card
+          Container(
+            decoration: BoxDecoration(
+              color: cs.surface,
+              borderRadius: BorderRadius.circular(16.r),
+              border: Border.all(color: appColors.surfaceBorder, width: 1),
+            ),
+            padding: EdgeInsets.fromLTRB(16.w, 16.h, 16.w, 12.h),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    // Distance value
+                    Text(
+                      totalDistance,
+                      style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                        fontFeatures: const [FontFeature.tabularFigures()],
+                      ),
+                    ),
+                    SizedBox(width: 4.w),
+                    Padding(
+                      padding: EdgeInsets.only(bottom: 4.h),
+                      child: Text(
+                        distLabel,
+                        style: TextStyle(
+                          color: appColors.textMuted,
+                          fontSize: 14.sp,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 2.h),
+                Text(
+                  'THIS YEAR · $runCount ${runCount == 1 ? 'RUN' : 'RUNS'}',
+                  style: TextStyle(
+                    color: appColors.textMuted,
+                    fontSize: 11.sp,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 1.0,
+                  ),
+                ),
+                SizedBox(height: 12.h),
+                SizedBox(
+                  height: 56.h,
+                  child: TrendLine(values: trendValues, height: 56.h),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Row items (sealed union)
+// ---------------------------------------------------------------------------
 
 sealed class _RowItem {
   const _RowItem();
@@ -120,26 +319,4 @@ class _HeaderItem extends _RowItem {
 class _RunItem extends _RowItem {
   const _RunItem(this.run);
   final Run run;
-}
-
-class _MonthHeader extends StatelessWidget {
-  const _MonthHeader({required this.label});
-
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.fromLTRB(20.w, 20.h, 20.w, 4.h),
-      child: Text(
-        label.toUpperCase(),
-        style: TextStyle(
-          color: Theme.of(context).colorScheme.primary,
-          fontSize: 12.sp,
-          fontWeight: FontWeight.bold,
-          letterSpacing: 1.2,
-        ),
-      ),
-    );
-  }
 }

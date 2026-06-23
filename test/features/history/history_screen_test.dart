@@ -9,7 +9,11 @@ import 'package:runtrack_app/features/history/presentation/history_screen.dart';
 import 'package:runtrack_app/features/history/presentation/run_detail_screen.dart';
 import 'package:runtrack_app/features/run_tracking/domain/run.dart';
 import 'package:runtrack_app/features/run_tracking/domain/run_point.dart';
+import 'package:runtrack_app/shared/charts/route_sparkline.dart';
+import 'package:runtrack_app/shared/charts/trend_line.dart';
 import 'package:runtrack_app/shared/theme/app_theme.dart';
+import 'package:runtrack_app/shared/widgets/app_bottom_nav.dart';
+import 'package:runtrack_app/shared/widgets/section_header.dart';
 
 void main() {
   late AppDatabase db;
@@ -33,14 +37,14 @@ void main() {
   });
 
   List<RunPoint> makePoints(int count, DateTime start) => List.generate(
-        count,
-        (i) => RunPoint(
-          lat: 3.0 + i * 0.0009,
-          lng: 101.0,
-          timestamp: start.add(Duration(seconds: 30 * i)),
-          accuracy: 5.0,
-        ),
-      );
+    count,
+    (i) => RunPoint(
+      lat: 3.0 + i * 0.0009,
+      lng: 101.0,
+      timestamp: start.add(Duration(seconds: 30 * i)),
+      accuracy: 5.0,
+    ),
+  );
 
   Future<void> seedRun(
     WidgetTester tester, {
@@ -51,16 +55,18 @@ void main() {
     List<RunPoint>? points,
   }) async {
     await tester.runAsync(() async {
-      await db.runDao.insertRun(Run(
-        id: id,
-        startedAt: startedAt,
-        distanceM: distanceM,
-        durationS: durationS,
-        avgPaceSPerKm: durationS > 0 && distanceM > 0
-            ? durationS / (distanceM / 1000)
-            : 0,
-        caloriesEst: 100,
-      ));
+      await db.runDao.insertRun(
+        Run(
+          id: id,
+          startedAt: startedAt,
+          distanceM: distanceM,
+          durationS: durationS,
+          avgPaceSPerKm: durationS > 0 && distanceM > 0
+              ? durationS / (distanceM / 1000)
+              : 0,
+          caloriesEst: 100,
+        ),
+      );
       if (points != null) {
         await db.runDao.insertPoints(id, points);
       }
@@ -77,11 +83,18 @@ void main() {
           routes: [
             GoRoute(
               path: ':runId',
-              builder: (context, state) => RunDetailScreen(
-                runId: state.pathParameters['runId']!,
-              ),
+              builder: (context, state) =>
+                  RunDetailScreen(runId: state.pathParameters['runId']!),
             ),
           ],
+        ),
+        GoRoute(
+          path: '/home',
+          builder: (context, state) => const Scaffold(body: Text('Home')),
+        ),
+        GoRoute(
+          path: '/profile',
+          builder: (context, state) => const Scaffold(body: Text('Profile')),
         ),
       ],
     );
@@ -106,8 +119,11 @@ void main() {
   testWidgets('empty DB shows empty state', (tester) async {
     await pumpAndLoad(tester);
 
-    expect(find.text('History'), findsOneWidget);
+    // 'History' appears as the title AND as the active AppBottomNav label.
+    expect(find.text('History'), findsWidgets);
     expect(find.text('No runs yet'), findsOneWidget);
+    // AppBottomNav present with history tab active
+    expect(find.byType(AppBottomNav), findsOneWidget);
   });
 
   testWidgets('seeded runs show month headers, rows and stats', (tester) async {
@@ -139,7 +155,8 @@ void main() {
 
     await pumpAndLoad(tester);
 
-    // Month headers (uppercased in the UI).
+    // Month headers via SectionHeader widget.
+    expect(find.byType(SectionHeader), findsWidgets);
     expect(find.text('JUNE 2026'), findsOneWidget);
     expect(find.text('MAY 2026'), findsOneWidget);
 
@@ -150,6 +167,18 @@ void main() {
 
     // Stats line for the newest run: 6.21 km, pace 2128/6.21 ≈ 5:43 /km, 35:28.
     expect(find.text('6.21 km · 5:43 /km · 35:28'), findsOneWidget);
+
+    // RouteSparkline widgets present for run tiles.
+    expect(find.byType(RouteSparkline), findsWidgets);
+
+    // Trailing chevrons present.
+    expect(find.byIcon(Icons.chevron_right), findsWidgets);
+
+    // AppBottomNav with history active.
+    expect(find.byType(AppBottomNav), findsOneWidget);
+
+    // Summary card with TrendLine (rendered when ≥1 run loaded).
+    expect(find.byType(TrendLine), findsOneWidget);
   });
 
   testWidgets('tapping a row navigates to run detail', (tester) async {
