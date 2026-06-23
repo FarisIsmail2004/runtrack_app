@@ -4,23 +4,29 @@ import 'package:runtrack_app/features/profile/presentation/widgets/appearance_sh
 import 'package:runtrack_app/shared/theme/app_theme.dart';
 
 void main() {
-  testWidgets('selecting Light fires onSelect(ThemeMode.light)', (tester) async {
+  testWidgets('selecting Light fires onSelect(ThemeMode.light)', (
+    tester,
+  ) async {
     ThemeMode? picked;
-    await tester.pumpWidget(MaterialApp(
-      theme: AppTheme.dark,
-      home: Scaffold(
-        body: Builder(builder: (context) {
-          return ElevatedButton(
-            onPressed: () => showAppearanceSheet(
-              context,
-              current: ThemeMode.system,
-              onSelect: (m) => picked = m,
-            ),
-            child: const Text('open'),
-          );
-        }),
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.dark,
+        home: Scaffold(
+          body: Builder(
+            builder: (context) {
+              return ElevatedButton(
+                onPressed: () => showAppearanceSheet(
+                  context,
+                  current: ThemeMode.system,
+                  onSelect: (m) => picked = m,
+                ),
+                child: const Text('open'),
+              );
+            },
+          ),
+        ),
       ),
-    ));
+    );
     await tester.tap(find.text('open'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Light'));
@@ -29,21 +35,25 @@ void main() {
   });
 
   testWidgets('current mode shows a check icon', (tester) async {
-    await tester.pumpWidget(MaterialApp(
-      theme: AppTheme.dark,
-      home: Scaffold(
-        body: Builder(builder: (context) {
-          return ElevatedButton(
-            onPressed: () => showAppearanceSheet(
-              context,
-              current: ThemeMode.dark,
-              onSelect: (_) {},
-            ),
-            child: const Text('open'),
-          );
-        }),
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.dark,
+        home: Scaffold(
+          body: Builder(
+            builder: (context) {
+              return ElevatedButton(
+                onPressed: () => showAppearanceSheet(
+                  context,
+                  current: ThemeMode.dark,
+                  onSelect: (_) {},
+                ),
+                child: const Text('open'),
+              );
+            },
+          ),
+        ),
       ),
-    ));
+    );
     await tester.tap(find.text('open'));
     await tester.pumpAndSettle();
 
@@ -57,21 +67,25 @@ void main() {
 
   testWidgets('selecting Dark fires onSelect(ThemeMode.dark)', (tester) async {
     ThemeMode? picked;
-    await tester.pumpWidget(MaterialApp(
-      theme: AppTheme.dark,
-      home: Scaffold(
-        body: Builder(builder: (context) {
-          return ElevatedButton(
-            onPressed: () => showAppearanceSheet(
-              context,
-              current: ThemeMode.system,
-              onSelect: (m) => picked = m,
-            ),
-            child: const Text('open'),
-          );
-        }),
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.dark,
+        home: Scaffold(
+          body: Builder(
+            builder: (context) {
+              return ElevatedButton(
+                onPressed: () => showAppearanceSheet(
+                  context,
+                  current: ThemeMode.system,
+                  onSelect: (m) => picked = m,
+                ),
+                child: const Text('open'),
+              );
+            },
+          ),
+        ),
       ),
-    ));
+    );
     await tester.tap(find.text('open'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Dark'));

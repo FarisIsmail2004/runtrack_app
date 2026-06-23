@@ -6,8 +6,10 @@ import 'package:runtrack_app/shared/theme/app_theme.dart';
 
 Widget _wrap(Widget child) => ScreenUtilInit(
   designSize: const Size(390, 844),
-  builder: (context, _) =>
-      MaterialApp(theme: AppTheme.dark, home: Scaffold(body: child)),
+  builder: (context, _) => MaterialApp(
+    theme: AppTheme.dark,
+    home: Scaffold(body: child),
+  ),
 );
 
 void main() {

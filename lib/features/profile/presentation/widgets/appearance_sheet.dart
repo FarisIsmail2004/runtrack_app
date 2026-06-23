@@ -27,10 +27,7 @@ void showAppearanceSheet(
 }
 
 class _AppearanceSheet extends StatelessWidget {
-  const _AppearanceSheet({
-    required this.current,
-    required this.onSelect,
-  });
+  const _AppearanceSheet({required this.current, required this.onSelect});
 
   final ThemeMode current;
   final ValueChanged<ThemeMode> onSelect;
@@ -66,9 +63,9 @@ class _AppearanceSheet extends StatelessWidget {
             padding: const EdgeInsets.fromLTRB(20, 0, 20, 4),
             child: Text(
               'Appearance',
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w600),
             ),
           ),
           const SizedBox(height: 8),

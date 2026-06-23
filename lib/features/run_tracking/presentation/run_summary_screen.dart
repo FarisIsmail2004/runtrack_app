@@ -32,9 +32,7 @@ class RunSummaryScreen extends ConsumerWidget {
             onPressed: () => Navigator.pop(dialogContext, true),
             child: Text(
               'DISCARD',
-              style: TextStyle(
-                color: AppColors.of(dialogContext).destructive,
-              ),
+              style: TextStyle(color: AppColors.of(dialogContext).destructive),
             ),
           ),
         ],

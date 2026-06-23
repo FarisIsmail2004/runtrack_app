@@ -307,5 +307,4 @@ void main() {
     // Greeting should contain "Ready to run"
     expect(find.textContaining('Ready to run'), findsOneWidget);
   });
-
 }

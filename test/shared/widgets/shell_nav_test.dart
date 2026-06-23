@@ -107,26 +107,17 @@ GoRouter _buildRouter() => GoRouter(
       branches: [
         StatefulShellBranch(
           routes: [
-            GoRoute(
-              path: '/home',
-              builder: (_, s) => const _HomeStub(),
-            ),
+            GoRoute(path: '/home', builder: (_, s) => const _HomeStub()),
           ],
         ),
         StatefulShellBranch(
           routes: [
-            GoRoute(
-              path: '/history',
-              builder: (_, s) => const _HistoryStub(),
-            ),
+            GoRoute(path: '/history', builder: (_, s) => const _HistoryStub()),
           ],
         ),
         StatefulShellBranch(
           routes: [
-            GoRoute(
-              path: '/profile',
-              builder: (_, s) => const _ProfileStub(),
-            ),
+            GoRoute(path: '/profile', builder: (_, s) => const _ProfileStub()),
           ],
         ),
       ],
@@ -134,46 +125,42 @@ GoRouter _buildRouter() => GoRouter(
   ],
 );
 
-Widget _app(GoRouter router) => MaterialApp.router(
-  theme: AppTheme.dark,
-  routerConfig: router,
-);
+Widget _app(GoRouter router) =>
+    MaterialApp.router(theme: AppTheme.dark, routerConfig: router);
 
 void main() {
   group('Shell nav — single bottom nav', () {
-    testWidgets(
-      'exactly ONE AppBottomNav, NO extra NavigationBar from shell',
-      (tester) async {
-        final router = _buildRouter();
-        await tester.pumpWidget(_app(router));
-        await tester.pumpAndSettle();
+    testWidgets('exactly ONE AppBottomNav, NO extra NavigationBar from shell', (
+      tester,
+    ) async {
+      final router = _buildRouter();
+      await tester.pumpWidget(_app(router));
+      await tester.pumpAndSettle();
 
-        // Assert: the themed kit nav is present exactly once.
-        expect(find.byType(AppBottomNav), findsOneWidget);
+      // Assert: the themed kit nav is present exactly once.
+      expect(find.byType(AppBottomNav), findsOneWidget);
 
-        // Assert: no leftover Material NavigationBar from the old AppScaffold.
-        expect(find.byType(NavigationBar), findsNothing);
-      },
-    );
+      // Assert: no leftover Material NavigationBar from the old AppScaffold.
+      expect(find.byType(NavigationBar), findsNothing);
+    });
 
-    testWidgets(
-      'tapping History destination in AppBottomNav switches branch',
-      (tester) async {
-        final router = _buildRouter();
-        await tester.pumpWidget(_app(router));
-        await tester.pumpAndSettle();
+    testWidgets('tapping History destination in AppBottomNav switches branch', (
+      tester,
+    ) async {
+      final router = _buildRouter();
+      await tester.pumpWidget(_app(router));
+      await tester.pumpAndSettle();
 
-        // Start on /home — HOME text visible.
-        expect(find.text('HOME'), findsOneWidget);
-        expect(find.text('HISTORY'), findsNothing);
+      // Start on /home — HOME text visible.
+      expect(find.text('HOME'), findsOneWidget);
+      expect(find.text('HISTORY'), findsNothing);
 
-        // Tap the History nav item.
-        await tester.tap(find.byKey(const ValueKey('nav-history')));
-        await tester.pumpAndSettle();
+      // Tap the History nav item.
+      await tester.tap(find.byKey(const ValueKey('nav-history')));
+      await tester.pumpAndSettle();
 
-        // History branch is now visible.
-        expect(find.text('HISTORY'), findsOneWidget);
-      },
-    );
+      // History branch is now visible.
+      expect(find.text('HISTORY'), findsOneWidget);
+    });
   });
 }

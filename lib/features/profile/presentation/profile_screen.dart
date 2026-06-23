@@ -40,12 +40,19 @@ class ProfileScreen extends ConsumerWidget {
     final initials = _initials(displayName);
 
     // Derive all-time stats inline from runsStreamProvider.
-    final (runCount, totalDistDisplay, totalDistLabel, avgPaceDisplay, avgPaceLabel) =
-        runsAsync.when(
-          data: (runs) => _computeStats(runs, unit),
-          loading: () => (0, '--', distanceUnitLabel(unit), '--', paceUnitLabel(unit)),
-          error: (e, _) => (0, '--', distanceUnitLabel(unit), '--', paceUnitLabel(unit)),
-        );
+    final (
+      runCount,
+      totalDistDisplay,
+      totalDistLabel,
+      avgPaceDisplay,
+      avgPaceLabel,
+    ) = runsAsync.when(
+      data: (runs) => _computeStats(runs, unit),
+      loading: () =>
+          (0, '--', distanceUnitLabel(unit), '--', paceUnitLabel(unit)),
+      error: (e, _) =>
+          (0, '--', distanceUnitLabel(unit), '--', paceUnitLabel(unit)),
+    );
 
     return Scaffold(
       body: SafeArea(
@@ -112,12 +119,11 @@ class ProfileScreen extends ConsumerWidget {
                             children: [
                               Text(
                                 displayName,
-                                style: Theme.of(
-                                  context,
-                                ).textTheme.titleLarge?.copyWith(
-                                  fontWeight: FontWeight.w700,
-                                  color: cs.onSurface,
-                                ),
+                                style: Theme.of(context).textTheme.titleLarge
+                                    ?.copyWith(
+                                      fontWeight: FontWeight.w700,
+                                      color: cs.onSurface,
+                                    ),
                               ),
                               SizedBox(height: 2.h),
                               Text(
@@ -151,10 +157,7 @@ class ProfileScreen extends ConsumerWidget {
                     ),
                     child: StatRow(
                       items: [
-                        StatItem(
-                          value: runCount.toString(),
-                          label: 'Runs',
-                        ),
+                        StatItem(value: runCount.toString(), label: 'Runs'),
                         StatItem(
                           value: totalDistDisplay,
                           unit: totalDistLabel,
@@ -361,14 +364,10 @@ class ProfileScreen extends ConsumerWidget {
               inputFormatters: [
                 FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
               ],
-              style: TextStyle(
-                color: Theme.of(context).colorScheme.onSurface,
-              ),
+              style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
               decoration: InputDecoration(
                 suffixText: 'kg',
-                suffixStyle: TextStyle(
-                  color: AppColors.of(context).textMuted,
-                ),
+                suffixStyle: TextStyle(color: AppColors.of(context).textMuted),
                 errorText: errorText,
               ),
             ),
@@ -384,8 +383,7 @@ class ProfileScreen extends ConsumerWidget {
                   // that would skew calorie estimation.
                   if (parsed == null || parsed < 20 || parsed > 350) {
                     setState(
-                      () =>
-                          errorText = 'Enter a weight between 20 and 350 kg',
+                      () => errorText = 'Enter a weight between 20 and 350 kg',
                     );
                     return;
                   }
@@ -500,10 +498,7 @@ class _SettingRow extends StatelessWidget {
               ? null
               : Text(
                   value,
-                  style: TextStyle(
-                    color: appColors.textMuted,
-                    fontSize: 15.sp,
-                  ),
+                  style: TextStyle(color: appColors.textMuted, fontSize: 15.sp),
                 )),
     );
   }

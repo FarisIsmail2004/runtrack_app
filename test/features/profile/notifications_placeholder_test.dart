@@ -25,8 +25,7 @@ void main() {
                   routes: [
                     GoRoute(
                       path: 'notifications',
-                      builder: (context, state) =>
-                          const NotificationsScreen(),
+                      builder: (context, state) => const NotificationsScreen(),
                     ),
                   ],
                 ),
@@ -37,10 +36,7 @@ void main() {
       ],
     );
     return ProviderScope(
-      child: MaterialApp.router(
-        theme: AppTheme.dark,
-        routerConfig: router,
-      ),
+      child: MaterialApp.router(theme: AppTheme.dark, routerConfig: router),
     );
   }
 
@@ -63,10 +59,7 @@ void main() {
     await tester.pumpAndSettle();
 
     // A fragment of the muted sub-line.
-    expect(
-      find.textContaining('reminders'),
-      findsOneWidget,
-    );
+    expect(find.textContaining('reminders'), findsOneWidget);
   });
 
   testWidgets('shows notification icon', (tester) async {
@@ -92,8 +85,7 @@ void main() {
                   routes: [
                     GoRoute(
                       path: 'notifications',
-                      builder: (context, state) =>
-                          const NotificationsScreen(),
+                      builder: (context, state) => const NotificationsScreen(),
                     ),
                   ],
                 ),
@@ -105,10 +97,7 @@ void main() {
     );
     await tester.pumpWidget(
       ProviderScope(
-        child: MaterialApp.router(
-          theme: AppTheme.light,
-          routerConfig: router,
-        ),
+        child: MaterialApp.router(theme: AppTheme.light, routerConfig: router),
       ),
     );
     await tester.pumpAndSettle();

@@ -39,9 +39,7 @@ class RunDetailScreen extends ConsumerWidget {
             onPressed: () => Navigator.pop(dialogContext, true),
             child: Text(
               'DELETE',
-              style: TextStyle(
-                color: AppColors.of(context).destructive,
-              ),
+              style: TextStyle(color: AppColors.of(context).destructive),
             ),
           ),
         ],
@@ -109,10 +107,7 @@ class RunDetailScreen extends ConsumerWidget {
                         ),
                       ),
                       IconButton(
-                        icon: Icon(
-                          Icons.ios_share,
-                          color: appColors.textMuted,
-                        ),
+                        icon: Icon(Icons.ios_share, color: appColors.textMuted),
                         tooltip: 'Share',
                         onPressed: () {}, // placeholder until share lands
                       ),

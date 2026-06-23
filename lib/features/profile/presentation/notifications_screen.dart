@@ -21,10 +21,7 @@ class NotificationsScreen extends StatelessWidget {
       appBar: AppBar(
         title: Text(
           'Notifications',
-          style: TextStyle(
-            color: cs.onSurface,
-            fontWeight: FontWeight.bold,
-          ),
+          style: TextStyle(color: cs.onSurface, fontWeight: FontWeight.bold),
         ),
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: cs.onSurface),
@@ -63,10 +60,7 @@ class NotificationsScreen extends StatelessWidget {
               Text(
                 'Run reminders and goal celebrations will live here.',
                 textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: appColors.textMuted,
-                  fontSize: 14.sp,
-                ),
+                style: TextStyle(color: appColors.textMuted, fontSize: 14.sp),
               ),
             ],
           ),
