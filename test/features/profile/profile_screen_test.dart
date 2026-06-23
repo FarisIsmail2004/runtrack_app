@@ -9,8 +9,10 @@ import 'package:go_router/go_router.dart';
 import 'package:runtrack_app/core/database/app_database.dart';
 import 'package:runtrack_app/core/supabase/supabase_client.dart';
 import 'package:runtrack_app/features/auth/data/auth_repository.dart';
+import 'package:runtrack_app/features/history/application/history_providers.dart';
 import 'package:runtrack_app/features/profile/application/profile_providers.dart';
 import 'package:runtrack_app/features/profile/presentation/profile_screen.dart';
+import 'package:runtrack_app/features/run_tracking/domain/run.dart';
 import 'package:runtrack_app/shared/theme/app_theme.dart';
 
 /// Minimal auth fake: emits a single seeded user and spies signOut.
@@ -105,6 +107,10 @@ void main() {
           builder: (_, _) => const Scaffold(body: Text('Home stub')),
         ),
         GoRoute(
+          path: '/history',
+          builder: (_, _) => const Scaffold(body: Text('History stub')),
+        ),
+        GoRoute(
           path: '/login',
           builder: (_, _) => const Scaffold(body: Text('Login stub')),
         ),
@@ -120,6 +126,11 @@ void main() {
           yield current;
           yield* settings.stream;
         }),
+        // Override runsStreamProvider with an empty list so the drift
+        // stream-query timer never leaks into flutter_test's fake-async clock.
+        runsStreamProvider.overrideWith(
+          (ref) => Stream<List<Run>>.value(<Run>[]),
+        ),
       ],
       child: MaterialApp.router(theme: AppTheme.dark, routerConfig: router),
     );
@@ -129,9 +140,12 @@ void main() {
     await tester.pumpWidget(buildApp());
     await tester.pumpAndSettle();
 
-    expect(find.text('Profile'), findsOneWidget);
+    // "Profile" appears in both the title and the bottom nav — at least one.
+    expect(find.text('Profile'), findsAtLeastNWidgets(1));
     expect(find.text('70 kg'), findsOneWidget);
     expect(find.text('Kilometers (km)'), findsOneWidget);
+    // Log Out may be below the fold — scroll until it's visible.
+    await tester.scrollUntilVisible(find.text('Log Out'), 100);
     expect(find.text('Log Out'), findsOneWidget);
   });
 
@@ -223,7 +237,7 @@ void main() {
     await tester.pumpWidget(buildApp());
     await tester.pumpAndSettle();
 
-    await tester.ensureVisible(find.text('Log Out'));
+    await tester.scrollUntilVisible(find.text('Log Out'), 100);
     await tester.pumpAndSettle();
     await tester.tap(find.text('Log Out'));
     await tester.pump();
@@ -238,7 +252,7 @@ void main() {
     await tester.pumpWidget(buildApp(supabaseConfigured: false));
     await tester.pumpAndSettle();
 
-    await tester.ensureVisible(find.text('Log Out'));
+    await tester.scrollUntilVisible(find.text('Log Out'), 100);
     await tester.pumpAndSettle();
     await tester.tap(find.text('Log Out'));
     await tester.pump(); // run signOut microtask
