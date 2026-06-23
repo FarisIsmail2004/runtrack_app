@@ -12,6 +12,7 @@ import '../../features/onboarding/presentation/onboarding_screen.dart';
 import '../../features/history/presentation/history_screen.dart';
 import '../../features/history/presentation/run_detail_screen.dart';
 import '../../features/home/presentation/home_screen.dart';
+import '../../features/profile/presentation/notifications_screen.dart';
 import '../../features/profile/presentation/profile_screen.dart';
 import '../../features/run_tracking/presentation/live_run_screen.dart';
 import '../../features/run_tracking/presentation/run_summary_screen.dart';
@@ -184,6 +185,12 @@ final appRouterProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: '/profile',
                 builder: (context, state) => const ProfileScreen(),
+                routes: [
+                  GoRoute(
+                    path: 'notifications',
+                    builder: (context, state) => const NotificationsScreen(),
+                  ),
+                ],
               ),
             ],
           ),
