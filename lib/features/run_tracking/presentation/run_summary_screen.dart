@@ -6,6 +6,7 @@ import 'package:runtrack_app/core/database/app_database.dart';
 import 'package:runtrack_app/features/run_tracking/application/run_providers.dart';
 import 'package:runtrack_app/features/run_tracking/application/sync_providers.dart';
 import 'package:runtrack_app/features/run_tracking/presentation/widgets/run_summary_view.dart';
+import 'package:runtrack_app/shared/theme/app_colors.dart';
 import 'package:runtrack_app/shared/widgets/app_buttons.dart';
 
 class RunSummaryScreen extends ConsumerWidget {
@@ -29,9 +30,11 @@ class RunSummaryScreen extends ConsumerWidget {
           ),
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, true),
-            child: const Text(
+            child: Text(
               'DISCARD',
-              style: TextStyle(color: Colors.redAccent),
+              style: TextStyle(
+                color: AppColors.of(dialogContext).destructive,
+              ),
             ),
           ),
         ],

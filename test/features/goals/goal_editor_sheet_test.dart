@@ -7,6 +7,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:runtrack_app/core/database/app_database.dart';
 import 'package:runtrack_app/features/goals/domain/goal.dart';
 import 'package:runtrack_app/features/goals/presentation/goal_editor_sheet.dart';
+import 'package:runtrack_app/shared/theme/app_theme.dart';
 
 AppDatabase _memDb() => AppDatabase(
   DatabaseConnection(NativeDatabase.memory(), closeStreamsSynchronously: true),
@@ -17,6 +18,7 @@ Widget _host(AppDatabase db) => ProviderScope(
   child: ScreenUtilInit(
     designSize: const Size(390, 844),
     child: MaterialApp(
+      theme: AppTheme.dark,
       home: Scaffold(
         body: Builder(
           builder: (context) => ElevatedButton(

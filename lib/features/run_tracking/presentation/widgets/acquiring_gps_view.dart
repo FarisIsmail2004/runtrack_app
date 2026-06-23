@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/theme/app_motion.dart';
 
 /// Acquiring/ready view: pulsing GPS animation, hint card and either a
@@ -19,7 +20,9 @@ class AcquiringGpsView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final primary = Theme.of(context).colorScheme.primary;
+    final cs = Theme.of(context).colorScheme;
+    final appColors = AppColors.of(context);
+    final primary = cs.primary;
 
     return SafeArea(
       child: Padding(
@@ -33,14 +36,14 @@ class AcquiringGpsView extends StatelessWidget {
               style: TextStyle(
                 fontSize: 26.sp,
                 fontWeight: FontWeight.bold,
-                color: Colors.white,
+                color: cs.onSurface,
               ),
             ),
             SizedBox(height: 8.h),
             Text(
               'Good GPS makes for accurate stats.',
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 15.sp, color: Colors.grey.shade400),
+              style: TextStyle(fontSize: 15.sp, color: appColors.textMuted),
             ),
             SizedBox(height: 40.h),
             Semantics(
@@ -52,7 +55,7 @@ class AcquiringGpsView extends StatelessWidget {
               width: double.infinity,
               padding: EdgeInsets.all(16.w),
               decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.surface,
+                color: cs.surface,
                 borderRadius: BorderRadius.circular(16.r),
               ),
               child: Row(
@@ -67,7 +70,7 @@ class AcquiringGpsView extends StatelessWidget {
                     child: Text(
                       'Move to an open area\nAvoid tall buildings and trees',
                       style: TextStyle(
-                        color: Colors.grey.shade300,
+                        color: appColors.textMuted,
                         fontSize: 14.sp,
                         height: 1.5,
                       ),
@@ -89,7 +92,7 @@ class AcquiringGpsView extends StatelessWidget {
                 onPressed: onCancel,
                 child: Text(
                   'CANCEL',
-                  style: TextStyle(color: Colors.grey.shade400),
+                  style: TextStyle(color: appColors.textMuted),
                 ),
               ),
             ] else
@@ -217,7 +220,11 @@ class _GpsPulseState extends State<_GpsPulse> with TickerProviderStateMixin {
                   ),
                   child: Icon(
                     Icons.satellite_alt,
-                    color: Color.lerp(widget.color, Colors.black, ready),
+                    color: Color.lerp(
+                      widget.color,
+                      Theme.of(context).colorScheme.onPrimary,
+                      ready,
+                    ),
                     size: 28.sp,
                   ),
                 ),

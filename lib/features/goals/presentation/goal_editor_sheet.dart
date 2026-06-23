@@ -9,11 +9,11 @@ import 'package:runtrack_app/features/goals/application/goal_sync_providers.dart
 import 'package:runtrack_app/features/goals/domain/goal.dart';
 import 'package:runtrack_app/features/goals/domain/goal_format.dart';
 import 'package:runtrack_app/features/profile/application/profile_providers.dart';
+import 'package:runtrack_app/shared/theme/app_colors.dart';
 
 /// Opens the goal editor as a modal bottom sheet.
 Future<void> showGoalEditorSheet(BuildContext context) => showModalBottomSheet(
   context: context,
-  backgroundColor: const Color(0xFF1A1A1A),
   isScrollControlled: true,
   shape: const RoundedRectangleBorder(
     borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
@@ -46,6 +46,7 @@ class _GoalEditorSheetState extends ConsumerState<GoalEditorSheet> {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    final appColors = AppColors.of(context);
     final unit = ref.watch(unitProvider);
 
     // Pre-fill once from the active goal (if any).
@@ -76,7 +77,7 @@ class _GoalEditorSheetState extends ConsumerState<GoalEditorSheet> {
           Text(
             'Weekly goal',
             style: TextStyle(
-              color: Colors.white,
+              color: cs.onSurface,
               fontSize: 20.sp,
               fontWeight: FontWeight.bold,
             ),
@@ -105,12 +106,12 @@ class _GoalEditorSheetState extends ConsumerState<GoalEditorSheet> {
             inputFormatters: [
               FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
             ],
-            style: const TextStyle(color: Colors.white),
+            style: TextStyle(color: cs.onSurface),
             decoration: InputDecoration(
               labelText: 'Target',
-              labelStyle: const TextStyle(color: Colors.white54),
+              labelStyle: TextStyle(color: appColors.textMuted),
               suffixText: targetInputLabel(_metric, unit),
-              suffixStyle: const TextStyle(color: Colors.white54),
+              suffixStyle: TextStyle(color: appColors.textMuted),
               errorText: _error,
             ),
           ),
@@ -120,9 +121,9 @@ class _GoalEditorSheetState extends ConsumerState<GoalEditorSheet> {
               if (_editingId != null)
                 TextButton(
                   onPressed: _remove,
-                  child: const Text(
+                  child: Text(
                     'REMOVE',
-                    style: TextStyle(color: Colors.redAccent),
+                    style: TextStyle(color: appColors.destructive),
                   ),
                 ),
               const Spacer(),

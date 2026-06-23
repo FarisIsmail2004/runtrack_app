@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:runtrack_app/features/auth/presentation/widgets/auth_widgets.dart';
+import 'package:runtrack_app/shared/theme/app_theme.dart';
 
 Widget _wrap(Widget child) => ScreenUtilInit(
   designSize: const Size(390, 844),
-  builder: (context, _) => MaterialApp(home: Scaffold(body: child)),
+  builder: (context, _) =>
+      MaterialApp(theme: AppTheme.dark, home: Scaffold(body: child)),
 );
 
 void main() {

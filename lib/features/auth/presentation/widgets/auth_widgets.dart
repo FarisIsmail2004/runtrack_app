@@ -85,6 +85,7 @@ class AuthHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final appColors = AppColors.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -92,13 +93,15 @@ class AuthHeader extends StatelessWidget {
           title,
           style: theme.textTheme.headlineMedium?.copyWith(
             fontWeight: FontWeight.bold,
-            color: Colors.white,
+            color: theme.colorScheme.onSurface,
           ),
         ),
         SizedBox(height: 8.h),
         Text(
           subtitle,
-          style: theme.textTheme.bodyLarge?.copyWith(color: Colors.white70),
+          style: theme.textTheme.bodyLarge?.copyWith(
+            color: appColors.textMuted,
+          ),
         ),
       ],
     );
@@ -255,14 +258,15 @@ class AuthDivider extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final appColors = AppColors.of(context);
     return Row(
       children: [
-        const Expanded(child: Divider(color: Colors.white24)),
+        Expanded(child: Divider(color: appColors.surfaceBorder)),
         Padding(
           padding: EdgeInsets.symmetric(horizontal: 12.w),
-          child: const Text('or', style: TextStyle(color: Colors.white54)),
+          child: Text('or', style: TextStyle(color: appColors.textMuted)),
         ),
-        const Expanded(child: Divider(color: Colors.white24)),
+        Expanded(child: Divider(color: appColors.surfaceBorder)),
       ],
     );
   }
@@ -312,6 +316,8 @@ class PasswordRequirementsChecklist extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final appColors = AppColors.of(context);
     final rules = PasswordPolicy.evaluate(password);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -327,15 +333,15 @@ class PasswordRequirementsChecklist extends StatelessWidget {
                       : Icons.radio_button_unchecked,
                   size: 16.sp,
                   color: rule.satisfied
-                      ? const Color(0xFFFF6A00)
-                      : Colors.white38,
+                      ? appColors.success
+                      : appColors.textMuted,
                 ),
                 SizedBox(width: 8.w),
                 Text(
                   rule.label,
                   style: TextStyle(
                     fontSize: 12.sp,
-                    color: rule.satisfied ? Colors.white : Colors.white54,
+                    color: rule.satisfied ? cs.onSurface : appColors.textMuted,
                   ),
                 ),
               ],
