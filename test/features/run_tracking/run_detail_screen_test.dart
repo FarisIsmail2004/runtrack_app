@@ -22,13 +22,16 @@ void main() {
     const intervalM = 10.0;
     final pts = <RunPoint>[];
     for (double d = 0; d <= 2500; d += intervalM) {
-      pts.add(RunPoint(
-        lat: 3.0 + d / metersPerDegreeLat,
-        lng: 101.0,
-        timestamp:
-            base.add(Duration(milliseconds: (d / speedMps * 1000).round())),
-        accuracy: 5.0,
-      ));
+      pts.add(
+        RunPoint(
+          lat: 3.0 + d / metersPerDegreeLat,
+          lng: 101.0,
+          timestamp: base.add(
+            Duration(milliseconds: (d / speedMps * 1000).round()),
+          ),
+          accuracy: 5.0,
+        ),
+      );
     }
     return pts;
   }
@@ -52,15 +55,17 @@ void main() {
   Future<String> seedRun(WidgetTester tester) async {
     const runId = 'detail-run-1';
     await tester.runAsync(() async {
-      await db.runDao.insertRun(Run(
-        id: runId,
-        startedAt: base,
-        endedAt: base.add(const Duration(minutes: 12, seconds: 30)),
-        distanceM: 2500,
-        durationS: 750,
-        avgPaceSPerKm: 300,
-        caloriesEst: 175,
-      ));
+      await db.runDao.insertRun(
+        Run(
+          id: runId,
+          startedAt: base,
+          endedAt: base.add(const Duration(minutes: 12, seconds: 30)),
+          distanceM: 2500,
+          durationS: 750,
+          avgPaceSPerKm: 300,
+          caloriesEst: 175,
+        ),
+      );
       await db.runDao.insertPoints(runId, buildPoints());
     });
     return runId;
@@ -127,8 +132,9 @@ void main() {
     expect(find.text('SAVE RUN'), findsNothing);
   });
 
-  testWidgets('delete confirms, removes run from DB and returns to history',
-      (tester) async {
+  testWidgets('delete confirms, removes run from DB and returns to history', (
+    tester,
+  ) async {
     final runId = await seedRun(tester);
     await pumpAndLoad(tester, runId);
 
@@ -161,5 +167,53 @@ void main() {
   testWidgets('not-found run shows friendly message', (tester) async {
     await pumpAndLoad(tester, 'nonexistent-id');
     expect(find.text('Run not found.'), findsOneWidget);
+  });
+
+  testWidgets('screen builds without error under AppTheme.light', (
+    tester,
+  ) async {
+    final runId = await seedRun(tester);
+    // Use the light theme to smoke-test that no hardcoded dark-only colors
+    // remain in the screen's own chrome.
+    final router = GoRouter(
+      initialLocation: '/history/$runId',
+      routes: [
+        StatefulShellRoute.indexedStack(
+          builder: (context, state, navigationShell) => navigationShell,
+          branches: [
+            StatefulShellBranch(
+              routes: [
+                GoRoute(
+                  path: '/history',
+                  builder: (context, state) =>
+                      const Scaffold(body: Text('History stub')),
+                  routes: [
+                    GoRoute(
+                      path: ':runId',
+                      builder: (context, state) => RunDetailScreen(
+                        runId: state.pathParameters['runId']!,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ],
+        ),
+      ],
+    );
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [databaseProvider.overrideWithValue(db)],
+        child: MaterialApp.router(theme: AppTheme.light, routerConfig: router),
+      ),
+    );
+    await tester.pump();
+    await tester.runAsync(() => Future<void>.delayed(Duration.zero));
+    await tester.pumpAndSettle();
+
+    expect(tester.takeException(), isNull);
+    expect(find.text('Jun 11, 2026'), findsOneWidget);
+    expect(find.text('2.50'), findsOneWidget);
   });
 }

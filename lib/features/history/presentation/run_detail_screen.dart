@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import 'package:runtrack_app/core/database/app_database.dart';
 import 'package:runtrack_app/features/run_tracking/application/run_providers.dart';
 import 'package:runtrack_app/features/run_tracking/presentation/widgets/run_summary_view.dart';
+import 'package:runtrack_app/shared/theme/app_colors.dart';
 
 /// Read-only view of a saved run, opened from the history list.
 ///
@@ -36,9 +37,11 @@ class RunDetailScreen extends ConsumerWidget {
           ),
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, true),
-            child: const Text(
+            child: Text(
               'DELETE',
-              style: TextStyle(color: Colors.redAccent),
+              style: TextStyle(
+                color: AppColors.of(context).destructive,
+              ),
             ),
           ),
         ],
@@ -57,22 +60,24 @@ class RunDetailScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final async = ref.watch(runWithPointsProvider(runId));
 
+    final cs = Theme.of(context).colorScheme;
+    final appColors = AppColors.of(context);
+
     return Scaffold(
-      backgroundColor: const Color(0xFF121212),
       body: async.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(
           child: Text(
             'Error loading run: $e',
-            style: const TextStyle(color: Colors.white70),
+            style: TextStyle(color: appColors.textMuted),
           ),
         ),
         data: (pair) {
           if (pair == null) {
-            return const Center(
+            return Center(
               child: Text(
                 'Run not found.',
-                style: TextStyle(color: Colors.white70),
+                style: TextStyle(color: appColors.textMuted),
               ),
             );
           }
@@ -89,7 +94,7 @@ class RunDetailScreen extends ConsumerWidget {
                   child: Row(
                     children: [
                       IconButton(
-                        icon: const Icon(Icons.arrow_back, color: Colors.white),
+                        icon: Icon(Icons.arrow_back, color: cs.onSurface),
                         tooltip: 'Back',
                         onPressed: () => context.go('/history'),
                       ),
@@ -97,24 +102,24 @@ class RunDetailScreen extends ConsumerWidget {
                         child: Text(
                           title,
                           style: TextStyle(
-                            color: Colors.white,
+                            color: cs.onSurface,
                             fontSize: 18.sp,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                       ),
                       IconButton(
-                        icon: const Icon(
+                        icon: Icon(
                           Icons.ios_share,
-                          color: Colors.white70,
+                          color: appColors.textMuted,
                         ),
                         tooltip: 'Share',
                         onPressed: () {}, // placeholder until share lands
                       ),
                       IconButton(
-                        icon: const Icon(
+                        icon: Icon(
                           Icons.delete_outline,
-                          color: Colors.white70,
+                          color: appColors.textMuted,
                         ),
                         tooltip: 'Delete run',
                         onPressed: () => _delete(context, ref),
