@@ -56,3 +56,8 @@ skills.md
 skills-lock.json
 *.md
 !/README.md
+
+# Design assets, planning docs, and exported PDFs — keep local, never push
+design/refresh/
+docs/superpowers/
+*.pdf
