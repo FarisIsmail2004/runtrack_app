@@ -3,8 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:runtrack_app/core/database/app_database.dart';
+import 'package:runtrack_app/features/profile/application/profile_providers.dart';
 import 'package:runtrack_app/features/run_tracking/application/run_providers.dart';
+import 'package:runtrack_app/features/run_tracking/domain/run.dart';
+import 'package:runtrack_app/features/run_tracking/domain/run_share.dart';
 import 'package:runtrack_app/features/run_tracking/presentation/widgets/run_summary_view.dart';
 import 'package:runtrack_app/shared/theme/app_colors.dart';
 
@@ -54,9 +58,13 @@ class RunDetailScreen extends ConsumerWidget {
     }
   }
 
+  Future<void> _share(Run run, UnitSystem unit) =>
+      SharePlus.instance.share(ShareParams(text: buildRunShareText(run, unit)));
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final async = ref.watch(runWithPointsProvider(runId));
+    final unit = ref.watch(unitProvider);
 
     final cs = Theme.of(context).colorScheme;
     final appColors = AppColors.of(context);
@@ -109,7 +117,7 @@ class RunDetailScreen extends ConsumerWidget {
                       IconButton(
                         icon: Icon(Icons.ios_share, color: appColors.textMuted),
                         tooltip: 'Share',
-                        onPressed: () {}, // placeholder until share lands
+                        onPressed: () => _share(run, unit),
                       ),
                       IconButton(
                         icon: Icon(

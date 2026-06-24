@@ -160,6 +160,60 @@ void main() {
     expect(find.text('runner'), findsOneWidget); // display name (local part)
   });
 
+  testWidgets('a stored display name overrides the email prefix', (
+    tester,
+  ) async {
+    auth = FakeAuthRepository(
+      user: const AuthUser(id: 'u1', email: 'runner@example.com'),
+    );
+    current = const Setting(
+      id: 1,
+      weightKg: 70,
+      unit: 'km',
+      onboardingSeen: false,
+      themeMode: 'system',
+      displayName: 'Faris',
+    );
+    await tester.pumpWidget(buildApp());
+    await tester.pumpAndSettle();
+
+    expect(find.text('Faris'), findsOneWidget);
+    expect(find.text('runner'), findsNothing); // prefix no longer shown
+    expect(find.text('runner@example.com'), findsOneWidget);
+  });
+
+  testWidgets('tapping Edit opens the name dialog and saving persists it', (
+    tester,
+  ) async {
+    auth = FakeAuthRepository(
+      user: const AuthUser(id: 'u1', email: 'runner@example.com'),
+    );
+    await tester.pumpWidget(buildApp());
+    await tester.pumpAndSettle();
+
+    // Header initially shows the email prefix.
+    expect(find.text('runner'), findsOneWidget);
+
+    await tester.tap(find.text('Edit'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 200));
+
+    final field = find.byType(TextField);
+    expect(field, findsOneWidget);
+    await tester.enterText(field, 'Faris');
+    await tester.tap(find.text('SAVE'));
+    await tester.pumpAndSettle(); // close the dialog fully
+
+    final saved = await tester.runAsync(() => db.settingsDao.getSettings());
+    expect(saved!.displayName, 'Faris');
+    emit(saved);
+    await tester.pumpAndSettle();
+
+    // Dialog gone → the only "Faris" left is the header.
+    expect(find.text('Faris'), findsOneWidget);
+    expect(find.text('runner'), findsNothing);
+  });
+
   testWidgets('offline shows Not signed in / Runner', (tester) async {
     await tester.pumpWidget(buildApp());
     await tester.pumpAndSettle();

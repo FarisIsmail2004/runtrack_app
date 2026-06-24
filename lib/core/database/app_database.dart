@@ -59,6 +59,7 @@ class Settings extends Table {
   BoolColumn get onboardingSeen =>
       boolean().withDefault(const Constant(false))();
   TextColumn get themeMode => text().withDefault(const Constant('system'))();
+  TextColumn get displayName => text().nullable()();
 
   @override
   Set<Column> get primaryKey => {id};
@@ -95,7 +96,7 @@ class AppDatabase extends _$AppDatabase {
   factory AppDatabase.open() => AppDatabase(driftDatabase(name: 'runtrack'));
 
   @override
-  int get schemaVersion => 5;
+  int get schemaVersion => 6;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -123,6 +124,11 @@ class AppDatabase extends _$AppDatabase {
       // v4 → v5 added Settings.theme_mode (light/dark/system).
       if (from < 5) {
         await m.addColumn(settings, settings.themeMode);
+      }
+      // v5 → v6 added Settings.display_name (nullable; falls back to the
+      // email prefix in the UI when unset).
+      if (from < 6) {
+        await m.addColumn(settings, settings.displayName);
       }
     },
     beforeOpen: (details) async {

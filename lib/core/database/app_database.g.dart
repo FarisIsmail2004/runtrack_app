@@ -1069,6 +1069,17 @@ class $SettingsTable extends Settings with TableInfo<$SettingsTable, Setting> {
     requiredDuringInsert: false,
     defaultValue: const Constant('system'),
   );
+  static const VerificationMeta _displayNameMeta = const VerificationMeta(
+    'displayName',
+  );
+  @override
+  late final GeneratedColumn<String> displayName = GeneratedColumn<String>(
+    'display_name',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -1076,6 +1087,7 @@ class $SettingsTable extends Settings with TableInfo<$SettingsTable, Setting> {
     unit,
     onboardingSeen,
     themeMode,
+    displayName,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -1119,6 +1131,15 @@ class $SettingsTable extends Settings with TableInfo<$SettingsTable, Setting> {
         themeMode.isAcceptableOrUnknown(data['theme_mode']!, _themeModeMeta),
       );
     }
+    if (data.containsKey('display_name')) {
+      context.handle(
+        _displayNameMeta,
+        displayName.isAcceptableOrUnknown(
+          data['display_name']!,
+          _displayNameMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -1148,6 +1169,10 @@ class $SettingsTable extends Settings with TableInfo<$SettingsTable, Setting> {
         DriftSqlType.string,
         data['${effectivePrefix}theme_mode'],
       )!,
+      displayName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}display_name'],
+      ),
     );
   }
 
@@ -1163,12 +1188,14 @@ class Setting extends DataClass implements Insertable<Setting> {
   final String unit;
   final bool onboardingSeen;
   final String themeMode;
+  final String? displayName;
   const Setting({
     required this.id,
     required this.weightKg,
     required this.unit,
     required this.onboardingSeen,
     required this.themeMode,
+    this.displayName,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -1178,6 +1205,9 @@ class Setting extends DataClass implements Insertable<Setting> {
     map['unit'] = Variable<String>(unit);
     map['onboarding_seen'] = Variable<bool>(onboardingSeen);
     map['theme_mode'] = Variable<String>(themeMode);
+    if (!nullToAbsent || displayName != null) {
+      map['display_name'] = Variable<String>(displayName);
+    }
     return map;
   }
 
@@ -1188,6 +1218,9 @@ class Setting extends DataClass implements Insertable<Setting> {
       unit: Value(unit),
       onboardingSeen: Value(onboardingSeen),
       themeMode: Value(themeMode),
+      displayName: displayName == null && nullToAbsent
+          ? const Value.absent()
+          : Value(displayName),
     );
   }
 
@@ -1202,6 +1235,7 @@ class Setting extends DataClass implements Insertable<Setting> {
       unit: serializer.fromJson<String>(json['unit']),
       onboardingSeen: serializer.fromJson<bool>(json['onboardingSeen']),
       themeMode: serializer.fromJson<String>(json['themeMode']),
+      displayName: serializer.fromJson<String?>(json['displayName']),
     );
   }
   @override
@@ -1213,6 +1247,7 @@ class Setting extends DataClass implements Insertable<Setting> {
       'unit': serializer.toJson<String>(unit),
       'onboardingSeen': serializer.toJson<bool>(onboardingSeen),
       'themeMode': serializer.toJson<String>(themeMode),
+      'displayName': serializer.toJson<String?>(displayName),
     };
   }
 
@@ -1222,12 +1257,14 @@ class Setting extends DataClass implements Insertable<Setting> {
     String? unit,
     bool? onboardingSeen,
     String? themeMode,
+    Value<String?> displayName = const Value.absent(),
   }) => Setting(
     id: id ?? this.id,
     weightKg: weightKg ?? this.weightKg,
     unit: unit ?? this.unit,
     onboardingSeen: onboardingSeen ?? this.onboardingSeen,
     themeMode: themeMode ?? this.themeMode,
+    displayName: displayName.present ? displayName.value : this.displayName,
   );
   Setting copyWithCompanion(SettingsCompanion data) {
     return Setting(
@@ -1238,6 +1275,9 @@ class Setting extends DataClass implements Insertable<Setting> {
           ? data.onboardingSeen.value
           : this.onboardingSeen,
       themeMode: data.themeMode.present ? data.themeMode.value : this.themeMode,
+      displayName: data.displayName.present
+          ? data.displayName.value
+          : this.displayName,
     );
   }
 
@@ -1248,14 +1288,15 @@ class Setting extends DataClass implements Insertable<Setting> {
           ..write('weightKg: $weightKg, ')
           ..write('unit: $unit, ')
           ..write('onboardingSeen: $onboardingSeen, ')
-          ..write('themeMode: $themeMode')
+          ..write('themeMode: $themeMode, ')
+          ..write('displayName: $displayName')
           ..write(')'))
         .toString();
   }
 
   @override
   int get hashCode =>
-      Object.hash(id, weightKg, unit, onboardingSeen, themeMode);
+      Object.hash(id, weightKg, unit, onboardingSeen, themeMode, displayName);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -1264,7 +1305,8 @@ class Setting extends DataClass implements Insertable<Setting> {
           other.weightKg == this.weightKg &&
           other.unit == this.unit &&
           other.onboardingSeen == this.onboardingSeen &&
-          other.themeMode == this.themeMode);
+          other.themeMode == this.themeMode &&
+          other.displayName == this.displayName);
 }
 
 class SettingsCompanion extends UpdateCompanion<Setting> {
@@ -1273,12 +1315,14 @@ class SettingsCompanion extends UpdateCompanion<Setting> {
   final Value<String> unit;
   final Value<bool> onboardingSeen;
   final Value<String> themeMode;
+  final Value<String?> displayName;
   const SettingsCompanion({
     this.id = const Value.absent(),
     this.weightKg = const Value.absent(),
     this.unit = const Value.absent(),
     this.onboardingSeen = const Value.absent(),
     this.themeMode = const Value.absent(),
+    this.displayName = const Value.absent(),
   });
   SettingsCompanion.insert({
     this.id = const Value.absent(),
@@ -1286,6 +1330,7 @@ class SettingsCompanion extends UpdateCompanion<Setting> {
     this.unit = const Value.absent(),
     this.onboardingSeen = const Value.absent(),
     this.themeMode = const Value.absent(),
+    this.displayName = const Value.absent(),
   });
   static Insertable<Setting> custom({
     Expression<int>? id,
@@ -1293,6 +1338,7 @@ class SettingsCompanion extends UpdateCompanion<Setting> {
     Expression<String>? unit,
     Expression<bool>? onboardingSeen,
     Expression<String>? themeMode,
+    Expression<String>? displayName,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -1300,6 +1346,7 @@ class SettingsCompanion extends UpdateCompanion<Setting> {
       if (unit != null) 'unit': unit,
       if (onboardingSeen != null) 'onboarding_seen': onboardingSeen,
       if (themeMode != null) 'theme_mode': themeMode,
+      if (displayName != null) 'display_name': displayName,
     });
   }
 
@@ -1309,6 +1356,7 @@ class SettingsCompanion extends UpdateCompanion<Setting> {
     Value<String>? unit,
     Value<bool>? onboardingSeen,
     Value<String>? themeMode,
+    Value<String?>? displayName,
   }) {
     return SettingsCompanion(
       id: id ?? this.id,
@@ -1316,6 +1364,7 @@ class SettingsCompanion extends UpdateCompanion<Setting> {
       unit: unit ?? this.unit,
       onboardingSeen: onboardingSeen ?? this.onboardingSeen,
       themeMode: themeMode ?? this.themeMode,
+      displayName: displayName ?? this.displayName,
     );
   }
 
@@ -1337,6 +1386,9 @@ class SettingsCompanion extends UpdateCompanion<Setting> {
     if (themeMode.present) {
       map['theme_mode'] = Variable<String>(themeMode.value);
     }
+    if (displayName.present) {
+      map['display_name'] = Variable<String>(displayName.value);
+    }
     return map;
   }
 
@@ -1347,7 +1399,8 @@ class SettingsCompanion extends UpdateCompanion<Setting> {
           ..write('weightKg: $weightKg, ')
           ..write('unit: $unit, ')
           ..write('onboardingSeen: $onboardingSeen, ')
-          ..write('themeMode: $themeMode')
+          ..write('themeMode: $themeMode, ')
+          ..write('displayName: $displayName')
           ..write(')'))
         .toString();
   }
@@ -2245,6 +2298,7 @@ typedef $$SettingsTableCreateCompanionBuilder =
       Value<String> unit,
       Value<bool> onboardingSeen,
       Value<String> themeMode,
+      Value<String?> displayName,
     });
 typedef $$SettingsTableUpdateCompanionBuilder =
     SettingsCompanion Function({
@@ -2253,6 +2307,7 @@ typedef $$SettingsTableUpdateCompanionBuilder =
       Value<String> unit,
       Value<bool> onboardingSeen,
       Value<String> themeMode,
+      Value<String?> displayName,
     });
 
 class $$SettingsTableFilterComposer
@@ -2286,6 +2341,11 @@ class $$SettingsTableFilterComposer
 
   ColumnFilters<String> get themeMode => $composableBuilder(
     column: $table.themeMode,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get displayName => $composableBuilder(
+    column: $table.displayName,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -2323,6 +2383,11 @@ class $$SettingsTableOrderingComposer
     column: $table.themeMode,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<String> get displayName => $composableBuilder(
+    column: $table.displayName,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$SettingsTableAnnotationComposer
@@ -2350,6 +2415,11 @@ class $$SettingsTableAnnotationComposer
 
   GeneratedColumn<String> get themeMode =>
       $composableBuilder(column: $table.themeMode, builder: (column) => column);
+
+  GeneratedColumn<String> get displayName => $composableBuilder(
+    column: $table.displayName,
+    builder: (column) => column,
+  );
 }
 
 class $$SettingsTableTableManager
@@ -2385,12 +2455,14 @@ class $$SettingsTableTableManager
                 Value<String> unit = const Value.absent(),
                 Value<bool> onboardingSeen = const Value.absent(),
                 Value<String> themeMode = const Value.absent(),
+                Value<String?> displayName = const Value.absent(),
               }) => SettingsCompanion(
                 id: id,
                 weightKg: weightKg,
                 unit: unit,
                 onboardingSeen: onboardingSeen,
                 themeMode: themeMode,
+                displayName: displayName,
               ),
           createCompanionCallback:
               ({
@@ -2399,12 +2471,14 @@ class $$SettingsTableTableManager
                 Value<String> unit = const Value.absent(),
                 Value<bool> onboardingSeen = const Value.absent(),
                 Value<String> themeMode = const Value.absent(),
+                Value<String?> displayName = const Value.absent(),
               }) => SettingsCompanion.insert(
                 id: id,
                 weightKg: weightKg,
                 unit: unit,
                 onboardingSeen: onboardingSeen,
                 themeMode: themeMode,
+                displayName: displayName,
               ),
           withReferenceMapper: (p0) => p0
               .map((e) => (e.readTable(table), BaseReferences(db, table, e)))

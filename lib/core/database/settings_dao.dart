@@ -50,6 +50,18 @@ class SettingsDao extends DatabaseAccessor<AppDatabase>
         SettingsCompanion(id: const Value(_rowId), themeMode: Value(mode)),
       );
 
+  /// Persists the user's chosen display name. A null or empty value clears it,
+  /// so the UI falls back to the email prefix.
+  Future<void> setDisplayName(String? name) {
+    final trimmed = name?.trim();
+    return into(settings).insertOnConflictUpdate(
+      SettingsCompanion(
+        id: const Value(_rowId),
+        displayName: Value(trimmed == null || trimmed.isEmpty ? null : trimmed),
+      ),
+    );
+  }
+
   static const _defaultRow = Setting(
     id: _rowId,
     weightKg: 70.0,

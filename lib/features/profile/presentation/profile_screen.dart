@@ -36,7 +36,11 @@ class ProfileScreen extends ConsumerWidget {
     final runsAsync = ref.watch(runsStreamProvider);
 
     final email = user?.email ?? 'Not signed in';
-    final displayName = user?.email?.split('@').first ?? 'Runner';
+    // Prefer the user-set display name; fall back to the email prefix.
+    final storedName = settingsAsync.valueOrNull?.displayName?.trim();
+    final displayName = (storedName != null && storedName.isNotEmpty)
+        ? storedName
+        : (user?.email?.split('@').first ?? 'Runner');
     final initials = _initials(displayName);
 
     // Derive all-time stats inline from runsStreamProvider.
@@ -74,7 +78,9 @@ class ProfileScreen extends ConsumerWidget {
                         ),
                         const Spacer(),
                         TextButton(
-                          onPressed: () {},
+                          onPressed: settingsAsync.isLoading
+                              ? null
+                              : () => _editName(context, ref, storedName),
                           style: TextButton.styleFrom(
                             foregroundColor: cs.primary,
                             padding: EdgeInsets.zero,
@@ -337,6 +343,55 @@ class ProfileScreen extends ConsumerWidget {
   // ---------------------------------------------------------------------------
   // Actions
   // ---------------------------------------------------------------------------
+
+  Future<void> _editName(
+    BuildContext context,
+    WidgetRef ref,
+    String? current,
+  ) async {
+    final controller = TextEditingController(text: current ?? '');
+    final result = await showDialog<String>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: Theme.of(dialogContext).colorScheme.surface,
+        title: Text(
+          'Display name',
+          style: TextStyle(
+            color: Theme.of(dialogContext).colorScheme.onSurface,
+          ),
+        ),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          textCapitalization: TextCapitalization.words,
+          maxLength: 40,
+          style: TextStyle(
+            color: Theme.of(dialogContext).colorScheme.onSurface,
+          ),
+          decoration: InputDecoration(
+            hintText: 'Your name',
+            hintStyle: TextStyle(color: AppColors.of(dialogContext).textMuted),
+          ),
+          onSubmitted: (v) => Navigator.pop(dialogContext, v),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('CANCEL'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, controller.text),
+            child: const Text('SAVE'),
+          ),
+        ],
+      ),
+    );
+    // Null = dialog dismissed/cancelled → leave the name untouched. An empty
+    // string clears it (DAO falls back to the email prefix).
+    if (result != null) {
+      await ref.read(settingsDaoProvider).setDisplayName(result);
+    }
+  }
 
   Future<void> _editWeight(
     BuildContext context,

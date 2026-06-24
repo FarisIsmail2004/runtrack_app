@@ -54,8 +54,8 @@ void main() {
   test('watchSettings emits the default row then updates', () async {
     final emissions = <(double, String)>[];
     final sub = db.settingsDao.watchSettings().listen(
-          (s) => emissions.add((s.weightKg, s.unit)),
-        );
+      (s) => emissions.add((s.weightKg, s.unit)),
+    );
 
     // Allow the initial emission to land.
     await Future<void>.delayed(Duration.zero);
@@ -67,5 +67,27 @@ void main() {
 
     expect(emissions.first, (70.0, 'km'));
     expect(emissions.last, (75.0, 'mi'));
+  });
+
+  test('displayName defaults to null and persists when set', () async {
+    final initial = await db.settingsDao.getSettings();
+    expect(initial.displayName, isNull);
+
+    await db.settingsDao.setDisplayName('Faris');
+    expect((await db.settingsDao.getSettings()).displayName, 'Faris');
+    // Other fields untouched.
+    expect((await db.settingsDao.getSettings()).weightKg, 70.0);
+  });
+
+  test('setDisplayName trims, and empty/whitespace clears to null', () async {
+    await db.settingsDao.setDisplayName('  Sam  ');
+    expect((await db.settingsDao.getSettings()).displayName, 'Sam');
+
+    await db.settingsDao.setDisplayName('   ');
+    expect((await db.settingsDao.getSettings()).displayName, isNull);
+
+    await db.settingsDao.setDisplayName('Sam');
+    await db.settingsDao.setDisplayName(null);
+    expect((await db.settingsDao.getSettings()).displayName, isNull);
   });
 }
