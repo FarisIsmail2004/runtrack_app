@@ -106,9 +106,9 @@ class _GoalEditorSheetState extends ConsumerState<GoalEditorSheet> {
       child: SingleChildScrollView(
         padding: EdgeInsets.fromLTRB(
           24.w,
-          8.h,
+          12.h,
           24.w,
-          12.h + MediaQuery.of(context).viewInsets.bottom,
+          16.h + MediaQuery.of(context).viewInsets.bottom,
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -118,7 +118,7 @@ class _GoalEditorSheetState extends ConsumerState<GoalEditorSheet> {
               child: Container(
                 width: 40.w,
                 height: 4.h,
-                margin: EdgeInsets.only(bottom: 4.h),
+                margin: EdgeInsets.only(bottom: 16.h),
                 decoration: BoxDecoration(
                   color: appColors.surfaceBorder,
                   borderRadius: BorderRadius.circular(2.r),
@@ -154,12 +154,12 @@ class _GoalEditorSheetState extends ConsumerState<GoalEditorSheet> {
                 ),
               ],
             ),
-            SizedBox(height: 12.h),
+            SizedBox(height: 20.h),
             _MetricToggle(
               selected: _metric,
               onChanged: (m) => _selectMetric(m, unit),
             ),
-            SizedBox(height: 16.h),
+            SizedBox(height: 24.h),
             _Label('TARGET'),
             SizedBox(height: 8.h),
             Row(
@@ -210,7 +210,7 @@ class _GoalEditorSheetState extends ConsumerState<GoalEditorSheet> {
                 ),
               ],
             ),
-            SizedBox(height: 8.h),
+            SizedBox(height: 20.h),
             Row(
               children: [
                 for (final p in cfg.presets) ...[
@@ -226,8 +226,10 @@ class _GoalEditorSheetState extends ConsumerState<GoalEditorSheet> {
                 ],
               ],
             ),
+            SizedBox(height: 20.h),
+            _LastWeekNote(metric: _metric, target: _value, unit: unit),
             if (_editingId != null) ...[
-              SizedBox(height: 4.h),
+              SizedBox(height: 12.h),
               Center(
                 child: TextButton(
                   onPressed: _remove,
@@ -238,7 +240,7 @@ class _GoalEditorSheetState extends ConsumerState<GoalEditorSheet> {
                 ),
               ),
             ],
-            SizedBox(height: 8.h),
+            SizedBox(height: 20.h),
             Row(
               children: [
                 Expanded(
@@ -268,8 +270,6 @@ class _GoalEditorSheetState extends ConsumerState<GoalEditorSheet> {
                 ),
               ],
             ),
-            SizedBox(height: 16.h),
-            _LastWeekNote(metric: _metric, target: _value, unit: unit),
           ],
         ),
       ),

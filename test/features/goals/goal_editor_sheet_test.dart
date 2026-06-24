@@ -50,6 +50,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Set goal · 11'), findsOneWidget);
 
+    await tester.ensureVisible(find.byKey(const Key('goalSave')));
     await tester.tap(find.byKey(const Key('goalSave')));
     await tester.pumpAndSettle();
 
@@ -101,6 +102,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Remove goal'), findsOneWidget);
 
+    await tester.ensureVisible(find.text('Remove goal'));
     await tester.tap(find.text('Remove goal'));
     await tester.pumpAndSettle();
     expect(await db.goalDao.getGoal(), isNull);
