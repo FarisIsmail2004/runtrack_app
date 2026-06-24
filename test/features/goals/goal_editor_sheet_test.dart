@@ -31,41 +31,78 @@ Widget _host(AppDatabase db) => ProviderScope(
   ),
 );
 
+Future<void> _open(WidgetTester tester, AppDatabase db) async {
+  await tester.pumpWidget(_host(db));
+  await tester.tap(find.text('open'));
+  await tester.pumpAndSettle();
+}
+
 void main() {
-  testWidgets('entering a distance target saves a goal', (tester) async {
+  testWidgets('default distance goal saves via the stepper + button', (
+    tester,
+  ) async {
     final db = _memDb();
     addTearDown(db.close);
+    await _open(tester, db);
 
-    await tester.pumpWidget(_host(db));
-    await tester.tap(find.text('open'));
+    // Default metric is distance (default 10 km). Tap "+" once → 11.
+    await tester.tap(find.byKey(const Key('goalStepUp')));
     await tester.pumpAndSettle();
+    expect(find.text('Set goal · 11'), findsOneWidget);
 
-    // Distance is the default metric; enter "5" km.
-    await tester.enterText(find.byType(TextField), '5');
-    await tester.tap(find.text('SAVE'));
+    await tester.tap(find.byKey(const Key('goalSave')));
     await tester.pumpAndSettle();
 
     final goal = await db.goalDao.getGoal();
-    expect(goal, isNotNull);
     expect(goal!.metric, GoalMetric.distance);
-    expect(goal.targetValue, 5000); // 5 km → metres
+    expect(goal.targetValue, 11000); // 11 km → metres
   });
 
-  testWidgets('invalid target shows an error and saves nothing', (
+  testWidgets('tapping a preset sets the value', (tester) async {
+    final db = _memDb();
+    addTearDown(db.close);
+    await _open(tester, db);
+
+    await tester.tap(find.byKey(const Key('goalPreset_20')));
+    await tester.pumpAndSettle();
+    expect(find.text('Set goal · 20'), findsOneWidget);
+  });
+
+  testWidgets('switching metric resets the value to that metric default', (
+    tester,
+  ) async {
+    final db = _memDb();
+    addTearDown(db.close);
+    await _open(tester, db);
+
+    await tester.tap(find.text('Duration'));
+    await tester.pumpAndSettle();
+    // Duration default 180 min → "3h".
+    expect(find.text('Set goal · 3h'), findsOneWidget);
+  });
+
+  testWidgets('remove link only shows when editing an existing goal', (
     tester,
   ) async {
     final db = _memDb();
     addTearDown(db.close);
 
-    await tester.pumpWidget(_host(db));
+    // No goal yet → no remove link.
+    await _open(tester, db);
+    expect(find.text('Remove goal'), findsNothing);
+    await tester.tap(find.byKey(const Key('goalClose')));
+    await tester.pumpAndSettle();
+
+    // Seed a goal, reopen → remove link present and clears the goal.
+    await db.goalDao.upsertGoal(
+      const Goal(id: 'g1', metric: GoalMetric.runs, targetValue: 4),
+    );
     await tester.tap(find.text('open'));
     await tester.pumpAndSettle();
+    expect(find.text('Remove goal'), findsOneWidget);
 
-    await tester.enterText(find.byType(TextField), '0');
-    await tester.tap(find.text('SAVE'));
+    await tester.tap(find.text('Remove goal'));
     await tester.pumpAndSettle();
-
-    expect(find.text('Enter a target greater than 0'), findsOneWidget);
     expect(await db.goalDao.getGoal(), isNull);
   });
 }
