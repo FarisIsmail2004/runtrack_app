@@ -80,3 +80,42 @@ String? formatGoalPerDay(GoalMetric metric, num value, UnitSystem unit) =>
         '≈ ${(value / 7).toStringAsFixed(1)} ${distanceUnitLabel(unit)} / day',
       GoalMetric.runs => null,
     };
+
+/// Stepper bounds + quick-pick presets for a metric, in display units.
+class GoalEditorConfig {
+  const GoalEditorConfig({
+    required this.step,
+    required this.min,
+    required this.defaultValue,
+    required this.presets,
+  });
+
+  final num step;
+  final num min;
+  final num defaultValue;
+  final List<num> presets;
+}
+
+/// Editor config per metric. Distance is unit-agnostic in magnitude (the same
+/// 5/10/20/30 presets read naturally as km or mi).
+GoalEditorConfig goalEditorConfig(GoalMetric metric, UnitSystem unit) =>
+    switch (metric) {
+      GoalMetric.duration => const GoalEditorConfig(
+        step: 15,
+        min: 15,
+        defaultValue: 180,
+        presets: [60, 120, 180, 300],
+      ),
+      GoalMetric.distance => const GoalEditorConfig(
+        step: 1,
+        min: 1,
+        defaultValue: 10,
+        presets: [5, 10, 20, 30],
+      ),
+      GoalMetric.runs => const GoalEditorConfig(
+        step: 1,
+        min: 1,
+        defaultValue: 3,
+        presets: [2, 3, 4, 5],
+      ),
+    };
