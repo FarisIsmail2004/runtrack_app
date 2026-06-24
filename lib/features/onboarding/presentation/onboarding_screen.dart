@@ -64,19 +64,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       body: SafeArea(
         child: Stack(
           children: [
-            // ── Skip button ───────────────────────────────────────────────
-            Positioned(
-              top: 8.h,
-              right: 16.w,
-              child: TextButton(
-                onPressed: () => _leave('/signup'),
-                child: Text(
-                  'Skip',
-                  style: TextStyle(color: cs.onSurface.withValues(alpha: 0.5)),
-                ),
-              ),
-            ),
-
             // ── Main column ───────────────────────────────────────────────
             Column(
               children: [
@@ -152,6 +139,21 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   ),
                 ),
               ],
+            ),
+
+            // ── Skip button ───────────────────────────────────────────────
+            // Last child so it paints — and hit-tests — above the PageView,
+            // which would otherwise swallow taps in the top-right corner.
+            Positioned(
+              top: 8.h,
+              right: 16.w,
+              child: TextButton(
+                onPressed: () => _leave('/login'),
+                child: Text(
+                  'Skip',
+                  style: TextStyle(color: cs.onSurface.withValues(alpha: 0.5)),
+                ),
+              ),
             ),
           ],
         ),

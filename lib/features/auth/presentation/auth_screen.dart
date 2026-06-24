@@ -16,9 +16,16 @@ enum AuthMode { login, signup }
 /// Unified Sign up / Log in screen. Both `/login` and `/signup` routes render
 /// this widget, pre-selecting the appropriate mode via [initialMode].
 ///
-/// The segmented toggle at the top lets the user switch modes without
-/// navigating — the URL is updated via GoRouter on each switch so deep links
-/// and the back button behave correctly.
+/// The two modes live as siblings in a [PageView], so the user can **swipe**
+/// horizontally between Sign up and Log in (or tap the segmented toggle, which
+/// glides the same pager). Because `/login` and `/signup` are separate routes
+/// that would each rebuild this screen — discarding the [PageController] and
+/// any in-flight swipe — mode changes are handled entirely in-screen and do
+/// NOT navigate. The launching route still picks the initial page.
+///
+/// Each page owns its own field controllers because the [PageView] keeps both
+/// pages mounted while a swipe is mid-flight; sharing one controller across two
+/// live `TextField`s is unsupported.
 ///
 /// SECURITY: passwords exist only in their TextField controllers and are
 /// forwarded straight to [AuthController] → repository → Supabase over TLS.
@@ -26,7 +33,7 @@ enum AuthMode { login, signup }
 class AuthScreen extends ConsumerStatefulWidget {
   const AuthScreen({required this.initialMode, super.key});
 
-  /// Pre-selects the segment that corresponds to the route.
+  /// Pre-selects the page that corresponds to the route.
   final AuthMode initialMode;
 
   @override
@@ -34,79 +41,127 @@ class AuthScreen extends ConsumerStatefulWidget {
 }
 
 class _AuthScreenState extends ConsumerState<AuthScreen> {
+  late final PageController _pageController;
   late AuthMode _mode;
 
-  final _formKey = GlobalKey<FormState>();
-  final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
-  final _confirmController = TextEditingController();
+  // ── Log in page state ──────────────────────────────────────────────────────
+  final _loginFormKey = GlobalKey<FormState>();
+  final _loginEmailController = TextEditingController();
+  final _loginPasswordController = TextEditingController();
+  bool _loginObscure = true;
+  String? _loginEmailError;
+  String? _loginPasswordError;
 
-  bool _obscurePassword = true;
-  bool _obscureConfirm = true;
+  // ── Sign up page state ─────────────────────────────────────────────────────
+  final _signupFormKey = GlobalKey<FormState>();
+  final _signupEmailController = TextEditingController();
+  final _signupPasswordController = TextEditingController();
+  final _signupConfirmController = TextEditingController();
+  bool _signupObscure = true;
+  bool _signupConfirmObscure = true;
 
   /// Tracked so the password checklist can rebuild on every keystroke.
-  String _password = '';
+  String _signupPassword = '';
+  String? _signupEmailError;
+  String? _signupPasswordError;
+
+  // Page order: index 0 = Sign up (left), index 1 = Log in (right) — matching
+  // the segmented toggle, so a left-swipe carries Sign up → Log in.
+  static int _indexFor(AuthMode m) => m == AuthMode.signup ? 0 : 1;
+  static AuthMode _modeFor(int index) =>
+      index == 0 ? AuthMode.signup : AuthMode.login;
 
   @override
   void initState() {
     super.initState();
     _mode = widget.initialMode;
+    _pageController = PageController(initialPage: _indexFor(_mode));
   }
 
   @override
   void didUpdateWidget(AuthScreen old) {
     super.didUpdateWidget(old);
-    // When GoRouter rebuilds this widget with a new initialMode (e.g. back
-    // button or deep link), sync the toggle state.
-    if (old.initialMode != widget.initialMode) {
+    // Defensive: if this State is ever reused with a new initialMode, jump the
+    // pager to match. (Normally a route change builds a fresh State instead.)
+    if (old.initialMode != widget.initialMode && widget.initialMode != _mode) {
       _mode = widget.initialMode;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && _pageController.hasClients) {
+          _pageController.jumpToPage(_indexFor(_mode));
+        }
+      });
     }
   }
 
   @override
   void dispose() {
-    _emailController.dispose();
-    _passwordController.dispose();
-    _confirmController.dispose();
+    _pageController.dispose();
+    _loginEmailController.dispose();
+    _loginPasswordController.dispose();
+    _signupEmailController.dispose();
+    _signupPasswordController.dispose();
+    _signupConfirmController.dispose();
     super.dispose();
   }
 
-  // ── helpers ──────────────────────────────────────────────────────────────
+  // ── mode switching ──────────────────────────────────────────────────────────
 
-  void _switchMode(AuthMode mode) {
+  /// Toggle tap → glide the pager to [mode]. A finger swipe instead drives the
+  /// pager directly and reports the new mode through [_onPageSettled].
+  void _goToMode(AuthMode mode) {
     if (mode == _mode) return;
-    setState(() {
-      _mode = mode;
-      // Reset form so stale validation messages from the other mode are gone.
-      _formKey.currentState?.reset();
-      _password = '';
-      _passwordController.clear();
-      _confirmController.clear();
-    });
-    // Keep the URL in sync so the browser back-button / deep links work.
-    final path = mode == AuthMode.login ? '/login' : '/signup';
-    context.go(path);
+    setState(() => _mode = mode);
+    _pageController.animateToPage(
+      _indexFor(mode),
+      duration: AppMotion.duration(context, AppMotion.standard),
+      curve: AppMotion.emphasized,
+    );
+  }
+
+  void _onPageSettled(int index) {
+    final mode = _modeFor(index);
+    if (mode != _mode) setState(() => _mode = mode);
   }
 
   String? _validateConfirm(String? value) {
     if ((value ?? '').isEmpty) return 'Confirm your password';
-    if (value != _passwordController.text) return 'Passwords do not match';
+    if (value != _signupPasswordController.text) {
+      return 'Passwords do not match';
+    }
     return null;
   }
 
-  Future<void> _submit() async {
+  Future<void> _submit(AuthMode mode) async {
     FocusScope.of(context).unfocus();
-    if (!(_formKey.currentState?.validate() ?? false)) return;
+    final formKey = mode == AuthMode.login ? _loginFormKey : _signupFormKey;
+    // Drop any stale server-side field errors so the form validator drives the
+    // display until a fresh server response comes back.
+    setState(() {
+      if (mode == AuthMode.login) {
+        _loginEmailError = null;
+        _loginPasswordError = null;
+      } else {
+        _signupEmailError = null;
+        _signupPasswordError = null;
+      }
+    });
+    if (!(formKey.currentState?.validate() ?? false)) return;
 
-    if (_mode == AuthMode.login) {
+    if (mode == AuthMode.login) {
       await ref
           .read(authControllerProvider.notifier)
-          .signInEmail(_emailController.text, _passwordController.text);
+          .signInEmail(
+            _loginEmailController.text,
+            _loginPasswordController.text,
+          );
       // Navigation driven by router redirect on auth-state change.
     } else {
       final ok = await ref
           .read(authControllerProvider.notifier)
-          .signUpEmail(_emailController.text, _passwordController.text);
+          .signUpEmail(
+            _signupEmailController.text,
+            _signupPasswordController.text,
+          );
       if (!mounted) return;
       if (ok && ref.read(authRepositoryProvider).currentUser == null) {
         ScaffoldMessenger.of(context)
@@ -122,21 +177,32 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     }
   }
 
+  /// Builds the form content for one mode. Returned as a `min`-sized column so
+  /// the page wrapper can center it vertically.
   Widget _buildModeContent({
     required AuthMode mode,
     required bool loading,
     required bool showApple,
   }) {
+    final isLogin = mode == AuthMode.login;
+    final emailController = isLogin
+        ? _loginEmailController
+        : _signupEmailController;
+    final emailError = isLogin ? _loginEmailError : _signupEmailError;
+    final passwordController = isLogin
+        ? _loginPasswordController
+        : _signupPasswordController;
+    final passwordError = isLogin ? _loginPasswordError : _signupPasswordError;
+    final obscure = isLogin ? _loginObscure : _signupObscure;
+
     return Column(
-      key: ValueKey<AuthMode>(mode),
+      mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         // ── header ────────────────────────────────────────────
         AuthHeader(
-          title: mode == AuthMode.login ? 'Welcome back' : 'Create account',
-          subtitle: mode == AuthMode.login
-              ? 'Log in to continue'
-              : "Let's get you started",
+          title: isLogin ? 'Welcome back' : 'Create account',
+          subtitle: isLogin ? 'Log in to continue' : "Let's get you started",
         ),
         SizedBox(height: 24.h),
 
@@ -163,45 +229,68 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
         SizedBox(height: 24.h),
 
         // ── fields ────────────────────────────────────────────
-        AuthEmailField(controller: _emailController),
+        AuthEmailField(
+          controller: emailController,
+          errorText: emailError,
+          onChanged: emailError == null
+              ? null
+              : (_) => setState(() {
+                  if (isLogin) {
+                    _loginEmailError = null;
+                  } else {
+                    _signupEmailError = null;
+                  }
+                }),
+        ),
         SizedBox(height: 16.h),
         AuthPasswordField(
-          controller: _passwordController,
+          controller: passwordController,
           label: 'Password',
-          obscure: _obscurePassword,
-          onChanged: mode == AuthMode.signup
-              ? (v) => setState(() => _password = v)
-              : null,
-          onToggleObscure: () =>
-              setState(() => _obscurePassword = !_obscurePassword),
-          validator: mode == AuthMode.login
+          obscure: obscure,
+          errorText: passwordError,
+          onChanged: isLogin
+              ? (passwordError != null
+                    ? (_) => setState(() => _loginPasswordError = null)
+                    : null)
+              : (v) => setState(() {
+                  _signupPassword = v;
+                  _signupPasswordError = null;
+                }),
+          onToggleObscure: () => setState(() {
+            if (isLogin) {
+              _loginObscure = !_loginObscure;
+            } else {
+              _signupObscure = !_signupObscure;
+            }
+          }),
+          validator: isLogin
               ? AuthValidators.loginPassword
               : null, // uses PasswordPolicy.validate by default
-          textInputAction: mode == AuthMode.login
+          textInputAction: isLogin
               ? TextInputAction.done
               : TextInputAction.next,
-          onFieldSubmitted: mode == AuthMode.login ? (_) => _submit() : null,
+          onFieldSubmitted: isLogin ? (_) => _submit(AuthMode.login) : null,
         ),
 
         // Sign-up extras: checklist + confirm field
-        if (mode == AuthMode.signup) ...[
+        if (!isLogin) ...[
           SizedBox(height: 8.h),
-          PasswordRequirementsChecklist(password: _password),
+          PasswordRequirementsChecklist(password: _signupPassword),
           SizedBox(height: 16.h),
           AuthPasswordField(
-            controller: _confirmController,
+            controller: _signupConfirmController,
             label: 'Confirm Password',
-            obscure: _obscureConfirm,
+            obscure: _signupConfirmObscure,
             onToggleObscure: () =>
-                setState(() => _obscureConfirm = !_obscureConfirm),
+                setState(() => _signupConfirmObscure = !_signupConfirmObscure),
             validator: _validateConfirm,
             textInputAction: TextInputAction.done,
-            onFieldSubmitted: (_) => _submit(),
+            onFieldSubmitted: (_) => _submit(AuthMode.signup),
           ),
         ],
 
         // Log-in extras: forgot password link
-        if (mode == AuthMode.login) ...[
+        if (isLogin) ...[
           Align(
             alignment: Alignment.centerRight,
             child: TextButton(
@@ -217,33 +306,49 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
 
         // ── primary submit ────────────────────────────────────
         AuthPrimaryButton(
-          label: mode == AuthMode.login ? 'Log In' : 'Sign Up',
+          label: isLogin ? 'Log In' : 'Sign Up',
           loading: loading,
-          onPressed: _submit,
+          onPressed: () => _submit(mode),
         ),
       ],
     );
   }
 
-  Widget _buildModeTransition(Widget child, Animation<double> animation) {
-    final curved = CurvedAnimation(
-      parent: animation,
-      curve: AppMotion.emphasized,
-      reverseCurve: Curves.easeInCubic,
-    );
-    final mode = (child.key as ValueKey<AuthMode>).value;
-    final beginOffset = mode == AuthMode.signup
-        ? const Offset(0.05, 0)
-        : const Offset(-0.05, 0);
-
-    return FadeTransition(
-      opacity: curved,
-      child: SlideTransition(
-        position: Tween<Offset>(
-          begin: beginOffset,
-          end: Offset.zero,
-        ).animate(curved),
-        child: child,
+  /// Wraps one mode's content in its own [Form], vertically centered and
+  /// scrollable so it stays usable when the keyboard shrinks the viewport or
+  /// when a page is briefly constrained shorter than its content mid-swipe.
+  Widget _buildModePage({
+    required AuthMode mode,
+    required bool loading,
+    required bool showApple,
+  }) {
+    return Form(
+      key: mode == AuthMode.login ? _loginFormKey : _signupFormKey,
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          return SingleChildScrollView(
+            padding: EdgeInsets.symmetric(vertical: 24.h),
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                minHeight: (constraints.maxHeight - 48.h).clamp(
+                  0,
+                  double.infinity,
+                ),
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  _buildModeContent(
+                    mode: mode,
+                    loading: loading,
+                    showApple: showApple,
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
       ),
     );
   }
@@ -258,9 +363,31 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     ref.listen<AuthControllerState>(authControllerProvider, (prev, next) {
       final msg = next.errorMessage;
       if (msg != null) {
-        ScaffoldMessenger.of(context)
-          ..hideCurrentSnackBar()
-          ..showSnackBar(SnackBar(content: Text(msg)));
+        final error = classifyAuthError(msg);
+        final isLogin = _mode == AuthMode.login;
+        switch (error.field) {
+          case AuthErrorField.email:
+            setState(() {
+              if (isLogin) {
+                _loginEmailError = error.message;
+              } else {
+                _signupEmailError = error.message;
+              }
+            });
+          case AuthErrorField.password:
+            setState(() {
+              if (isLogin) {
+                _loginPasswordError = error.message;
+              } else {
+                _signupPasswordError = error.message;
+              }
+            });
+          case null:
+            // Not tied to a field — fall back to a SnackBar.
+            ScaffoldMessenger.of(context)
+              ..hideCurrentSnackBar()
+              ..showSnackBar(SnackBar(content: Text(error.message)));
+        }
         ref.read(authControllerProvider.notifier).clearError();
       }
     });
@@ -273,54 +400,41 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     return Scaffold(
       body: SafeArea(
         child: Center(
-          child: SingleChildScrollView(
-            padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 32.h),
-            child: ConstrainedBox(
-              constraints: BoxConstraints(maxWidth: 440.w),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    // ── segmented toggle ──────────────────────────────────
-                    _AuthModeToggle(
-                      mode: _mode,
-                      enabled: !loading,
-                      onChanged: _switchMode,
-                    ),
-                    SizedBox(height: 32.h),
-
-                    AnimatedSize(
-                      duration: AppMotion.duration(context, AppMotion.standard),
-                      curve: AppMotion.emphasized,
-                      alignment: Alignment.topCenter,
-                      child: AnimatedSwitcher(
-                        duration: AppMotion.duration(
-                          context,
-                          AppMotion.standard,
-                        ),
-                        reverseDuration: AppMotion.duration(
-                          context,
-                          AppMotion.quick,
-                        ),
-                        switchInCurve: AppMotion.emphasized,
-                        switchOutCurve: Curves.easeInCubic,
-                        transitionBuilder: _buildModeTransition,
-                        layoutBuilder: (currentChild, previousChildren) {
-                          return Stack(
-                            alignment: Alignment.topCenter,
-                            children: [...previousChildren, ?currentChild],
-                          );
-                        },
-                        child: _buildModeContent(
-                          mode: _mode,
+          child: ConstrainedBox(
+            constraints: BoxConstraints(maxWidth: 440.w),
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 24.w),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  SizedBox(height: 32.h),
+                  // ── segmented toggle ──────────────────────────────────
+                  _AuthModeToggle(
+                    mode: _mode,
+                    enabled: !loading,
+                    onChanged: _goToMode,
+                  ),
+                  SizedBox(height: 16.h),
+                  // ── swipeable Sign up / Log in pages ──────────────────
+                  Expanded(
+                    child: PageView(
+                      controller: _pageController,
+                      onPageChanged: _onPageSettled,
+                      children: [
+                        _buildModePage(
+                          mode: AuthMode.signup,
                           loading: loading,
                           showApple: showApple,
                         ),
-                      ),
+                        _buildModePage(
+                          mode: AuthMode.login,
+                          loading: loading,
+                          showApple: showApple,
+                        ),
+                      ],
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
           ),

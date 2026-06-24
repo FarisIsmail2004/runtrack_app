@@ -16,6 +16,9 @@ class SpyAuthRepository implements AuthRepository {
   String? lastEmail;
   String? lastPassword;
 
+  /// When set, [signInWithEmail] throws this instead of succeeding.
+  AuthFailure? failure;
+
   void dispose() => _controller.close();
 
   @override
@@ -29,6 +32,7 @@ class SpyAuthRepository implements AuthRepository {
     signInCalls++;
     lastEmail = email;
     lastPassword = password;
+    if (failure != null) throw failure!;
   }
 
   @override
@@ -156,6 +160,57 @@ void main() {
     expect(repo.signInCalls, 1);
     expect(repo.lastEmail, 'runner@example.com');
     expect(repo.lastPassword, 'secret123');
+  });
+
+  testWidgets('invalid credentials shows an inline error, not a SnackBar', (
+    tester,
+  ) async {
+    repo.failure = const AuthFailure('Invalid login credentials');
+    await tester.pumpWidget(buildLogin());
+    await tester.pumpAndSettle();
+
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'Email'),
+      'runner@example.com',
+    );
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'Password'),
+      'wrongpass',
+    );
+    await tester.tap(find.widgetWithText(ElevatedButton, 'Log In'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Incorrect email or password'), findsOneWidget);
+    expect(find.byType(SnackBar), findsNothing);
+  });
+
+  testWidgets('unconfirmed email maps the error to the email field', (
+    tester,
+  ) async {
+    repo.failure = const AuthFailure('Email not confirmed');
+    await tester.pumpWidget(buildLogin());
+    await tester.pumpAndSettle();
+
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'Email'),
+      'runner@example.com',
+    );
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'Password'),
+      'secret123',
+    );
+    await tester.tap(find.widgetWithText(ElevatedButton, 'Log In'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Confirm your email before logging in'), findsOneWidget);
+
+    // Editing the email field clears the inline error.
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'Email'),
+      'runner2@example.com',
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('Confirm your email before logging in'), findsNothing);
   });
 
   testWidgets('tapping "Forgot password?" navigates to /forgot-password', (

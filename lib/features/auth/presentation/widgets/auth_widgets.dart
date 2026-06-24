@@ -35,6 +35,66 @@ class AuthValidators {
   }
 }
 
+/// Which form field a server-side auth error should be attached to.
+enum AuthErrorField { email, password }
+
+/// A classified auth error: the [field] to highlight inline (null → no specific
+/// field, show as a SnackBar instead) plus a user-friendly [message].
+class AuthFieldError {
+  const AuthFieldError(this.field, this.message);
+
+  final AuthErrorField? field;
+  final String message;
+}
+
+/// Maps a raw Supabase/auth error string to the specific field it concerns.
+///
+/// Supabase intentionally returns one generic "Invalid login credentials" for a
+/// wrong email OR wrong password (to avoid revealing which accounts exist), so
+/// that case can't be pinned to a single field — we surface a combined message
+/// on the password field. Every error the backend *does* disambiguate (account
+/// already exists, unconfirmed email, malformed email, weak password) is mapped
+/// to the exact field so the user sees the message right where the fix belongs.
+AuthFieldError classifyAuthError(String raw) {
+  final m = raw.toLowerCase();
+
+  if (m.contains('invalid login credentials') ||
+      m.contains('invalid credentials')) {
+    return const AuthFieldError(
+      AuthErrorField.password,
+      'Incorrect email or password',
+    );
+  }
+  if (m.contains('email not confirmed')) {
+    return const AuthFieldError(
+      AuthErrorField.email,
+      'Confirm your email before logging in',
+    );
+  }
+  if (m.contains('already registered') ||
+      m.contains('already been registered') ||
+      m.contains('already exists')) {
+    return const AuthFieldError(
+      AuthErrorField.email,
+      'An account with this email already exists',
+    );
+  }
+  if (m.contains('unable to validate email') ||
+      m.contains('invalid email') ||
+      (m.contains('email') && m.contains('valid'))) {
+    return const AuthFieldError(
+      AuthErrorField.email,
+      'Enter a valid email address',
+    );
+  }
+  if (m.contains('password')) {
+    // Server-side password complaint (e.g. too short / leaked) — show verbatim.
+    return AuthFieldError(AuthErrorField.password, raw);
+  }
+  // Network, rate-limit, "not configured", etc. — not field-specific.
+  return AuthFieldError(null, raw);
+}
+
 /// One password requirement and whether the current input satisfies it.
 class PasswordRule {
   const PasswordRule(this.label, this.satisfied);
@@ -109,11 +169,19 @@ class AuthHeader extends StatelessWidget {
   }
 }
 
-/// Email input with format validation.
+/// Email input with format validation. [errorText], when set, shows a
+/// server-side error beneath the field (e.g. "account already exists").
 class AuthEmailField extends StatelessWidget {
-  const AuthEmailField({required this.controller, super.key});
+  const AuthEmailField({
+    required this.controller,
+    this.errorText,
+    this.onChanged,
+    super.key,
+  });
 
   final TextEditingController controller;
+  final String? errorText;
+  final void Function(String)? onChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -123,10 +191,12 @@ class AuthEmailField extends StatelessWidget {
       textInputAction: TextInputAction.next,
       autofillHints: const [AutofillHints.email],
       autocorrect: false,
-      decoration: const InputDecoration(
+      onChanged: onChanged,
+      decoration: InputDecoration(
         labelText: 'Email',
-        prefixIcon: Icon(Icons.mail_outline),
-        border: OutlineInputBorder(),
+        errorText: errorText,
+        prefixIcon: const Icon(Icons.mail_outline),
+        border: const OutlineInputBorder(),
       ),
       validator: AuthValidators.email,
     );
@@ -141,6 +211,7 @@ class AuthPasswordField extends StatelessWidget {
     required this.obscure,
     required this.onToggleObscure,
     this.helperText,
+    this.errorText,
     this.onChanged,
     this.validator,
     this.textInputAction = TextInputAction.next,
@@ -153,6 +224,7 @@ class AuthPasswordField extends StatelessWidget {
   final bool obscure;
   final VoidCallback onToggleObscure;
   final String? helperText;
+  final String? errorText;
   final void Function(String)? onChanged;
   final String? Function(String?)? validator;
   final TextInputAction textInputAction;
@@ -171,6 +243,7 @@ class AuthPasswordField extends StatelessWidget {
       decoration: InputDecoration(
         labelText: label,
         helperText: helperText,
+        errorText: errorText,
         prefixIcon: const Icon(Icons.lock_outline),
         border: const OutlineInputBorder(),
         suffixIcon: IconButton(

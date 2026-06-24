@@ -64,18 +64,22 @@ class _Cell extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          // Big number + optional unit suffix
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.baseline,
-            textBaseline: TextBaseline.alphabetic,
-            children: [
-              Text(item.value, style: numStyle),
-              if (item.unit != null) ...[
-                const SizedBox(width: 2),
-                Text(item.unit!, style: unitStyle),
+          // Big number + optional unit suffix. Scaled down to fit the cell so
+          // narrow layouts (e.g. the 3-up onboarding card) never overflow.
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.baseline,
+              textBaseline: TextBaseline.alphabetic,
+              children: [
+                Text(item.value, style: numStyle),
+                if (item.unit != null) ...[
+                  const SizedBox(width: 2),
+                  Text(item.unit!, style: unitStyle),
+                ],
               ],
-            ],
+            ),
           ),
           const SizedBox(height: 4),
           Text(item.label.toUpperCase(), style: _labelStyle(context)),

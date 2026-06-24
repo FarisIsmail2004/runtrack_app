@@ -4,7 +4,9 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:runtrack_app/core/utils/pace_format.dart';
+import 'package:runtrack_app/features/history/application/history_filter.dart';
 import 'package:runtrack_app/features/history/application/history_providers.dart';
+import 'package:runtrack_app/features/history/presentation/widgets/history_filter_sheet.dart';
 import 'package:runtrack_app/features/history/presentation/widgets/run_list_tile.dart';
 import 'package:runtrack_app/features/profile/application/profile_providers.dart';
 import 'package:runtrack_app/features/run_tracking/domain/run.dart';
@@ -19,7 +21,8 @@ class HistoryScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final runsAsync = ref.watch(runsStreamProvider);
+    final runsAsync = ref.watch(filteredRunsProvider);
+    final filterActive = ref.watch(historyFilterProvider).isActive;
 
     return Scaffold(
       body: SafeArea(
@@ -35,7 +38,9 @@ class HistoryScreen extends ConsumerWidget {
                   ),
                 ),
                 data: (runs) {
-                  if (runs.isEmpty) return const _EmptyState();
+                  if (runs.isEmpty) {
+                    return _EmptyState(filtered: filterActive);
+                  }
                   return _HistoryList(runs: runs);
                 },
               ),
@@ -83,7 +88,11 @@ class _BottomNav extends StatelessWidget {
 // ---------------------------------------------------------------------------
 
 class _EmptyState extends StatelessWidget {
-  const _EmptyState();
+  const _EmptyState({this.filtered = false});
+
+  /// When true, the list is empty because a filter excluded everything (rather
+  /// than the user never having run), so the copy points back at the filter.
+  final bool filtered;
 
   @override
   Widget build(BuildContext context) {
@@ -96,10 +105,14 @@ class _EmptyState extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.directions_run, size: 64.sp, color: muted),
+                Icon(
+                  filtered ? Icons.filter_alt_off : Icons.directions_run,
+                  size: 64.sp,
+                  color: muted,
+                ),
                 SizedBox(height: 16.h),
                 Text(
-                  'No runs yet',
+                  filtered ? 'No matching runs' : 'No runs yet',
                   style: TextStyle(
                     color: Theme.of(context).colorScheme.onSurface,
                     fontSize: 18.sp,
@@ -108,7 +121,9 @@ class _EmptyState extends StatelessWidget {
                 ),
                 SizedBox(height: 8.h),
                 Text(
-                  'Your finished runs will show up here.',
+                  filtered
+                      ? 'Try adjusting or resetting your filters.'
+                      : 'Your finished runs will show up here.',
                   style: TextStyle(color: muted, fontSize: 14.sp),
                 ),
               ],
@@ -124,17 +139,47 @@ class _EmptyState extends StatelessWidget {
 // App bar row
 // ---------------------------------------------------------------------------
 
-class _AppBar extends StatelessWidget {
+class _AppBar extends ConsumerWidget {
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final cs = Theme.of(context).colorScheme;
     final muted = AppColors.of(context).textMuted;
+    final filterActive = ref.watch(historyFilterProvider).isActive;
+
     return Padding(
       padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 8.h),
       child: Row(
         children: [
           Text('History', style: Theme.of(context).textTheme.headlineMedium),
           const Spacer(),
-          Icon(Icons.tune_rounded, color: muted, size: 22.sp),
+          // Tappable filter button; an accent dot marks an active filter.
+          IconButton(
+            tooltip: 'Sort & filter',
+            onPressed: () => showHistoryFilterSheet(context),
+            icon: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                Icon(
+                  Icons.tune_rounded,
+                  color: filterActive ? cs.primary : muted,
+                  size: 22.sp,
+                ),
+                if (filterActive)
+                  Positioned(
+                    right: -2,
+                    top: -2,
+                    child: Container(
+                      width: 8.w,
+                      height: 8.w,
+                      decoration: BoxDecoration(
+                        color: cs.primary,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
         ],
       ),
     );
