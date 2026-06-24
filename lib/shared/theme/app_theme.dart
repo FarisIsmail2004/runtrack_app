@@ -1,6 +1,5 @@
 // lib/shared/theme/app_theme.dart
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import 'app_colors.dart';
 
@@ -15,14 +14,6 @@ class AppTheme {
     surface: const Color(0xFF161618),
     onSurface: Colors.white,
     appColors: AppColors.dark,
-  );
-
-  static ThemeData get light => _build(
-    brightness: Brightness.light,
-    base: const Color(0xFFF6F5F1),
-    surface: Colors.white,
-    onSurface: const Color(0xFF0B0B0C),
-    appColors: AppColors.light,
   );
 
   static ThemeData _build({
@@ -47,26 +38,32 @@ class AppTheme {
         );
 
     // Fraunces for display + headlines, Inter for everything else.
-    final fraunces = GoogleFonts.frauncesTextTheme();
-    final inter = GoogleFonts.interTextTheme();
-    final text = inter
+    final baseText = ThemeData(
+      useMaterial3: true,
+      brightness: brightness,
+    ).textTheme.apply(fontFamily: 'Inter');
+    final text = baseText
         .copyWith(
-          displayLarge: fraunces.displayLarge?.copyWith(
+          displayLarge: baseText.displayLarge?.copyWith(
+            fontFamily: 'Fraunces',
             fontWeight: FontWeight.w700,
             color: onSurface,
             fontFeatures: const [FontFeature.tabularFigures()],
           ),
-          displayMedium: fraunces.displayMedium?.copyWith(
+          displayMedium: baseText.displayMedium?.copyWith(
+            fontFamily: 'Fraunces',
             fontWeight: FontWeight.w700,
             color: onSurface,
             fontFeatures: const [FontFeature.tabularFigures()],
           ),
-          displaySmall: fraunces.displaySmall?.copyWith(
+          displaySmall: baseText.displaySmall?.copyWith(
+            fontFamily: 'Fraunces',
             fontWeight: FontWeight.w600,
             color: onSurface,
             fontFeatures: const [FontFeature.tabularFigures()],
           ),
-          headlineMedium: fraunces.headlineMedium?.copyWith(
+          headlineMedium: baseText.headlineMedium?.copyWith(
+            fontFamily: 'Fraunces',
             fontWeight: FontWeight.w600,
             color: onSurface,
           ),
@@ -88,7 +85,8 @@ class AppTheme {
             borderRadius: BorderRadius.circular(16),
           ),
           padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 18),
-          textStyle: GoogleFonts.fraunces(
+          textStyle: const TextStyle(
+            fontFamily: 'Fraunces',
             fontSize: 18,
             fontWeight: FontWeight.w700,
           ),

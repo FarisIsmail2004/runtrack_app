@@ -33,14 +33,14 @@ void main() {
   });
 
   test('formatGoalAmount renders value + optional unit per metric', () {
-    expect(
-      formatGoalAmount(GoalMetric.distance, 10000, UnitSystem.km),
-      ('10.00', 'km'),
-    );
-    expect(
-      formatGoalAmount(GoalMetric.duration, 1800, UnitSystem.km),
-      ('30:00', null),
-    );
+    expect(formatGoalAmount(GoalMetric.distance, 10000, UnitSystem.km), (
+      '10.00',
+      'km',
+    ));
+    expect(formatGoalAmount(GoalMetric.duration, 1800, UnitSystem.km), (
+      '30:00',
+      null,
+    ));
     expect(formatGoalAmount(GoalMetric.runs, 4, UnitSystem.km), ('4', 'runs'));
   });
 }

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import 'core/location/run_foreground_service.dart';
 import 'core/router/app_router.dart';
@@ -10,16 +10,24 @@ import 'features/auth/application/auth_notifier.dart';
 import 'features/goals/application/goal_sync_providers.dart';
 import 'features/onboarding/application/onboarding_providers.dart';
 import 'features/profile/application/profile_sync_providers.dart';
-import 'features/profile/application/theme_mode_providers.dart';
 import 'features/run_tracking/application/sync_providers.dart';
 import 'shared/theme/app_theme.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Disable runtime font fetching — all fonts are bundled in assets/fonts/
-  // so the app renders correctly offline from first launch.
-  GoogleFonts.config.allowRuntimeFetching = false;
+  // Lock to portrait — live run stats are designed for a single orientation and
+  // a rotation mid-run would only disrupt glanceability. Draw under the system
+  // bars (edge-to-edge); per-screen overlay styling is handled in the app
+  // builder below. Guarded so headless widget tests don't choke on the channel.
+  try {
+    await SystemChrome.setPreferredOrientations(const [
+      DeviceOrientation.portraitUp,
+    ]);
+    await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+  } catch (e) {
+    debugPrint('SystemChrome setup failed (expected in tests): $e');
+  }
 
   // Initialise the foreground-task plugin before runApp so the notification
   // channel is registered before any platform channel calls occur.
@@ -54,8 +62,6 @@ class RunTrackApp extends ConsumerWidget {
     // start): first hydrate local from the remote (restores a fresh install),
     // then flush anything recorded offline back up. All no-op in offline builds
     // and when signed out.
-    final themeMode = ref.watch(themeModeProvider);
-
     ref.listen(authStateProvider, (previous, next) {
       if (next.valueOrNull != null) {
         final runSync = ref.read(runSyncServiceProvider);
@@ -72,10 +78,20 @@ class RunTrackApp extends ConsumerWidget {
       builder: (context, child) => MaterialApp.router(
         debugShowCheckedModeBanner: false,
         title: 'RunTrack',
-        theme: AppTheme.light,
-        darkTheme: AppTheme.dark,
-        themeMode: themeMode,
+        // Dark-only app: one theme, no light variant, no system switching.
+        theme: AppTheme.dark,
         routerConfig: router,
+        // Transparent system bars with light icons over the dark UI.
+        builder: (context, child) => AnnotatedRegion<SystemUiOverlayStyle>(
+          value: const SystemUiOverlayStyle(
+            statusBarColor: Colors.transparent,
+            statusBarIconBrightness: Brightness.light,
+            statusBarBrightness: Brightness.dark,
+            systemNavigationBarColor: Colors.transparent,
+            systemNavigationBarIconBrightness: Brightness.light,
+          ),
+          child: child ?? const SizedBox.shrink(),
+        ),
       ),
     );
   }

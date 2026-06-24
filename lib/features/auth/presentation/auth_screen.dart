@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:runtrack_app/shared/theme/app_motion.dart';
 
 import '../application/auth_notifier.dart';
 import '../data/auth_repository.dart';
@@ -121,6 +122,132 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     }
   }
 
+  Widget _buildModeContent({
+    required AuthMode mode,
+    required bool loading,
+    required bool showApple,
+  }) {
+    return Column(
+      key: ValueKey<AuthMode>(mode),
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        // ── header ────────────────────────────────────────────
+        AuthHeader(
+          title: mode == AuthMode.login ? 'Welcome back' : 'Create account',
+          subtitle: mode == AuthMode.login
+              ? 'Log in to continue'
+              : "Let's get you started",
+        ),
+        SizedBox(height: 24.h),
+
+        // ── Apple-first social buttons ────────────────────────
+        if (showApple) ...[
+          AuthSocialButton(
+            label: 'Continue with Apple',
+            icon: Icons.apple,
+            enabled: !loading,
+            onPressed: () =>
+                ref.read(authControllerProvider.notifier).appleSignIn(),
+          ),
+          SizedBox(height: 12.h),
+        ],
+        AuthSocialButton(
+          label: 'Continue with Google',
+          icon: Icons.g_mobiledata,
+          enabled: !loading,
+          onPressed: () =>
+              ref.read(authControllerProvider.notifier).googleSignIn(),
+        ),
+        SizedBox(height: 24.h),
+        const AuthDivider(),
+        SizedBox(height: 24.h),
+
+        // ── fields ────────────────────────────────────────────
+        AuthEmailField(controller: _emailController),
+        SizedBox(height: 16.h),
+        AuthPasswordField(
+          controller: _passwordController,
+          label: 'Password',
+          obscure: _obscurePassword,
+          onChanged: mode == AuthMode.signup
+              ? (v) => setState(() => _password = v)
+              : null,
+          onToggleObscure: () =>
+              setState(() => _obscurePassword = !_obscurePassword),
+          validator: mode == AuthMode.login
+              ? AuthValidators.loginPassword
+              : null, // uses PasswordPolicy.validate by default
+          textInputAction: mode == AuthMode.login
+              ? TextInputAction.done
+              : TextInputAction.next,
+          onFieldSubmitted: mode == AuthMode.login ? (_) => _submit() : null,
+        ),
+
+        // Sign-up extras: checklist + confirm field
+        if (mode == AuthMode.signup) ...[
+          SizedBox(height: 8.h),
+          PasswordRequirementsChecklist(password: _password),
+          SizedBox(height: 16.h),
+          AuthPasswordField(
+            controller: _confirmController,
+            label: 'Confirm Password',
+            obscure: _obscureConfirm,
+            onToggleObscure: () =>
+                setState(() => _obscureConfirm = !_obscureConfirm),
+            validator: _validateConfirm,
+            textInputAction: TextInputAction.done,
+            onFieldSubmitted: (_) => _submit(),
+          ),
+        ],
+
+        // Log-in extras: forgot password link
+        if (mode == AuthMode.login) ...[
+          Align(
+            alignment: Alignment.centerRight,
+            child: TextButton(
+              onPressed: loading
+                  ? null
+                  : () => context.push('/forgot-password'),
+              child: const Text('Forgot password?'),
+            ),
+          ),
+        ],
+
+        SizedBox(height: 8.h),
+
+        // ── primary submit ────────────────────────────────────
+        AuthPrimaryButton(
+          label: mode == AuthMode.login ? 'Log In' : 'Sign Up',
+          loading: loading,
+          onPressed: _submit,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildModeTransition(Widget child, Animation<double> animation) {
+    final curved = CurvedAnimation(
+      parent: animation,
+      curve: AppMotion.emphasized,
+      reverseCurve: Curves.easeInCubic,
+    );
+    final mode = (child.key as ValueKey<AuthMode>).value;
+    final beginOffset = mode == AuthMode.signup
+        ? const Offset(0.05, 0)
+        : const Offset(-0.05, 0);
+
+    return FadeTransition(
+      opacity: curved,
+      child: SlideTransition(
+        position: Tween<Offset>(
+          begin: beginOffset,
+          end: Offset.zero,
+        ).animate(curved),
+        child: child,
+      ),
+    );
+  }
+
   // ── build ─────────────────────────────────────────────────────────────────
 
   @override
@@ -163,101 +290,34 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                     ),
                     SizedBox(height: 32.h),
 
-                    // ── header ────────────────────────────────────────────
-                    AuthHeader(
-                      title: _mode == AuthMode.login
-                          ? 'Welcome back'
-                          : 'Create account',
-                      subtitle: _mode == AuthMode.login
-                          ? 'Log in to continue'
-                          : "Let's get you started",
-                    ),
-                    SizedBox(height: 24.h),
-
-                    // ── Apple-first social buttons ────────────────────────
-                    if (showApple) ...[
-                      AuthSocialButton(
-                        label: 'Continue with Apple',
-                        icon: Icons.apple,
-                        enabled: !loading,
-                        onPressed: () => ref
-                            .read(authControllerProvider.notifier)
-                            .appleSignIn(),
-                      ),
-                      SizedBox(height: 12.h),
-                    ],
-                    AuthSocialButton(
-                      label: 'Continue with Google',
-                      icon: Icons.g_mobiledata,
-                      enabled: !loading,
-                      onPressed: () => ref
-                          .read(authControllerProvider.notifier)
-                          .googleSignIn(),
-                    ),
-                    SizedBox(height: 24.h),
-                    const AuthDivider(),
-                    SizedBox(height: 24.h),
-
-                    // ── fields ────────────────────────────────────────────
-                    AuthEmailField(controller: _emailController),
-                    SizedBox(height: 16.h),
-                    AuthPasswordField(
-                      controller: _passwordController,
-                      label: 'Password',
-                      obscure: _obscurePassword,
-                      onChanged: _mode == AuthMode.signup
-                          ? (v) => setState(() => _password = v)
-                          : null,
-                      onToggleObscure: () =>
-                          setState(() => _obscurePassword = !_obscurePassword),
-                      validator: _mode == AuthMode.login
-                          ? AuthValidators.loginPassword
-                          : null, // uses PasswordPolicy.validate by default
-                      textInputAction: _mode == AuthMode.login
-                          ? TextInputAction.done
-                          : TextInputAction.next,
-                      onFieldSubmitted: _mode == AuthMode.login
-                          ? (_) => _submit()
-                          : null,
-                    ),
-
-                    // Sign-up extras: checklist + confirm field
-                    if (_mode == AuthMode.signup) ...[
-                      SizedBox(height: 8.h),
-                      PasswordRequirementsChecklist(password: _password),
-                      SizedBox(height: 16.h),
-                      AuthPasswordField(
-                        controller: _confirmController,
-                        label: 'Confirm Password',
-                        obscure: _obscureConfirm,
-                        onToggleObscure: () =>
-                            setState(() => _obscureConfirm = !_obscureConfirm),
-                        validator: _validateConfirm,
-                        textInputAction: TextInputAction.done,
-                        onFieldSubmitted: (_) => _submit(),
-                      ),
-                    ],
-
-                    // Log-in extras: forgot password link
-                    if (_mode == AuthMode.login) ...[
-                      Align(
-                        alignment: Alignment.centerRight,
-                        child: TextButton(
-                          onPressed: loading
-                              ? null
-                              : () => context.push('/forgot-password'),
-                          child: const Text('Forgot password?'),
+                    AnimatedSize(
+                      duration: AppMotion.duration(context, AppMotion.standard),
+                      curve: AppMotion.emphasized,
+                      alignment: Alignment.topCenter,
+                      child: AnimatedSwitcher(
+                        duration: AppMotion.duration(
+                          context,
+                          AppMotion.standard,
+                        ),
+                        reverseDuration: AppMotion.duration(
+                          context,
+                          AppMotion.quick,
+                        ),
+                        switchInCurve: AppMotion.emphasized,
+                        switchOutCurve: Curves.easeInCubic,
+                        transitionBuilder: _buildModeTransition,
+                        layoutBuilder: (currentChild, previousChildren) {
+                          return Stack(
+                            alignment: Alignment.topCenter,
+                            children: [...previousChildren, ?currentChild],
+                          );
+                        },
+                        child: _buildModeContent(
+                          mode: _mode,
+                          loading: loading,
+                          showApple: showApple,
                         ),
                       ),
-                    ],
-
-                    SizedBox(height: 8.h),
-
-                    // ── primary submit ────────────────────────────────────
-                    AuthPrimaryButton(
-                      label: _mode == AuthMode.login ? 'Log In' : 'Sign Up',
-                      loading: loading,
-                      onPressed: _submit,
                     ),
                   ],
                 ),

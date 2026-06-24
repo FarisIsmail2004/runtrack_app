@@ -87,7 +87,10 @@ class FakeAuthRepository implements AuthRepository {
 
   @override
   Future<void> resetPasswordWithCode(
-      String email, String code, String newPassword) async {
+    String email,
+    String code,
+    String newPassword,
+  ) async {
     lastResetEmail = email;
     lastResetCode = code;
     lastResetPassword = newPassword;
@@ -127,23 +130,28 @@ void main() {
       expect(repo.lastSignInPassword, 'secret123');
 
       await Future<void>.delayed(Duration.zero);
-      expect(emitted.last, const AuthUser(id: 'u1', email: 'runner@example.com'));
+      expect(
+        emitted.last,
+        const AuthUser(id: 'u1', email: 'runner@example.com'),
+      );
     });
 
-    test('signInEmail failure → controller exposes the error message',
-        () async {
-      final repo = FakeAuthRepository()..throwOnSignIn = true;
-      final container = makeContainer(repo);
+    test(
+      'signInEmail failure → controller exposes the error message',
+      () async {
+        final repo = FakeAuthRepository()..throwOnSignIn = true;
+        final container = makeContainer(repo);
 
-      final ok = await container
-          .read(authControllerProvider.notifier)
-          .signInEmail('runner@example.com', 'secret123');
+        final ok = await container
+            .read(authControllerProvider.notifier)
+            .signInEmail('runner@example.com', 'secret123');
 
-      expect(ok, isFalse);
-      final state = container.read(authControllerProvider);
-      expect(state.isLoading, isFalse);
-      expect(state.errorMessage, 'bad credentials');
-    });
+        expect(ok, isFalse);
+        final state = container.read(authControllerProvider);
+        expect(state.isLoading, isFalse);
+        expect(state.errorMessage, 'bad credentials');
+      },
+    );
 
     test('clearError resets the error message', () async {
       final repo = FakeAuthRepository()..throwOnSignIn = true;
@@ -180,8 +188,9 @@ void main() {
       final repo = FakeAuthRepository();
       final container = makeContainer(repo);
 
-      final ok =
-          await container.read(authControllerProvider.notifier).googleSignIn();
+      final ok = await container
+          .read(authControllerProvider.notifier)
+          .googleSignIn();
 
       expect(ok, isTrue);
       expect(repo.googleCalls, 1);
@@ -192,19 +201,24 @@ void main() {
       final repo = FakeAuthRepository()..throwOnGoogle = true;
       final container = makeContainer(repo);
 
-      final ok =
-          await container.read(authControllerProvider.notifier).googleSignIn();
+      final ok = await container
+          .read(authControllerProvider.notifier)
+          .googleSignIn();
 
       expect(ok, isFalse);
-      expect(container.read(authControllerProvider).errorMessage, 'google failed');
+      expect(
+        container.read(authControllerProvider).errorMessage,
+        'google failed',
+      );
     });
 
     test('appleSignIn success routes through controller', () async {
       final repo = FakeAuthRepository();
       final container = makeContainer(repo);
 
-      final ok =
-          await container.read(authControllerProvider.notifier).appleSignIn();
+      final ok = await container
+          .read(authControllerProvider.notifier)
+          .appleSignIn();
 
       expect(ok, isTrue);
       expect(repo.appleCalls, 1);
@@ -214,27 +228,33 @@ void main() {
       final repo = FakeAuthRepository()..throwOnApple = true;
       final container = makeContainer(repo);
 
-      final ok =
-          await container.read(authControllerProvider.notifier).appleSignIn();
-
-      expect(ok, isFalse);
-      expect(container.read(authControllerProvider).errorMessage, 'apple failed');
-    });
-
-    test('sendPasswordResetCode success → true, trims email, no error',
-        () async {
-      final repo = FakeAuthRepository();
-      final container = makeContainer(repo);
-
       final ok = await container
           .read(authControllerProvider.notifier)
-          .sendPasswordResetCode('  runner@example.com  ');
+          .appleSignIn();
 
-      expect(ok, isTrue);
-      expect(repo.sendCodeCalls, 1);
-      expect(repo.lastResetEmail, 'runner@example.com');
-      expect(container.read(authControllerProvider).errorMessage, isNull);
+      expect(ok, isFalse);
+      expect(
+        container.read(authControllerProvider).errorMessage,
+        'apple failed',
+      );
     });
+
+    test(
+      'sendPasswordResetCode success → true, trims email, no error',
+      () async {
+        final repo = FakeAuthRepository();
+        final container = makeContainer(repo);
+
+        final ok = await container
+            .read(authControllerProvider.notifier)
+            .sendPasswordResetCode('  runner@example.com  ');
+
+        expect(ok, isTrue);
+        expect(repo.sendCodeCalls, 1);
+        expect(repo.lastResetEmail, 'runner@example.com');
+        expect(container.read(authControllerProvider).errorMessage, isNull);
+      },
+    );
 
     test('sendPasswordResetCode failure → false with error message', () async {
       final repo = FakeAuthRepository()..throwOnSendCode = true;
@@ -245,23 +265,28 @@ void main() {
           .sendPasswordResetCode('runner@example.com');
 
       expect(ok, isFalse);
-      expect(container.read(authControllerProvider).errorMessage, 'send failed');
+      expect(
+        container.read(authControllerProvider).errorMessage,
+        'send failed',
+      );
     });
 
-    test('resetPasswordWithCode success → true, forwards trimmed code/email',
-        () async {
-      final repo = FakeAuthRepository();
-      final container = makeContainer(repo);
+    test(
+      'resetPasswordWithCode success → true, forwards trimmed code/email',
+      () async {
+        final repo = FakeAuthRepository();
+        final container = makeContainer(repo);
 
-      final ok = await container
-          .read(authControllerProvider.notifier)
-          .resetPasswordWithCode(' a@b.com ', ' 123456 ', 'newsecret');
+        final ok = await container
+            .read(authControllerProvider.notifier)
+            .resetPasswordWithCode(' a@b.com ', ' 123456 ', 'newsecret');
 
-      expect(ok, isTrue);
-      expect(repo.lastResetEmail, 'a@b.com');
-      expect(repo.lastResetCode, '123456');
-      expect(repo.lastResetPassword, 'newsecret');
-    });
+        expect(ok, isTrue);
+        expect(repo.lastResetEmail, 'a@b.com');
+        expect(repo.lastResetCode, '123456');
+        expect(repo.lastResetPassword, 'newsecret');
+      },
+    );
 
     test('resetPasswordWithCode failure → false with error message', () async {
       final repo = FakeAuthRepository()..throwOnResetPassword = true;
@@ -272,7 +297,10 @@ void main() {
           .resetPasswordWithCode('a@b.com', '123456', 'newsecret');
 
       expect(ok, isFalse);
-      expect(container.read(authControllerProvider).errorMessage, 'reset failed');
+      expect(
+        container.read(authControllerProvider).errorMessage,
+        'reset failed',
+      );
     });
 
     test('authStateProvider reflects the repository stream', () async {
@@ -296,32 +324,34 @@ void main() {
   });
 
   group('UnconfiguredAuthRepository (offline mode)', () {
-    test('all sign-in methods throw the friendly not-configured failure',
-        () async {
-      const repo = UnconfiguredAuthRepository();
+    test(
+      'all sign-in methods throw the friendly not-configured failure',
+      () async {
+        const repo = UnconfiguredAuthRepository();
 
-      expect(repo.currentUser, isNull);
-      expect(
-        () => repo.signInWithEmail('a@b.com', 'secret123'),
-        throwsA(isA<AuthFailure>()),
-      );
-      expect(
-        () => repo.signUpWithEmail('a@b.com', 'secret123'),
-        throwsA(isA<AuthFailure>()),
-      );
-      expect(repo.signInWithGoogle, throwsA(isA<AuthFailure>()));
-      expect(repo.signInWithApple, throwsA(isA<AuthFailure>()));
-      expect(
-        () => repo.sendPasswordResetCode('a@b.com'),
-        throwsA(isA<AuthFailure>()),
-      );
-      expect(
-        () => repo.resetPasswordWithCode('a@b.com', '123456', 'secret123'),
-        throwsA(isA<AuthFailure>()),
-      );
-      // signOut is a no-op (does not throw).
-      await repo.signOut();
-    });
+        expect(repo.currentUser, isNull);
+        expect(
+          () => repo.signInWithEmail('a@b.com', 'secret123'),
+          throwsA(isA<AuthFailure>()),
+        );
+        expect(
+          () => repo.signUpWithEmail('a@b.com', 'secret123'),
+          throwsA(isA<AuthFailure>()),
+        );
+        expect(repo.signInWithGoogle, throwsA(isA<AuthFailure>()));
+        expect(repo.signInWithApple, throwsA(isA<AuthFailure>()));
+        expect(
+          () => repo.sendPasswordResetCode('a@b.com'),
+          throwsA(isA<AuthFailure>()),
+        );
+        expect(
+          () => repo.resetPasswordWithCode('a@b.com', '123456', 'secret123'),
+          throwsA(isA<AuthFailure>()),
+        );
+        // signOut is a no-op (does not throw).
+        await repo.signOut();
+      },
+    );
 
     test('authStateChanges emits a single null', () async {
       const repo = UnconfiguredAuthRepository();

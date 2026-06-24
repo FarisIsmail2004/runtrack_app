@@ -11,8 +11,6 @@ import 'package:runtrack_app/features/goals/presentation/goal_editor_sheet.dart'
 import 'package:runtrack_app/features/history/application/history_providers.dart';
 import 'package:runtrack_app/features/profile/application/profile_providers.dart';
 import 'package:runtrack_app/features/profile/application/profile_sync_providers.dart';
-import 'package:runtrack_app/features/profile/application/theme_mode_providers.dart';
-import 'package:runtrack_app/features/profile/presentation/widgets/appearance_sheet.dart';
 import 'package:runtrack_app/features/run_tracking/domain/run.dart';
 import 'package:runtrack_app/shared/theme/app_colors.dart';
 import 'package:runtrack_app/shared/widgets/app_bottom_nav.dart';
@@ -32,7 +30,6 @@ class ProfileScreen extends ConsumerWidget {
     final settingsAsync = ref.watch(settingsStreamProvider);
     final unit = ref.watch(unitProvider);
     final weightKg = ref.watch(weightKgProvider);
-    final themeMode = ref.watch(themeModeProvider);
     final runsAsync = ref.watch(runsStreamProvider);
 
     final email = user?.email ?? 'Not signed in';
@@ -217,24 +214,6 @@ class ProfileScreen extends ConsumerWidget {
                       ),
                       _RowDivider(),
                       _SettingRow(
-                        icon: Icons.palette_outlined,
-                        label: 'Appearance',
-                        value: _themeModeLabel(themeMode),
-                        trailing: Icon(
-                          Icons.chevron_right,
-                          color: appColors.textMuted,
-                          size: 20.sp,
-                        ),
-                        onTap: () => showAppearanceSheet(
-                          context,
-                          current: themeMode,
-                          onSelect: (m) => ref
-                              .read(settingsDaoProvider)
-                              .setThemeMode(themeModeToString(m)),
-                        ),
-                      ),
-                      _RowDivider(),
-                      _SettingRow(
                         icon: Icons.notifications_outlined,
                         label: 'Notifications',
                         value: '',
@@ -308,12 +287,6 @@ class ProfileScreen extends ConsumerWidget {
     if (parts.length == 1) return parts[0][0].toUpperCase();
     return (parts[0][0] + parts[1][0]).toUpperCase();
   }
-
-  static String _themeModeLabel(ThemeMode mode) => switch (mode) {
-    ThemeMode.light => 'Light',
-    ThemeMode.dark => 'Dark',
-    ThemeMode.system => 'System',
-  };
 
   /// Compute run count, total distance, avg pace from all runs.
   /// Returns (count, distValue, distUnit, paceValue, paceUnit).

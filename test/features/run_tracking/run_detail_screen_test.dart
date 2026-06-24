@@ -169,12 +169,10 @@ void main() {
     expect(find.text('Run not found.'), findsOneWidget);
   });
 
-  testWidgets('screen builds without error under AppTheme.light', (
+  testWidgets('screen builds without error under AppTheme.dark', (
     tester,
   ) async {
     final runId = await seedRun(tester);
-    // Use the light theme to smoke-test that no hardcoded dark-only colors
-    // remain in the screen's own chrome.
     final router = GoRouter(
       initialLocation: '/history/$runId',
       routes: [
@@ -205,7 +203,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [databaseProvider.overrideWithValue(db)],
-        child: MaterialApp.router(theme: AppTheme.light, routerConfig: router),
+        child: MaterialApp.router(theme: AppTheme.dark, routerConfig: router),
       ),
     );
     await tester.pump();

@@ -69,7 +69,7 @@ void main() {
     expect(find.byIcon(Icons.notifications_none), findsOneWidget);
   });
 
-  testWidgets('renders without error under AppTheme.light', (tester) async {
+  testWidgets('renders without error under AppTheme.dark', (tester) async {
     final router = GoRouter(
       initialLocation: '/profile/notifications',
       routes: [
@@ -97,7 +97,7 @@ void main() {
     );
     await tester.pumpWidget(
       ProviderScope(
-        child: MaterialApp.router(theme: AppTheme.light, routerConfig: router),
+        child: MaterialApp.router(theme: AppTheme.dark, routerConfig: router),
       ),
     );
     await tester.pumpAndSettle();

@@ -20,12 +20,16 @@ void main() {
     double distSoFar = 0.0;
     while (distSoFar <= totalM) {
       final secondsElapsed = distSoFar / speedMps;
-      points.add(RunPoint(
-        lat: 3.0 + distSoFar / metersPerDegreeLat,
-        lng: 101.0,
-        timestamp: base.add(Duration(milliseconds: (secondsElapsed * 1000).round())),
-        accuracy: accuracy,
-      ));
+      points.add(
+        RunPoint(
+          lat: 3.0 + distSoFar / metersPerDegreeLat,
+          lng: 101.0,
+          timestamp: base.add(
+            Duration(milliseconds: (secondsElapsed * 1000).round()),
+          ),
+          accuracy: accuracy,
+        ),
+      );
       distSoFar += intervalM;
     }
     return points;
@@ -60,24 +64,43 @@ void main() {
       final pts = buildPoints(totalM: 2500);
       final splits = kmSplits(pts);
 
-      expect(splits.length, 3,
-          reason: 'Expected 2 full km splits + 1 partial 0.5 km split');
+      expect(
+        splits.length,
+        3,
+        reason: 'Expected 2 full km splits + 1 partial 0.5 km split',
+      );
 
       // Full km splits: pace ≈ 300 s/km ±5%, isPartial == false
       for (final s in splits.take(2)) {
-        expect(s.distanceM, closeTo(1000.0, 1.0),
-            reason: 'Full split should be 1000 m');
-        expect(s.paceSPerKm, closeTo(300.0, 15.0),
-            reason: 'Full split pace should be ≈300 s/km ±5%');
-        expect(s.isPartial, isFalse, reason: 'Full km split should not be partial');
+        expect(
+          s.distanceM,
+          closeTo(1000.0, 1.0),
+          reason: 'Full split should be 1000 m',
+        );
+        expect(
+          s.paceSPerKm,
+          closeTo(300.0, 15.0),
+          reason: 'Full split pace should be ≈300 s/km ±5%',
+        );
+        expect(
+          s.isPartial,
+          isFalse,
+          reason: 'Full km split should not be partial',
+        );
       }
 
       // Partial split: ~500 m, pace ≈ 300 s/km ±5%, isPartial == true
       final partial = splits.last;
-      expect(partial.distanceM, closeTo(500.0, 50.0),
-          reason: 'Partial split should be ≈500 m');
-      expect(partial.paceSPerKm, closeTo(300.0, 15.0),
-          reason: 'Partial split pace should be ≈300 s/km ±5%');
+      expect(
+        partial.distanceM,
+        closeTo(500.0, 50.0),
+        reason: 'Partial split should be ≈500 m',
+      );
+      expect(
+        partial.paceSPerKm,
+        closeTo(300.0, 15.0),
+        reason: 'Partial split pace should be ≈300 s/km ±5%',
+      );
       expect(partial.isPartial, isTrue, reason: 'Last split should be partial');
     });
 
@@ -94,8 +117,11 @@ void main() {
       final splits = kmSplits(pts);
       expect(splits.length, 1);
       expect(splits.first.distanceM, closeTo(1000.0, 1.0));
-      expect(splits.first.isPartial, isFalse,
-          reason: 'Exactly 1 km should not be marked partial');
+      expect(
+        splits.first.isPartial,
+        isFalse,
+        reason: 'Exactly 1 km should not be marked partial',
+      );
     });
   });
 }

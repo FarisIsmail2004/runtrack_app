@@ -3,11 +3,11 @@ import 'package:runtrack_app/core/location/location_service.dart';
 import 'package:runtrack_app/features/run_tracking/domain/run_point.dart';
 
 RunPoint _point(double? accuracy) => RunPoint(
-      lat: 3.07,
-      lng: 101.6,
-      timestamp: DateTime(2026, 6, 11),
-      accuracy: accuracy,
-    );
+  lat: 3.07,
+  lng: 101.6,
+  timestamp: DateTime(2026, 6, 11),
+  accuracy: accuracy,
+);
 
 void main() {
   const service = LocationService();

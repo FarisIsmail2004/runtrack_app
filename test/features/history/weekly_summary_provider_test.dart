@@ -32,14 +32,16 @@ void main() {
     required double distanceM,
     required int durationS,
   }) async {
-    await db.runDao.insertRun(Run(
-      id: id,
-      startedAt: startedAt,
-      distanceM: distanceM,
-      durationS: durationS,
-      avgPaceSPerKm: 0,
-      caloriesEst: 0,
-    ));
+    await db.runDao.insertRun(
+      Run(
+        id: id,
+        startedAt: startedAt,
+        distanceM: distanceM,
+        durationS: durationS,
+        avgPaceSPerKm: 0,
+        caloriesEst: 0,
+      ),
+    );
   }
 
   /// Reads [weeklySummaryProvider] from [container], waiting for the underlying
@@ -72,42 +74,43 @@ void main() {
   // work, but the explicit subtract() makes the intent clear; this test pins
   // the behaviour across the month boundary regardless.
   test(
-      'week start falling in the previous month counts prior-month-tail runs',
-      () async {
-    // In-week, but dated in the previous month (Jan 27, after the Jan 26 start).
-    await seedRun(
-      'prior-month-tail',
-      startedAt: DateTime(2026, 1, 27, 7, 0),
-      distanceM: 5000,
-      durationS: 1500,
-    );
-    // Also in the same week, in the current month (Feb 1, "now").
-    await seedRun(
-      'current-day',
-      startedAt: DateTime(2026, 2, 1, 6, 0),
-      distanceM: 3000,
-      durationS: 900,
-    );
-    // Out of week: Jan 25 is before the Jan 26 Monday start → excluded.
-    await seedRun(
-      'before-week',
-      startedAt: DateTime(2026, 1, 25, 8, 0),
-      distanceM: 9999,
-      durationS: 9999,
-    );
+    'week start falling in the previous month counts prior-month-tail runs',
+    () async {
+      // In-week, but dated in the previous month (Jan 27, after the Jan 26 start).
+      await seedRun(
+        'prior-month-tail',
+        startedAt: DateTime(2026, 1, 27, 7, 0),
+        distanceM: 5000,
+        durationS: 1500,
+      );
+      // Also in the same week, in the current month (Feb 1, "now").
+      await seedRun(
+        'current-day',
+        startedAt: DateTime(2026, 2, 1, 6, 0),
+        distanceM: 3000,
+        durationS: 900,
+      );
+      // Out of week: Jan 25 is before the Jan 26 Monday start → excluded.
+      await seedRun(
+        'before-week',
+        startedAt: DateTime(2026, 1, 25, 8, 0),
+        distanceM: 9999,
+        durationS: 9999,
+      );
 
-    final container = ProviderContainer(
-      overrides: [
-        databaseProvider.overrideWithValue(db),
-        clockProvider.overrideWithValue(() => DateTime(2026, 2, 1, 9, 0)),
-      ],
-    );
-    addTearDown(container.dispose);
+      final container = ProviderContainer(
+        overrides: [
+          databaseProvider.overrideWithValue(db),
+          clockProvider.overrideWithValue(() => DateTime(2026, 2, 1, 9, 0)),
+        ],
+      );
+      addTearDown(container.dispose);
 
-    final summary = await readSummary(container);
+      final summary = await readSummary(container);
 
-    expect(summary.runs, 2, reason: 'prior-month-tail + current-day');
-    expect(summary.distanceM, 8000); // 5000 + 3000
-    expect(summary.durationS, 2400); // 1500 + 900
-  });
+      expect(summary.runs, 2, reason: 'prior-month-tail + current-day');
+      expect(summary.distanceM, 8000); // 5000 + 3000
+      expect(summary.durationS, 2400); // 1500 + 900
+    },
+  );
 }

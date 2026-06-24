@@ -13,9 +13,6 @@ void main() {
     test('missing uppercase → rejected', () {
       expect(PasswordPolicy.validate('aa1!aaaa'), isNotNull);
     });
-    test('missing lowercase → rejected', () {
-      expect(PasswordPolicy.validate('AA1!AAAA'), isNotNull);
-    });
     test('missing digit → rejected', () {
       expect(PasswordPolicy.validate('Aa!aaaaa'), isNotNull);
     });
@@ -28,21 +25,20 @@ void main() {
   });
 
   group('PasswordPolicy.evaluate', () {
-    test('returns 5 rules in fixed order', () {
+    test('returns 4 rules in fixed order', () {
       final rules = PasswordPolicy.evaluate('');
-      expect(rules.length, 5);
+      expect(rules.length, 4);
     });
     test('flags satisfied rules for a strong password', () {
       final rules = PasswordPolicy.evaluate('Aa1!aaaa');
       expect(rules.every((r) => r.satisfied), isTrue);
     });
-    test('flags only length+lowercase for "aaaaaaaa"', () {
+    test('flags only length for "aaaaaaaa"', () {
       final rules = PasswordPolicy.evaluate('aaaaaaaa');
       expect(rules[0].satisfied, isTrue); // length
-      expect(rules[1].satisfied, isTrue); // lowercase
-      expect(rules[2].satisfied, isFalse); // uppercase
-      expect(rules[3].satisfied, isFalse); // digit
-      expect(rules[4].satisfied, isFalse); // symbol
+      expect(rules[1].satisfied, isFalse); // uppercase
+      expect(rules[2].satisfied, isFalse); // digit
+      expect(rules[3].satisfied, isFalse); // symbol
     });
   });
 

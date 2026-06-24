@@ -164,7 +164,7 @@ void main() {
     expect(find.text('At least 8 characters'), findsOneWidget);
 
     // All rules start unsatisfied.
-    expect(find.byIcon(Icons.radio_button_unchecked), findsNWidgets(5));
+    expect(find.byIcon(Icons.radio_button_unchecked), findsNWidgets(4));
 
     // Type a strong password → all satisfied.
     // In the unified screen: 0=email, 1=password, 2=confirm password.
@@ -173,7 +173,7 @@ void main() {
       'Aa1!aaaa',
     );
     await tester.pump();
-    expect(find.byIcon(Icons.check_circle), findsNWidgets(5));
+    expect(find.byIcon(Icons.check_circle), findsNWidgets(4));
   });
 
   testWidgets('segmented toggle is present in signup mode', (tester) async {

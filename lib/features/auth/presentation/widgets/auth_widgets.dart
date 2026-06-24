@@ -43,25 +43,26 @@ class PasswordRule {
 }
 
 /// Centralizes the signup / password-reset complexity rules: min length plus
-/// at least one lowercase, uppercase, digit, and symbol. Used both as a form
+/// at least one uppercase, digit, and symbol. Used both as a form
 /// validator and as the source for the live requirements checklist.
 class PasswordPolicy {
   PasswordPolicy._();
 
   static const int minLength = 8;
 
-  static final _lower = RegExp(r'[a-z]');
   static final _upper = RegExp(r'[A-Z]');
   static final _digit = RegExp(r'\d');
   static final _symbol = RegExp(r'[^A-Za-z0-9]');
 
-  /// Rules in a fixed display order (length, lowercase, uppercase, digit, symbol).
+  /// Rules in a fixed display order (length, uppercase, digit, symbol).
   static List<PasswordRule> evaluate(String value) => [
     PasswordRule('At least $minLength characters', value.length >= minLength),
-    PasswordRule('One lowercase letter', _lower.hasMatch(value)),
-    PasswordRule('One uppercase letter', _upper.hasMatch(value)),
-    PasswordRule('One number', _digit.hasMatch(value)),
-    PasswordRule('One symbol', _symbol.hasMatch(value)),
+    PasswordRule('At least 1 uppercase letter', _upper.hasMatch(value)),
+    PasswordRule('At least 1 number', _digit.hasMatch(value)),
+    PasswordRule(
+      'At least 1 special character(e.g.,!@#^&*()-+)',
+      _symbol.hasMatch(value),
+    ),
   ];
 
   /// Form validator: empty → prompt; otherwise the first unmet rule's message.
@@ -337,11 +338,15 @@ class PasswordRequirementsChecklist extends StatelessWidget {
                       : appColors.textMuted,
                 ),
                 SizedBox(width: 8.w),
-                Text(
-                  rule.label,
-                  style: TextStyle(
-                    fontSize: 12.sp,
-                    color: rule.satisfied ? cs.onSurface : appColors.textMuted,
+                Expanded(
+                  child: Text(
+                    rule.label,
+                    style: TextStyle(
+                      fontSize: 12.sp,
+                      color: rule.satisfied
+                          ? cs.onSurface
+                          : appColors.textMuted,
+                    ),
                   ),
                 ),
               ],

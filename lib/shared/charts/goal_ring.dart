@@ -33,19 +33,31 @@ class GoalRing extends StatelessWidget {
           track: track,
         ),
         child: Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                centerLabel,
-                style: Theme.of(context).textTheme.displaySmall,
+          // Inset to the ring's inner circle, then scale the label down so it
+          // always fits — long values like "100%" must not wrap or overflow.
+          child: Padding(
+            padding: EdgeInsets.all(size * 0.22),
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    centerLabel,
+                    maxLines: 1,
+                    softWrap: false,
+                    style: Theme.of(context).textTheme.displaySmall,
+                  ),
+                  if (subLabel != null)
+                    Text(
+                      subLabel!,
+                      maxLines: 1,
+                      softWrap: false,
+                      style: TextStyle(color: AppColors.of(context).textMuted),
+                    ),
+                ],
               ),
-              if (subLabel != null)
-                Text(
-                  subLabel!,
-                  style: TextStyle(color: AppColors.of(context).textMuted),
-                ),
-            ],
+            ),
           ),
         ),
       ),

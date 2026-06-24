@@ -152,7 +152,11 @@ void main() {
         remoteRun('remote-1'),
         [
           RunPoint(lat: 3.0, lng: 101.0, timestamp: base),
-          RunPoint(lat: 3.1, lng: 101.1, timestamp: base.add(const Duration(seconds: 1))),
+          RunPoint(
+            lat: 3.1,
+            lng: 101.1,
+            timestamp: base.add(const Duration(seconds: 1)),
+          ),
         ],
       ));
 

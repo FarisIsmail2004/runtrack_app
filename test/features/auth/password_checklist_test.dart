@@ -21,8 +21,8 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    // 5 rules → 5 check_circle icons when all satisfied.
-    expect(find.byIcon(Icons.check_circle), findsNWidgets(5));
+    // 4 rules → 4 check_circle icons when all satisfied.
+    expect(find.byIcon(Icons.check_circle), findsNWidgets(4));
     expect(find.byIcon(Icons.radio_button_unchecked), findsNothing);
   });
 
@@ -32,8 +32,8 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    // length + lowercase satisfied; uppercase, digit, symbol unmet.
-    expect(find.byIcon(Icons.check_circle), findsNWidgets(2));
+    // length satisfied; uppercase, digit, symbol unmet.
+    expect(find.byIcon(Icons.check_circle), findsNWidgets(1));
     expect(find.byIcon(Icons.radio_button_unchecked), findsNWidgets(3));
   });
 }

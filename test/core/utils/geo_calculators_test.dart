@@ -17,8 +17,7 @@ void main() {
   });
 
   group('accumulateDistance', () {
-    DateTime t(int offsetSeconds) =>
-        DateTime(2024, 1, 1, 0, 0, offsetSeconds);
+    DateTime t(int offsetSeconds) => DateTime(2024, 1, 1, 0, 0, offsetSeconds);
 
     // Helper: create a point ~100m north of previous
     // 1 degree lat ≈ 111195 m, so 100m ≈ 0.0008993 degrees
@@ -42,11 +41,8 @@ void main() {
       // Points within 1m: 0.000001 degrees ≈ 0.11m
       final points = List.generate(
         5,
-        (i) => RunPoint(
-          lat: 51.5 + i * 0.000001,
-          lng: -0.1,
-          timestamp: t(i * 5),
-        ),
+        (i) =>
+            RunPoint(lat: 51.5 + i * 0.000001, lng: -0.1, timestamp: t(i * 5)),
       );
       expect(accumulateDistance(points), closeTo(0.0, 0.5));
     });
@@ -128,10 +124,10 @@ void main() {
       // from the first anchor, so accumulateDistance should return 0.
       final points = [
         RunPoint(lat: 51.5, lng: -0.1, timestamp: t(0)),
-        RunPoint(lat: 51.5000090, lng: -0.1, timestamp: t(2)),  // ~1m north
-        RunPoint(lat: 51.5, lng: -0.1, timestamp: t(4)),          // back to origin
-        RunPoint(lat: 51.4999910, lng: -0.1, timestamp: t(6)),  // ~1m south
-        RunPoint(lat: 51.5, lng: -0.1, timestamp: t(8)),          // back again
+        RunPoint(lat: 51.5000090, lng: -0.1, timestamp: t(2)), // ~1m north
+        RunPoint(lat: 51.5, lng: -0.1, timestamp: t(4)), // back to origin
+        RunPoint(lat: 51.4999910, lng: -0.1, timestamp: t(6)), // ~1m south
+        RunPoint(lat: 51.5, lng: -0.1, timestamp: t(8)), // back again
       ];
       expect(accumulateDistance(points), closeTo(0.0, 0.1));
     });

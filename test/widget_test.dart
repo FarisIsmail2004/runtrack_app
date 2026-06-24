@@ -51,9 +51,9 @@ void main() {
     expect(find.text('START RUN'), findsOneWidget);
     expect(find.text('Ready to run?'), findsOneWidget);
 
-    // Theme assertions
+    // Theme assertions — dark-only app, no light variant or system switching.
     final app = tester.widget<MaterialApp>(find.byType(MaterialApp).first);
-    expect(app.themeMode, ThemeMode.system);
-    expect(app.darkTheme!.brightness, Brightness.dark);
+    expect(app.theme!.brightness, Brightness.dark);
+    expect(app.darkTheme, isNull);
   });
 }

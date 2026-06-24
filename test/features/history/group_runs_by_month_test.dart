@@ -4,13 +4,13 @@ import 'package:runtrack_app/features/run_tracking/domain/run.dart';
 
 void main() {
   Run run(String id, DateTime startedAt) => Run(
-        id: id,
-        startedAt: startedAt,
-        distanceM: 1000,
-        durationS: 300,
-        avgPaceSPerKm: 300,
-        caloriesEst: 50,
-      );
+    id: id,
+    startedAt: startedAt,
+    distanceM: 1000,
+    durationS: 300,
+    avgPaceSPerKm: 300,
+    caloriesEst: 50,
+  );
 
   test('empty input yields no groups', () {
     expect(groupRunsByMonth(const []), isEmpty);

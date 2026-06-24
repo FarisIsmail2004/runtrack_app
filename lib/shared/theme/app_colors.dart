@@ -27,14 +27,6 @@ class AppColors extends ThemeExtension<AppColors> {
     textMuted: Color(0xFF8A8A8E),
   );
 
-  static const AppColors light = AppColors(
-    success: Color(0xFF1FA847),
-    warning: Color(0xFFB97700),
-    destructive: Color(0xFFE5392E),
-    surfaceBorder: Color(0x140B0B0C), // black @ 8%
-    textMuted: Color(0xFF6B6B70),
-  );
-
   /// Convenience resolver used throughout the widget kit.
   static AppColors of(BuildContext context) =>
       Theme.of(context).extension<AppColors>()!;
