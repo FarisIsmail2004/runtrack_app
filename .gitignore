@@ -60,4 +60,5 @@ skills-lock.json
 # Design assets, planning docs, and exported PDFs — keep local, never push
 design/refresh/
 docs/superpowers/
+.superpowers/
 *.pdf
