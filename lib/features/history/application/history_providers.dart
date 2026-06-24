@@ -39,28 +39,40 @@ class WeeklySummary {
   });
 }
 
+/// Monday 00:00 (local) of the week containing [now].
+DateTime _weekStart(DateTime now) => DateTime(
+  now.year,
+  now.month,
+  now.day,
+).subtract(Duration(days: now.weekday - 1));
+
+/// Totals for runs that started in `[from, to)` ( `to` null = open-ended).
+WeeklySummary _summarise(List<Run> runs, DateTime from, [DateTime? to]) {
+  final inWindow = runs.where(
+    (r) =>
+        !r.startedAt.isBefore(from) && (to == null || r.startedAt.isBefore(to)),
+  );
+  return WeeklySummary(
+    runs: inWindow.length,
+    distanceM: inWindow.fold(0.0, (sum, r) => sum + r.distanceM),
+    durationS: inWindow.fold(0, (sum, r) => sum + r.durationS),
+  );
+}
+
 /// Summarises runs that started on or after Monday 00:00 local time.
 final weeklySummaryProvider = Provider<AsyncValue<WeeklySummary>>((ref) {
   return ref.watch(runsStreamProvider).whenData((allRuns) {
-    final now = ref.watch(clockProvider)();
-    // Monday 00:00 of the current week. Subtract whole days from midnight today
-    // rather than relying on DateTime's negative-day overflow (which is correct
-    // but obscure and breaks readability across month boundaries).
-    final weekStart = DateTime(
-      now.year,
-      now.month,
-      now.day,
-    ).subtract(Duration(days: now.weekday - 1));
+    final start = _weekStart(ref.watch(clockProvider)());
+    return _summarise(allRuns, start);
+  });
+});
 
-    final thisWeek = allRuns
-        .where((r) => !r.startedAt.isBefore(weekStart))
-        .toList();
-
-    return WeeklySummary(
-      runs: thisWeek.length,
-      distanceM: thisWeek.fold(0.0, (sum, r) => sum + r.distanceM),
-      durationS: thisWeek.fold(0, (sum, r) => sum + r.durationS),
-    );
+/// Summarises the previous Mon–Sun week (the seven days before this week).
+final lastWeekSummaryProvider = Provider<AsyncValue<WeeklySummary>>((ref) {
+  return ref.watch(runsStreamProvider).whenData((allRuns) {
+    final thisWeek = _weekStart(ref.watch(clockProvider)());
+    final lastWeek = thisWeek.subtract(const Duration(days: 7));
+    return _summarise(allRuns, lastWeek, thisWeek);
   });
 });
 
