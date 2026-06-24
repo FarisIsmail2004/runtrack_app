@@ -38,3 +38,45 @@ String targetInputLabel(GoalMetric metric, UnitSystem unit) => switch (metric) {
   GoalMetric.duration => (formatDuration(base.round()), null),
   GoalMetric.runs => (base.round().toString(), 'runs'),
 };
+
+/// Human weekly-duration string: "2h 40m", "3h", or "45m".
+String formatGoalDurationHuman(int totalMinutes) {
+  final h = totalMinutes ~/ 60;
+  final m = totalMinutes % 60;
+  if (h > 0) return m > 0 ? '${h}h ${m}m' : '${h}h';
+  return '${m}m';
+}
+
+/// Hero value + suffix for the editor, given a value in display units.
+(String value, String suffix) formatGoalHero(
+  GoalMetric metric,
+  num value,
+  UnitSystem unit,
+) => switch (metric) {
+  GoalMetric.duration => (_heroDuration(value.round()), '/ wk'),
+  GoalMetric.distance => (
+    value == value.roundToDouble()
+        ? value.round().toString()
+        : value.toStringAsFixed(1),
+    '${distanceUnitLabel(unit)} / wk',
+  ),
+  GoalMetric.runs => (value.round().toString(), 'runs / wk'),
+};
+
+// Hero duration drops the trailing "m" label for a cleaner headline: "3h 45".
+String _heroDuration(int totalMinutes) {
+  final h = totalMinutes ~/ 60;
+  final m = totalMinutes % 60;
+  if (h > 0) return m > 0 ? '${h}h ${m.toString().padLeft(2, '0')}' : '${h}h';
+  return '${m}m';
+}
+
+/// "≈ `<amount>` / day" helper, or null when the metric has no daily breakdown.
+String? formatGoalPerDay(GoalMetric metric, num value, UnitSystem unit) =>
+    switch (metric) {
+      GoalMetric.duration =>
+        '≈ ${formatGoalDurationHuman((value / 7).round())} / day',
+      GoalMetric.distance =>
+        '≈ ${(value / 7).toStringAsFixed(1)} ${distanceUnitLabel(unit)} / day',
+      GoalMetric.runs => null,
+    };
