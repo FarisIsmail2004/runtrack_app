@@ -62,11 +62,95 @@ class SettingsDao extends DatabaseAccessor<AppDatabase>
     );
   }
 
+  Future<void> setNotificationsEnabled(bool value) =>
+      into(settings).insertOnConflictUpdate(
+        SettingsCompanion(
+          id: const Value(_rowId),
+          notificationsEnabled: Value(value),
+        ),
+      );
+
+  Future<void> setRunReminderEnabled(bool value) =>
+      into(settings).insertOnConflictUpdate(
+        SettingsCompanion(
+          id: const Value(_rowId),
+          runReminderEnabled: Value(value),
+        ),
+      );
+
+  Future<void> setRunReminderDays(String csv) =>
+      into(settings).insertOnConflictUpdate(
+        SettingsCompanion(id: const Value(_rowId), runReminderDays: Value(csv)),
+      );
+
+  Future<void> setRunReminderTimeMin(int minutes) =>
+      into(settings).insertOnConflictUpdate(
+        SettingsCompanion(
+          id: const Value(_rowId),
+          runReminderTimeMin: Value(minutes),
+        ),
+      );
+
+  Future<void> setStreakAlerts(bool value) =>
+      into(settings).insertOnConflictUpdate(
+        SettingsCompanion(id: const Value(_rowId), streakAlerts: Value(value)),
+      );
+
+  Future<void> setWeeklyGoalAlerts(bool value) =>
+      into(settings).insertOnConflictUpdate(
+        SettingsCompanion(
+          id: const Value(_rowId),
+          weeklyGoalAlerts: Value(value),
+        ),
+      );
+
+  Future<void> setGoalAchievedAlerts(bool value) =>
+      into(settings).insertOnConflictUpdate(
+        SettingsCompanion(
+          id: const Value(_rowId),
+          goalAchievedAlerts: Value(value),
+        ),
+      );
+
+  Future<void> setComebackAlerts(bool value) =>
+      into(settings).insertOnConflictUpdate(
+        SettingsCompanion(
+          id: const Value(_rowId),
+          comebackAlerts: Value(value),
+        ),
+      );
+
+  Future<void> setQuietHoursStartMin(int minutes) =>
+      into(settings).insertOnConflictUpdate(
+        SettingsCompanion(
+          id: const Value(_rowId),
+          quietHoursStartMin: Value(minutes),
+        ),
+      );
+
+  Future<void> setQuietHoursEndMin(int minutes) =>
+      into(settings).insertOnConflictUpdate(
+        SettingsCompanion(
+          id: const Value(_rowId),
+          quietHoursEndMin: Value(minutes),
+        ),
+      );
+
   static const _defaultRow = Setting(
     id: _rowId,
     weightKg: 70.0,
     unit: 'km',
     onboardingSeen: false,
     themeMode: 'system',
+    notificationsEnabled: false,
+    runReminderEnabled: false,
+    runReminderDays: '',
+    runReminderTimeMin: 420,
+    streakAlerts: true,
+    weeklyGoalAlerts: true,
+    goalAchievedAlerts: true,
+    comebackAlerts: true,
+    quietHoursStartMin: 1260,
+    quietHoursEndMin: 480,
   );
 }

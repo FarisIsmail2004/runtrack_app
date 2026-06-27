@@ -67,6 +67,16 @@ void main() {
     unit: 'km',
     onboardingSeen: false,
     themeMode: 'system',
+    notificationsEnabled: false,
+    runReminderEnabled: false,
+    runReminderDays: '',
+    runReminderTimeMin: 420,
+    streakAlerts: true,
+    weeklyGoalAlerts: true,
+    goalAchievedAlerts: true,
+    comebackAlerts: true,
+    quietHoursStartMin: 1260,
+    quietHoursEndMin: 480,
   );
 
   setUp(() {
@@ -83,6 +93,16 @@ void main() {
       unit: 'km',
       onboardingSeen: false,
       themeMode: 'system',
+      notificationsEnabled: false,
+      runReminderEnabled: false,
+      runReminderDays: '',
+      runReminderTimeMin: 420,
+      streakAlerts: true,
+      weeklyGoalAlerts: true,
+      goalAchievedAlerts: true,
+      comebackAlerts: true,
+      quietHoursStartMin: 1260,
+      quietHoursEndMin: 480,
     );
     settings = StreamController<Setting>.broadcast();
   });
@@ -173,6 +193,16 @@ void main() {
       onboardingSeen: false,
       themeMode: 'system',
       displayName: 'Faris',
+      notificationsEnabled: false,
+      runReminderEnabled: false,
+      runReminderDays: '',
+      runReminderTimeMin: 420,
+      streakAlerts: true,
+      weeklyGoalAlerts: true,
+      goalAchievedAlerts: true,
+      comebackAlerts: true,
+      quietHoursStartMin: 1260,
+      quietHoursEndMin: 480,
     );
     await tester.pumpWidget(buildApp());
     await tester.pumpAndSettle();
