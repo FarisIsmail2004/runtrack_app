@@ -10,7 +10,19 @@ class NotificationScheduler {
   final SettingsDao _settingsDao;
   final RunReminderSink _sink;
 
-  Future<void> reconcile() async {
+  // Serializes reconciles so a launch reconcile and a settings-change
+  // reconcile (or several rapid settings writes) can never interleave on the
+  // sink's cancel-then-schedule sequence.
+  Future<void> _chain = Future<void>.value();
+
+  Future<void> reconcile() {
+    final next = _chain.then((_) => _run());
+    // Keep the chain alive even if one run throws, so later reconciles still run.
+    _chain = next.catchError((_) {});
+    return next; // callers still observe this run's error (main.dart guards it)
+  }
+
+  Future<void> _run() async {
     final settings = await _settingsDao.getSettings();
     await _sink.applyRunReminders(planRunReminders(settings));
   }

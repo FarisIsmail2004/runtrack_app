@@ -40,6 +40,7 @@ List<ReminderSlot> planRunReminders(Setting s) {
           .map((d) => int.tryParse(d.trim()))
           .whereType<int>()
           .where((d) => d >= 1 && d <= 7)
+          // .toSet() de-duplicates repeated weekday entries (e.g. "1,1,3" → [1,3]).
           .toSet()
           .toList()
         ..sort();

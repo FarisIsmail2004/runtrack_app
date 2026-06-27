@@ -11,6 +11,8 @@ class SuggestedSchedule {
 }
 
 /// Neutral default used when there is too little history to infer from.
+/// Shared const returned directly to callers — MUST be treated read-only;
+/// callers must not mutate `.days`.
 const _defaultSchedule = SuggestedSchedule(days: [1, 3, 5], timeMin: 420);
 
 /// Infers a reminder schedule from finished [runs]. With fewer than 5 finished
