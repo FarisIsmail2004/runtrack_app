@@ -16,10 +16,7 @@ class NotificationsScreen extends ConsumerWidget {
     final cs = Theme.of(context).colorScheme;
     final settingsAsync = ref.watch(settingsStreamProvider);
     final dao = ref.watch(databaseProvider).settingsDao;
-    final scheduler = ref.watch(notificationSchedulerProvider);
     final service = ref.watch(localNotificationServiceProvider);
-
-    Future<void> reconcile() => scheduler.reconcile();
 
     return Scaffold(
       appBar: AppBar(
@@ -49,7 +46,6 @@ class NotificationsScreen extends ConsumerWidget {
                   if (!granted) return; // leave off if denied
                 }
                 await dao.setNotificationsEnabled(v);
-                await reconcile();
               },
             ),
             const Divider(),
@@ -70,7 +66,6 @@ class NotificationsScreen extends ConsumerWidget {
                         await dao.setRunReminderTimeMin(suggestion.timeMin);
                       }
                       await dao.setRunReminderEnabled(v);
-                      await reconcile();
                     }
                   : null,
             ),
@@ -79,7 +74,6 @@ class NotificationsScreen extends ConsumerWidget {
                 selected: _parseDays(s.runReminderDays),
                 onChanged: (days) async {
                   await dao.setRunReminderDays(_daysCsv(days));
-                  await reconcile();
                 },
               ),
               ListTile(
@@ -97,7 +91,6 @@ class NotificationsScreen extends ConsumerWidget {
                     await dao.setRunReminderTimeMin(
                       picked.hour * 60 + picked.minute,
                     );
-                    await reconcile();
                   }
                 },
               ),
