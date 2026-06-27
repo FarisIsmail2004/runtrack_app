@@ -1080,6 +1080,139 @@ class $SettingsTable extends Settings with TableInfo<$SettingsTable, Setting> {
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _notificationsEnabledMeta =
+      const VerificationMeta('notificationsEnabled');
+  @override
+  late final GeneratedColumn<bool> notificationsEnabled = GeneratedColumn<bool>(
+    'notifications_enabled',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("notifications_enabled" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _runReminderEnabledMeta =
+      const VerificationMeta('runReminderEnabled');
+  @override
+  late final GeneratedColumn<bool> runReminderEnabled = GeneratedColumn<bool>(
+    'run_reminder_enabled',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("run_reminder_enabled" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _runReminderDaysMeta = const VerificationMeta(
+    'runReminderDays',
+  );
+  @override
+  late final GeneratedColumn<String> runReminderDays = GeneratedColumn<String>(
+    'run_reminder_days',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _runReminderTimeMinMeta =
+      const VerificationMeta('runReminderTimeMin');
+  @override
+  late final GeneratedColumn<int> runReminderTimeMin = GeneratedColumn<int>(
+    'run_reminder_time_min',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(420),
+  );
+  static const VerificationMeta _streakAlertsMeta = const VerificationMeta(
+    'streakAlerts',
+  );
+  @override
+  late final GeneratedColumn<bool> streakAlerts = GeneratedColumn<bool>(
+    'streak_alerts',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("streak_alerts" IN (0, 1))',
+    ),
+    defaultValue: const Constant(true),
+  );
+  static const VerificationMeta _weeklyGoalAlertsMeta = const VerificationMeta(
+    'weeklyGoalAlerts',
+  );
+  @override
+  late final GeneratedColumn<bool> weeklyGoalAlerts = GeneratedColumn<bool>(
+    'weekly_goal_alerts',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("weekly_goal_alerts" IN (0, 1))',
+    ),
+    defaultValue: const Constant(true),
+  );
+  static const VerificationMeta _goalAchievedAlertsMeta =
+      const VerificationMeta('goalAchievedAlerts');
+  @override
+  late final GeneratedColumn<bool> goalAchievedAlerts = GeneratedColumn<bool>(
+    'goal_achieved_alerts',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("goal_achieved_alerts" IN (0, 1))',
+    ),
+    defaultValue: const Constant(true),
+  );
+  static const VerificationMeta _comebackAlertsMeta = const VerificationMeta(
+    'comebackAlerts',
+  );
+  @override
+  late final GeneratedColumn<bool> comebackAlerts = GeneratedColumn<bool>(
+    'comeback_alerts',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("comeback_alerts" IN (0, 1))',
+    ),
+    defaultValue: const Constant(true),
+  );
+  static const VerificationMeta _quietHoursStartMinMeta =
+      const VerificationMeta('quietHoursStartMin');
+  @override
+  late final GeneratedColumn<int> quietHoursStartMin = GeneratedColumn<int>(
+    'quiet_hours_start_min',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(1260),
+  );
+  static const VerificationMeta _quietHoursEndMinMeta = const VerificationMeta(
+    'quietHoursEndMin',
+  );
+  @override
+  late final GeneratedColumn<int> quietHoursEndMin = GeneratedColumn<int>(
+    'quiet_hours_end_min',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(480),
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -1088,6 +1221,16 @@ class $SettingsTable extends Settings with TableInfo<$SettingsTable, Setting> {
     onboardingSeen,
     themeMode,
     displayName,
+    notificationsEnabled,
+    runReminderEnabled,
+    runReminderDays,
+    runReminderTimeMin,
+    streakAlerts,
+    weeklyGoalAlerts,
+    goalAchievedAlerts,
+    comebackAlerts,
+    quietHoursStartMin,
+    quietHoursEndMin,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -1140,6 +1283,96 @@ class $SettingsTable extends Settings with TableInfo<$SettingsTable, Setting> {
         ),
       );
     }
+    if (data.containsKey('notifications_enabled')) {
+      context.handle(
+        _notificationsEnabledMeta,
+        notificationsEnabled.isAcceptableOrUnknown(
+          data['notifications_enabled']!,
+          _notificationsEnabledMeta,
+        ),
+      );
+    }
+    if (data.containsKey('run_reminder_enabled')) {
+      context.handle(
+        _runReminderEnabledMeta,
+        runReminderEnabled.isAcceptableOrUnknown(
+          data['run_reminder_enabled']!,
+          _runReminderEnabledMeta,
+        ),
+      );
+    }
+    if (data.containsKey('run_reminder_days')) {
+      context.handle(
+        _runReminderDaysMeta,
+        runReminderDays.isAcceptableOrUnknown(
+          data['run_reminder_days']!,
+          _runReminderDaysMeta,
+        ),
+      );
+    }
+    if (data.containsKey('run_reminder_time_min')) {
+      context.handle(
+        _runReminderTimeMinMeta,
+        runReminderTimeMin.isAcceptableOrUnknown(
+          data['run_reminder_time_min']!,
+          _runReminderTimeMinMeta,
+        ),
+      );
+    }
+    if (data.containsKey('streak_alerts')) {
+      context.handle(
+        _streakAlertsMeta,
+        streakAlerts.isAcceptableOrUnknown(
+          data['streak_alerts']!,
+          _streakAlertsMeta,
+        ),
+      );
+    }
+    if (data.containsKey('weekly_goal_alerts')) {
+      context.handle(
+        _weeklyGoalAlertsMeta,
+        weeklyGoalAlerts.isAcceptableOrUnknown(
+          data['weekly_goal_alerts']!,
+          _weeklyGoalAlertsMeta,
+        ),
+      );
+    }
+    if (data.containsKey('goal_achieved_alerts')) {
+      context.handle(
+        _goalAchievedAlertsMeta,
+        goalAchievedAlerts.isAcceptableOrUnknown(
+          data['goal_achieved_alerts']!,
+          _goalAchievedAlertsMeta,
+        ),
+      );
+    }
+    if (data.containsKey('comeback_alerts')) {
+      context.handle(
+        _comebackAlertsMeta,
+        comebackAlerts.isAcceptableOrUnknown(
+          data['comeback_alerts']!,
+          _comebackAlertsMeta,
+        ),
+      );
+    }
+    if (data.containsKey('quiet_hours_start_min')) {
+      context.handle(
+        _quietHoursStartMinMeta,
+        quietHoursStartMin.isAcceptableOrUnknown(
+          data['quiet_hours_start_min']!,
+          _quietHoursStartMinMeta,
+        ),
+      );
+    }
+    if (data.containsKey('quiet_hours_end_min')) {
+      context.handle(
+        _quietHoursEndMinMeta,
+        quietHoursEndMin.isAcceptableOrUnknown(
+          data['quiet_hours_end_min']!,
+          _quietHoursEndMinMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -1173,6 +1406,46 @@ class $SettingsTable extends Settings with TableInfo<$SettingsTable, Setting> {
         DriftSqlType.string,
         data['${effectivePrefix}display_name'],
       ),
+      notificationsEnabled: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}notifications_enabled'],
+      )!,
+      runReminderEnabled: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}run_reminder_enabled'],
+      )!,
+      runReminderDays: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}run_reminder_days'],
+      )!,
+      runReminderTimeMin: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}run_reminder_time_min'],
+      )!,
+      streakAlerts: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}streak_alerts'],
+      )!,
+      weeklyGoalAlerts: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}weekly_goal_alerts'],
+      )!,
+      goalAchievedAlerts: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}goal_achieved_alerts'],
+      )!,
+      comebackAlerts: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}comeback_alerts'],
+      )!,
+      quietHoursStartMin: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}quiet_hours_start_min'],
+      )!,
+      quietHoursEndMin: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}quiet_hours_end_min'],
+      )!,
     );
   }
 
@@ -1189,6 +1462,16 @@ class Setting extends DataClass implements Insertable<Setting> {
   final bool onboardingSeen;
   final String themeMode;
   final String? displayName;
+  final bool notificationsEnabled;
+  final bool runReminderEnabled;
+  final String runReminderDays;
+  final int runReminderTimeMin;
+  final bool streakAlerts;
+  final bool weeklyGoalAlerts;
+  final bool goalAchievedAlerts;
+  final bool comebackAlerts;
+  final int quietHoursStartMin;
+  final int quietHoursEndMin;
   const Setting({
     required this.id,
     required this.weightKg,
@@ -1196,6 +1479,16 @@ class Setting extends DataClass implements Insertable<Setting> {
     required this.onboardingSeen,
     required this.themeMode,
     this.displayName,
+    required this.notificationsEnabled,
+    required this.runReminderEnabled,
+    required this.runReminderDays,
+    required this.runReminderTimeMin,
+    required this.streakAlerts,
+    required this.weeklyGoalAlerts,
+    required this.goalAchievedAlerts,
+    required this.comebackAlerts,
+    required this.quietHoursStartMin,
+    required this.quietHoursEndMin,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -1208,6 +1501,16 @@ class Setting extends DataClass implements Insertable<Setting> {
     if (!nullToAbsent || displayName != null) {
       map['display_name'] = Variable<String>(displayName);
     }
+    map['notifications_enabled'] = Variable<bool>(notificationsEnabled);
+    map['run_reminder_enabled'] = Variable<bool>(runReminderEnabled);
+    map['run_reminder_days'] = Variable<String>(runReminderDays);
+    map['run_reminder_time_min'] = Variable<int>(runReminderTimeMin);
+    map['streak_alerts'] = Variable<bool>(streakAlerts);
+    map['weekly_goal_alerts'] = Variable<bool>(weeklyGoalAlerts);
+    map['goal_achieved_alerts'] = Variable<bool>(goalAchievedAlerts);
+    map['comeback_alerts'] = Variable<bool>(comebackAlerts);
+    map['quiet_hours_start_min'] = Variable<int>(quietHoursStartMin);
+    map['quiet_hours_end_min'] = Variable<int>(quietHoursEndMin);
     return map;
   }
 
@@ -1221,6 +1524,16 @@ class Setting extends DataClass implements Insertable<Setting> {
       displayName: displayName == null && nullToAbsent
           ? const Value.absent()
           : Value(displayName),
+      notificationsEnabled: Value(notificationsEnabled),
+      runReminderEnabled: Value(runReminderEnabled),
+      runReminderDays: Value(runReminderDays),
+      runReminderTimeMin: Value(runReminderTimeMin),
+      streakAlerts: Value(streakAlerts),
+      weeklyGoalAlerts: Value(weeklyGoalAlerts),
+      goalAchievedAlerts: Value(goalAchievedAlerts),
+      comebackAlerts: Value(comebackAlerts),
+      quietHoursStartMin: Value(quietHoursStartMin),
+      quietHoursEndMin: Value(quietHoursEndMin),
     );
   }
 
@@ -1236,6 +1549,18 @@ class Setting extends DataClass implements Insertable<Setting> {
       onboardingSeen: serializer.fromJson<bool>(json['onboardingSeen']),
       themeMode: serializer.fromJson<String>(json['themeMode']),
       displayName: serializer.fromJson<String?>(json['displayName']),
+      notificationsEnabled: serializer.fromJson<bool>(
+        json['notificationsEnabled'],
+      ),
+      runReminderEnabled: serializer.fromJson<bool>(json['runReminderEnabled']),
+      runReminderDays: serializer.fromJson<String>(json['runReminderDays']),
+      runReminderTimeMin: serializer.fromJson<int>(json['runReminderTimeMin']),
+      streakAlerts: serializer.fromJson<bool>(json['streakAlerts']),
+      weeklyGoalAlerts: serializer.fromJson<bool>(json['weeklyGoalAlerts']),
+      goalAchievedAlerts: serializer.fromJson<bool>(json['goalAchievedAlerts']),
+      comebackAlerts: serializer.fromJson<bool>(json['comebackAlerts']),
+      quietHoursStartMin: serializer.fromJson<int>(json['quietHoursStartMin']),
+      quietHoursEndMin: serializer.fromJson<int>(json['quietHoursEndMin']),
     );
   }
   @override
@@ -1248,6 +1573,16 @@ class Setting extends DataClass implements Insertable<Setting> {
       'onboardingSeen': serializer.toJson<bool>(onboardingSeen),
       'themeMode': serializer.toJson<String>(themeMode),
       'displayName': serializer.toJson<String?>(displayName),
+      'notificationsEnabled': serializer.toJson<bool>(notificationsEnabled),
+      'runReminderEnabled': serializer.toJson<bool>(runReminderEnabled),
+      'runReminderDays': serializer.toJson<String>(runReminderDays),
+      'runReminderTimeMin': serializer.toJson<int>(runReminderTimeMin),
+      'streakAlerts': serializer.toJson<bool>(streakAlerts),
+      'weeklyGoalAlerts': serializer.toJson<bool>(weeklyGoalAlerts),
+      'goalAchievedAlerts': serializer.toJson<bool>(goalAchievedAlerts),
+      'comebackAlerts': serializer.toJson<bool>(comebackAlerts),
+      'quietHoursStartMin': serializer.toJson<int>(quietHoursStartMin),
+      'quietHoursEndMin': serializer.toJson<int>(quietHoursEndMin),
     };
   }
 
@@ -1258,6 +1593,16 @@ class Setting extends DataClass implements Insertable<Setting> {
     bool? onboardingSeen,
     String? themeMode,
     Value<String?> displayName = const Value.absent(),
+    bool? notificationsEnabled,
+    bool? runReminderEnabled,
+    String? runReminderDays,
+    int? runReminderTimeMin,
+    bool? streakAlerts,
+    bool? weeklyGoalAlerts,
+    bool? goalAchievedAlerts,
+    bool? comebackAlerts,
+    int? quietHoursStartMin,
+    int? quietHoursEndMin,
   }) => Setting(
     id: id ?? this.id,
     weightKg: weightKg ?? this.weightKg,
@@ -1265,6 +1610,16 @@ class Setting extends DataClass implements Insertable<Setting> {
     onboardingSeen: onboardingSeen ?? this.onboardingSeen,
     themeMode: themeMode ?? this.themeMode,
     displayName: displayName.present ? displayName.value : this.displayName,
+    notificationsEnabled: notificationsEnabled ?? this.notificationsEnabled,
+    runReminderEnabled: runReminderEnabled ?? this.runReminderEnabled,
+    runReminderDays: runReminderDays ?? this.runReminderDays,
+    runReminderTimeMin: runReminderTimeMin ?? this.runReminderTimeMin,
+    streakAlerts: streakAlerts ?? this.streakAlerts,
+    weeklyGoalAlerts: weeklyGoalAlerts ?? this.weeklyGoalAlerts,
+    goalAchievedAlerts: goalAchievedAlerts ?? this.goalAchievedAlerts,
+    comebackAlerts: comebackAlerts ?? this.comebackAlerts,
+    quietHoursStartMin: quietHoursStartMin ?? this.quietHoursStartMin,
+    quietHoursEndMin: quietHoursEndMin ?? this.quietHoursEndMin,
   );
   Setting copyWithCompanion(SettingsCompanion data) {
     return Setting(
@@ -1278,6 +1633,36 @@ class Setting extends DataClass implements Insertable<Setting> {
       displayName: data.displayName.present
           ? data.displayName.value
           : this.displayName,
+      notificationsEnabled: data.notificationsEnabled.present
+          ? data.notificationsEnabled.value
+          : this.notificationsEnabled,
+      runReminderEnabled: data.runReminderEnabled.present
+          ? data.runReminderEnabled.value
+          : this.runReminderEnabled,
+      runReminderDays: data.runReminderDays.present
+          ? data.runReminderDays.value
+          : this.runReminderDays,
+      runReminderTimeMin: data.runReminderTimeMin.present
+          ? data.runReminderTimeMin.value
+          : this.runReminderTimeMin,
+      streakAlerts: data.streakAlerts.present
+          ? data.streakAlerts.value
+          : this.streakAlerts,
+      weeklyGoalAlerts: data.weeklyGoalAlerts.present
+          ? data.weeklyGoalAlerts.value
+          : this.weeklyGoalAlerts,
+      goalAchievedAlerts: data.goalAchievedAlerts.present
+          ? data.goalAchievedAlerts.value
+          : this.goalAchievedAlerts,
+      comebackAlerts: data.comebackAlerts.present
+          ? data.comebackAlerts.value
+          : this.comebackAlerts,
+      quietHoursStartMin: data.quietHoursStartMin.present
+          ? data.quietHoursStartMin.value
+          : this.quietHoursStartMin,
+      quietHoursEndMin: data.quietHoursEndMin.present
+          ? data.quietHoursEndMin.value
+          : this.quietHoursEndMin,
     );
   }
 
@@ -1289,14 +1674,40 @@ class Setting extends DataClass implements Insertable<Setting> {
           ..write('unit: $unit, ')
           ..write('onboardingSeen: $onboardingSeen, ')
           ..write('themeMode: $themeMode, ')
-          ..write('displayName: $displayName')
+          ..write('displayName: $displayName, ')
+          ..write('notificationsEnabled: $notificationsEnabled, ')
+          ..write('runReminderEnabled: $runReminderEnabled, ')
+          ..write('runReminderDays: $runReminderDays, ')
+          ..write('runReminderTimeMin: $runReminderTimeMin, ')
+          ..write('streakAlerts: $streakAlerts, ')
+          ..write('weeklyGoalAlerts: $weeklyGoalAlerts, ')
+          ..write('goalAchievedAlerts: $goalAchievedAlerts, ')
+          ..write('comebackAlerts: $comebackAlerts, ')
+          ..write('quietHoursStartMin: $quietHoursStartMin, ')
+          ..write('quietHoursEndMin: $quietHoursEndMin')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode =>
-      Object.hash(id, weightKg, unit, onboardingSeen, themeMode, displayName);
+  int get hashCode => Object.hash(
+    id,
+    weightKg,
+    unit,
+    onboardingSeen,
+    themeMode,
+    displayName,
+    notificationsEnabled,
+    runReminderEnabled,
+    runReminderDays,
+    runReminderTimeMin,
+    streakAlerts,
+    weeklyGoalAlerts,
+    goalAchievedAlerts,
+    comebackAlerts,
+    quietHoursStartMin,
+    quietHoursEndMin,
+  );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -1306,7 +1717,17 @@ class Setting extends DataClass implements Insertable<Setting> {
           other.unit == this.unit &&
           other.onboardingSeen == this.onboardingSeen &&
           other.themeMode == this.themeMode &&
-          other.displayName == this.displayName);
+          other.displayName == this.displayName &&
+          other.notificationsEnabled == this.notificationsEnabled &&
+          other.runReminderEnabled == this.runReminderEnabled &&
+          other.runReminderDays == this.runReminderDays &&
+          other.runReminderTimeMin == this.runReminderTimeMin &&
+          other.streakAlerts == this.streakAlerts &&
+          other.weeklyGoalAlerts == this.weeklyGoalAlerts &&
+          other.goalAchievedAlerts == this.goalAchievedAlerts &&
+          other.comebackAlerts == this.comebackAlerts &&
+          other.quietHoursStartMin == this.quietHoursStartMin &&
+          other.quietHoursEndMin == this.quietHoursEndMin);
 }
 
 class SettingsCompanion extends UpdateCompanion<Setting> {
@@ -1316,6 +1737,16 @@ class SettingsCompanion extends UpdateCompanion<Setting> {
   final Value<bool> onboardingSeen;
   final Value<String> themeMode;
   final Value<String?> displayName;
+  final Value<bool> notificationsEnabled;
+  final Value<bool> runReminderEnabled;
+  final Value<String> runReminderDays;
+  final Value<int> runReminderTimeMin;
+  final Value<bool> streakAlerts;
+  final Value<bool> weeklyGoalAlerts;
+  final Value<bool> goalAchievedAlerts;
+  final Value<bool> comebackAlerts;
+  final Value<int> quietHoursStartMin;
+  final Value<int> quietHoursEndMin;
   const SettingsCompanion({
     this.id = const Value.absent(),
     this.weightKg = const Value.absent(),
@@ -1323,6 +1754,16 @@ class SettingsCompanion extends UpdateCompanion<Setting> {
     this.onboardingSeen = const Value.absent(),
     this.themeMode = const Value.absent(),
     this.displayName = const Value.absent(),
+    this.notificationsEnabled = const Value.absent(),
+    this.runReminderEnabled = const Value.absent(),
+    this.runReminderDays = const Value.absent(),
+    this.runReminderTimeMin = const Value.absent(),
+    this.streakAlerts = const Value.absent(),
+    this.weeklyGoalAlerts = const Value.absent(),
+    this.goalAchievedAlerts = const Value.absent(),
+    this.comebackAlerts = const Value.absent(),
+    this.quietHoursStartMin = const Value.absent(),
+    this.quietHoursEndMin = const Value.absent(),
   });
   SettingsCompanion.insert({
     this.id = const Value.absent(),
@@ -1331,6 +1772,16 @@ class SettingsCompanion extends UpdateCompanion<Setting> {
     this.onboardingSeen = const Value.absent(),
     this.themeMode = const Value.absent(),
     this.displayName = const Value.absent(),
+    this.notificationsEnabled = const Value.absent(),
+    this.runReminderEnabled = const Value.absent(),
+    this.runReminderDays = const Value.absent(),
+    this.runReminderTimeMin = const Value.absent(),
+    this.streakAlerts = const Value.absent(),
+    this.weeklyGoalAlerts = const Value.absent(),
+    this.goalAchievedAlerts = const Value.absent(),
+    this.comebackAlerts = const Value.absent(),
+    this.quietHoursStartMin = const Value.absent(),
+    this.quietHoursEndMin = const Value.absent(),
   });
   static Insertable<Setting> custom({
     Expression<int>? id,
@@ -1339,6 +1790,16 @@ class SettingsCompanion extends UpdateCompanion<Setting> {
     Expression<bool>? onboardingSeen,
     Expression<String>? themeMode,
     Expression<String>? displayName,
+    Expression<bool>? notificationsEnabled,
+    Expression<bool>? runReminderEnabled,
+    Expression<String>? runReminderDays,
+    Expression<int>? runReminderTimeMin,
+    Expression<bool>? streakAlerts,
+    Expression<bool>? weeklyGoalAlerts,
+    Expression<bool>? goalAchievedAlerts,
+    Expression<bool>? comebackAlerts,
+    Expression<int>? quietHoursStartMin,
+    Expression<int>? quietHoursEndMin,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -1347,6 +1808,21 @@ class SettingsCompanion extends UpdateCompanion<Setting> {
       if (onboardingSeen != null) 'onboarding_seen': onboardingSeen,
       if (themeMode != null) 'theme_mode': themeMode,
       if (displayName != null) 'display_name': displayName,
+      if (notificationsEnabled != null)
+        'notifications_enabled': notificationsEnabled,
+      if (runReminderEnabled != null)
+        'run_reminder_enabled': runReminderEnabled,
+      if (runReminderDays != null) 'run_reminder_days': runReminderDays,
+      if (runReminderTimeMin != null)
+        'run_reminder_time_min': runReminderTimeMin,
+      if (streakAlerts != null) 'streak_alerts': streakAlerts,
+      if (weeklyGoalAlerts != null) 'weekly_goal_alerts': weeklyGoalAlerts,
+      if (goalAchievedAlerts != null)
+        'goal_achieved_alerts': goalAchievedAlerts,
+      if (comebackAlerts != null) 'comeback_alerts': comebackAlerts,
+      if (quietHoursStartMin != null)
+        'quiet_hours_start_min': quietHoursStartMin,
+      if (quietHoursEndMin != null) 'quiet_hours_end_min': quietHoursEndMin,
     });
   }
 
@@ -1357,6 +1833,16 @@ class SettingsCompanion extends UpdateCompanion<Setting> {
     Value<bool>? onboardingSeen,
     Value<String>? themeMode,
     Value<String?>? displayName,
+    Value<bool>? notificationsEnabled,
+    Value<bool>? runReminderEnabled,
+    Value<String>? runReminderDays,
+    Value<int>? runReminderTimeMin,
+    Value<bool>? streakAlerts,
+    Value<bool>? weeklyGoalAlerts,
+    Value<bool>? goalAchievedAlerts,
+    Value<bool>? comebackAlerts,
+    Value<int>? quietHoursStartMin,
+    Value<int>? quietHoursEndMin,
   }) {
     return SettingsCompanion(
       id: id ?? this.id,
@@ -1365,6 +1851,16 @@ class SettingsCompanion extends UpdateCompanion<Setting> {
       onboardingSeen: onboardingSeen ?? this.onboardingSeen,
       themeMode: themeMode ?? this.themeMode,
       displayName: displayName ?? this.displayName,
+      notificationsEnabled: notificationsEnabled ?? this.notificationsEnabled,
+      runReminderEnabled: runReminderEnabled ?? this.runReminderEnabled,
+      runReminderDays: runReminderDays ?? this.runReminderDays,
+      runReminderTimeMin: runReminderTimeMin ?? this.runReminderTimeMin,
+      streakAlerts: streakAlerts ?? this.streakAlerts,
+      weeklyGoalAlerts: weeklyGoalAlerts ?? this.weeklyGoalAlerts,
+      goalAchievedAlerts: goalAchievedAlerts ?? this.goalAchievedAlerts,
+      comebackAlerts: comebackAlerts ?? this.comebackAlerts,
+      quietHoursStartMin: quietHoursStartMin ?? this.quietHoursStartMin,
+      quietHoursEndMin: quietHoursEndMin ?? this.quietHoursEndMin,
     );
   }
 
@@ -1389,6 +1885,36 @@ class SettingsCompanion extends UpdateCompanion<Setting> {
     if (displayName.present) {
       map['display_name'] = Variable<String>(displayName.value);
     }
+    if (notificationsEnabled.present) {
+      map['notifications_enabled'] = Variable<bool>(notificationsEnabled.value);
+    }
+    if (runReminderEnabled.present) {
+      map['run_reminder_enabled'] = Variable<bool>(runReminderEnabled.value);
+    }
+    if (runReminderDays.present) {
+      map['run_reminder_days'] = Variable<String>(runReminderDays.value);
+    }
+    if (runReminderTimeMin.present) {
+      map['run_reminder_time_min'] = Variable<int>(runReminderTimeMin.value);
+    }
+    if (streakAlerts.present) {
+      map['streak_alerts'] = Variable<bool>(streakAlerts.value);
+    }
+    if (weeklyGoalAlerts.present) {
+      map['weekly_goal_alerts'] = Variable<bool>(weeklyGoalAlerts.value);
+    }
+    if (goalAchievedAlerts.present) {
+      map['goal_achieved_alerts'] = Variable<bool>(goalAchievedAlerts.value);
+    }
+    if (comebackAlerts.present) {
+      map['comeback_alerts'] = Variable<bool>(comebackAlerts.value);
+    }
+    if (quietHoursStartMin.present) {
+      map['quiet_hours_start_min'] = Variable<int>(quietHoursStartMin.value);
+    }
+    if (quietHoursEndMin.present) {
+      map['quiet_hours_end_min'] = Variable<int>(quietHoursEndMin.value);
+    }
     return map;
   }
 
@@ -1400,7 +1926,17 @@ class SettingsCompanion extends UpdateCompanion<Setting> {
           ..write('unit: $unit, ')
           ..write('onboardingSeen: $onboardingSeen, ')
           ..write('themeMode: $themeMode, ')
-          ..write('displayName: $displayName')
+          ..write('displayName: $displayName, ')
+          ..write('notificationsEnabled: $notificationsEnabled, ')
+          ..write('runReminderEnabled: $runReminderEnabled, ')
+          ..write('runReminderDays: $runReminderDays, ')
+          ..write('runReminderTimeMin: $runReminderTimeMin, ')
+          ..write('streakAlerts: $streakAlerts, ')
+          ..write('weeklyGoalAlerts: $weeklyGoalAlerts, ')
+          ..write('goalAchievedAlerts: $goalAchievedAlerts, ')
+          ..write('comebackAlerts: $comebackAlerts, ')
+          ..write('quietHoursStartMin: $quietHoursStartMin, ')
+          ..write('quietHoursEndMin: $quietHoursEndMin')
           ..write(')'))
         .toString();
   }
@@ -2299,6 +2835,16 @@ typedef $$SettingsTableCreateCompanionBuilder =
       Value<bool> onboardingSeen,
       Value<String> themeMode,
       Value<String?> displayName,
+      Value<bool> notificationsEnabled,
+      Value<bool> runReminderEnabled,
+      Value<String> runReminderDays,
+      Value<int> runReminderTimeMin,
+      Value<bool> streakAlerts,
+      Value<bool> weeklyGoalAlerts,
+      Value<bool> goalAchievedAlerts,
+      Value<bool> comebackAlerts,
+      Value<int> quietHoursStartMin,
+      Value<int> quietHoursEndMin,
     });
 typedef $$SettingsTableUpdateCompanionBuilder =
     SettingsCompanion Function({
@@ -2308,6 +2854,16 @@ typedef $$SettingsTableUpdateCompanionBuilder =
       Value<bool> onboardingSeen,
       Value<String> themeMode,
       Value<String?> displayName,
+      Value<bool> notificationsEnabled,
+      Value<bool> runReminderEnabled,
+      Value<String> runReminderDays,
+      Value<int> runReminderTimeMin,
+      Value<bool> streakAlerts,
+      Value<bool> weeklyGoalAlerts,
+      Value<bool> goalAchievedAlerts,
+      Value<bool> comebackAlerts,
+      Value<int> quietHoursStartMin,
+      Value<int> quietHoursEndMin,
     });
 
 class $$SettingsTableFilterComposer
@@ -2346,6 +2902,56 @@ class $$SettingsTableFilterComposer
 
   ColumnFilters<String> get displayName => $composableBuilder(
     column: $table.displayName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get notificationsEnabled => $composableBuilder(
+    column: $table.notificationsEnabled,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get runReminderEnabled => $composableBuilder(
+    column: $table.runReminderEnabled,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get runReminderDays => $composableBuilder(
+    column: $table.runReminderDays,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get runReminderTimeMin => $composableBuilder(
+    column: $table.runReminderTimeMin,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get streakAlerts => $composableBuilder(
+    column: $table.streakAlerts,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get weeklyGoalAlerts => $composableBuilder(
+    column: $table.weeklyGoalAlerts,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get goalAchievedAlerts => $composableBuilder(
+    column: $table.goalAchievedAlerts,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get comebackAlerts => $composableBuilder(
+    column: $table.comebackAlerts,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get quietHoursStartMin => $composableBuilder(
+    column: $table.quietHoursStartMin,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get quietHoursEndMin => $composableBuilder(
+    column: $table.quietHoursEndMin,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -2388,6 +2994,56 @@ class $$SettingsTableOrderingComposer
     column: $table.displayName,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<bool> get notificationsEnabled => $composableBuilder(
+    column: $table.notificationsEnabled,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get runReminderEnabled => $composableBuilder(
+    column: $table.runReminderEnabled,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get runReminderDays => $composableBuilder(
+    column: $table.runReminderDays,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get runReminderTimeMin => $composableBuilder(
+    column: $table.runReminderTimeMin,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get streakAlerts => $composableBuilder(
+    column: $table.streakAlerts,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get weeklyGoalAlerts => $composableBuilder(
+    column: $table.weeklyGoalAlerts,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get goalAchievedAlerts => $composableBuilder(
+    column: $table.goalAchievedAlerts,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get comebackAlerts => $composableBuilder(
+    column: $table.comebackAlerts,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get quietHoursStartMin => $composableBuilder(
+    column: $table.quietHoursStartMin,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get quietHoursEndMin => $composableBuilder(
+    column: $table.quietHoursEndMin,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$SettingsTableAnnotationComposer
@@ -2418,6 +3074,56 @@ class $$SettingsTableAnnotationComposer
 
   GeneratedColumn<String> get displayName => $composableBuilder(
     column: $table.displayName,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get notificationsEnabled => $composableBuilder(
+    column: $table.notificationsEnabled,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get runReminderEnabled => $composableBuilder(
+    column: $table.runReminderEnabled,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get runReminderDays => $composableBuilder(
+    column: $table.runReminderDays,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get runReminderTimeMin => $composableBuilder(
+    column: $table.runReminderTimeMin,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get streakAlerts => $composableBuilder(
+    column: $table.streakAlerts,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get weeklyGoalAlerts => $composableBuilder(
+    column: $table.weeklyGoalAlerts,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get goalAchievedAlerts => $composableBuilder(
+    column: $table.goalAchievedAlerts,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get comebackAlerts => $composableBuilder(
+    column: $table.comebackAlerts,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get quietHoursStartMin => $composableBuilder(
+    column: $table.quietHoursStartMin,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get quietHoursEndMin => $composableBuilder(
+    column: $table.quietHoursEndMin,
     builder: (column) => column,
   );
 }
@@ -2456,6 +3162,16 @@ class $$SettingsTableTableManager
                 Value<bool> onboardingSeen = const Value.absent(),
                 Value<String> themeMode = const Value.absent(),
                 Value<String?> displayName = const Value.absent(),
+                Value<bool> notificationsEnabled = const Value.absent(),
+                Value<bool> runReminderEnabled = const Value.absent(),
+                Value<String> runReminderDays = const Value.absent(),
+                Value<int> runReminderTimeMin = const Value.absent(),
+                Value<bool> streakAlerts = const Value.absent(),
+                Value<bool> weeklyGoalAlerts = const Value.absent(),
+                Value<bool> goalAchievedAlerts = const Value.absent(),
+                Value<bool> comebackAlerts = const Value.absent(),
+                Value<int> quietHoursStartMin = const Value.absent(),
+                Value<int> quietHoursEndMin = const Value.absent(),
               }) => SettingsCompanion(
                 id: id,
                 weightKg: weightKg,
@@ -2463,6 +3179,16 @@ class $$SettingsTableTableManager
                 onboardingSeen: onboardingSeen,
                 themeMode: themeMode,
                 displayName: displayName,
+                notificationsEnabled: notificationsEnabled,
+                runReminderEnabled: runReminderEnabled,
+                runReminderDays: runReminderDays,
+                runReminderTimeMin: runReminderTimeMin,
+                streakAlerts: streakAlerts,
+                weeklyGoalAlerts: weeklyGoalAlerts,
+                goalAchievedAlerts: goalAchievedAlerts,
+                comebackAlerts: comebackAlerts,
+                quietHoursStartMin: quietHoursStartMin,
+                quietHoursEndMin: quietHoursEndMin,
               ),
           createCompanionCallback:
               ({
@@ -2472,6 +3198,16 @@ class $$SettingsTableTableManager
                 Value<bool> onboardingSeen = const Value.absent(),
                 Value<String> themeMode = const Value.absent(),
                 Value<String?> displayName = const Value.absent(),
+                Value<bool> notificationsEnabled = const Value.absent(),
+                Value<bool> runReminderEnabled = const Value.absent(),
+                Value<String> runReminderDays = const Value.absent(),
+                Value<int> runReminderTimeMin = const Value.absent(),
+                Value<bool> streakAlerts = const Value.absent(),
+                Value<bool> weeklyGoalAlerts = const Value.absent(),
+                Value<bool> goalAchievedAlerts = const Value.absent(),
+                Value<bool> comebackAlerts = const Value.absent(),
+                Value<int> quietHoursStartMin = const Value.absent(),
+                Value<int> quietHoursEndMin = const Value.absent(),
               }) => SettingsCompanion.insert(
                 id: id,
                 weightKg: weightKg,
@@ -2479,6 +3215,16 @@ class $$SettingsTableTableManager
                 onboardingSeen: onboardingSeen,
                 themeMode: themeMode,
                 displayName: displayName,
+                notificationsEnabled: notificationsEnabled,
+                runReminderEnabled: runReminderEnabled,
+                runReminderDays: runReminderDays,
+                runReminderTimeMin: runReminderTimeMin,
+                streakAlerts: streakAlerts,
+                weeklyGoalAlerts: weeklyGoalAlerts,
+                goalAchievedAlerts: goalAchievedAlerts,
+                comebackAlerts: comebackAlerts,
+                quietHoursStartMin: quietHoursStartMin,
+                quietHoursEndMin: quietHoursEndMin,
               ),
           withReferenceMapper: (p0) => p0
               .map((e) => (e.readTable(table), BaseReferences(db, table, e)))

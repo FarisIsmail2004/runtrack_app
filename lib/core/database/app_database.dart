@@ -60,6 +60,24 @@ class Settings extends Table {
       boolean().withDefault(const Constant(false))();
   TextColumn get themeMode => text().withDefault(const Constant('system'))();
   TextColumn get displayName => text().nullable()();
+  BoolColumn get notificationsEnabled =>
+      boolean().withDefault(const Constant(false))();
+  BoolColumn get runReminderEnabled =>
+      boolean().withDefault(const Constant(false))();
+  TextColumn get runReminderDays => text().withDefault(const Constant(''))();
+  IntColumn get runReminderTimeMin =>
+      integer().withDefault(const Constant(420))();
+  BoolColumn get streakAlerts => boolean().withDefault(const Constant(true))();
+  BoolColumn get weeklyGoalAlerts =>
+      boolean().withDefault(const Constant(true))();
+  BoolColumn get goalAchievedAlerts =>
+      boolean().withDefault(const Constant(true))();
+  BoolColumn get comebackAlerts =>
+      boolean().withDefault(const Constant(true))();
+  IntColumn get quietHoursStartMin =>
+      integer().withDefault(const Constant(1260))();
+  IntColumn get quietHoursEndMin =>
+      integer().withDefault(const Constant(480))();
 
   @override
   Set<Column> get primaryKey => {id};
@@ -96,7 +114,7 @@ class AppDatabase extends _$AppDatabase {
   factory AppDatabase.open() => AppDatabase(driftDatabase(name: 'runtrack'));
 
   @override
-  int get schemaVersion => 6;
+  int get schemaVersion => 7;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -129,6 +147,19 @@ class AppDatabase extends _$AppDatabase {
       // email prefix in the UI when unset).
       if (from < 6) {
         await m.addColumn(settings, settings.displayName);
+      }
+      // v6 → v7 added the notification-preference columns.
+      if (from < 7) {
+        await m.addColumn(settings, settings.notificationsEnabled);
+        await m.addColumn(settings, settings.runReminderEnabled);
+        await m.addColumn(settings, settings.runReminderDays);
+        await m.addColumn(settings, settings.runReminderTimeMin);
+        await m.addColumn(settings, settings.streakAlerts);
+        await m.addColumn(settings, settings.weeklyGoalAlerts);
+        await m.addColumn(settings, settings.goalAchievedAlerts);
+        await m.addColumn(settings, settings.comebackAlerts);
+        await m.addColumn(settings, settings.quietHoursStartMin);
+        await m.addColumn(settings, settings.quietHoursEndMin);
       }
     },
     beforeOpen: (details) async {
