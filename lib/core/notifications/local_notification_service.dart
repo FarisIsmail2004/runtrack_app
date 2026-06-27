@@ -5,8 +5,13 @@ import 'package:timezone/timezone.dart' as tz;
 
 import 'package:runtrack_app/features/notifications/domain/run_reminder_plan.dart';
 
+/// Surface the scheduler depends on (kept narrow for testability).
+abstract interface class RunReminderSink {
+  Future<void> applyRunReminders(List<ReminderSlot> slots);
+}
+
 /// Thin wrapper over flutter_local_notifications for the run reminder.
-class LocalNotificationService {
+class LocalNotificationService implements RunReminderSink {
   LocalNotificationService([FlutterLocalNotificationsPlugin? plugin])
     : _plugin = plugin ?? FlutterLocalNotificationsPlugin();
 
@@ -74,6 +79,7 @@ class LocalNotificationService {
 
   /// Cancels every run-reminder slot (ids 1001..1007), then schedules [slots]
   /// as weekly-recurring zoned notifications.
+  @override
   Future<void> applyRunReminders(List<ReminderSlot> slots) async {
     for (var wd = 1; wd <= 7; wd++) {
       await _plugin.cancel(kRunReminderIdBase + wd);
