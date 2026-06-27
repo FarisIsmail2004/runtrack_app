@@ -8,6 +8,7 @@ import 'core/router/app_router.dart';
 import 'core/supabase/supabase_client.dart';
 import 'features/auth/application/auth_notifier.dart';
 import 'features/goals/application/goal_sync_providers.dart';
+import 'features/notifications/application/notification_providers.dart';
 import 'features/onboarding/application/onboarding_providers.dart';
 import 'features/profile/application/profile_sync_providers.dart';
 import 'features/run_tracking/application/sync_providers.dart';
@@ -47,7 +48,18 @@ Future<void> main() async {
     debugPrint('initSupabase() failed — continuing offline: $e');
   }
 
-  runApp(const ProviderScope(child: RunTrackApp()));
+  final container = ProviderContainer();
+  try {
+    await container.read(localNotificationServiceProvider).init();
+  } catch (e) {
+    debugPrint(
+      'LocalNotificationService.init() failed (expected in tests): $e',
+    );
+  }
+
+  runApp(
+    UncontrolledProviderScope(container: container, child: const RunTrackApp()),
+  );
 }
 
 class RunTrackApp extends ConsumerWidget {
@@ -57,6 +69,16 @@ class RunTrackApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final router = ref.watch(appRouterProvider);
     ref.watch(onboardingLoaderProvider);
+
+    // Re-align scheduled run reminders with current prefs on each launch.
+    ref.listen(settingsStreamProvider, (_, _) {
+      ref
+          .read(notificationSchedulerProvider)
+          .reconcile()
+          .catchError(
+            (Object e) => debugPrint('reminder reconcile failed: $e'),
+          );
+    });
 
     // When a signed-in user appears (login, or a session restored at app
     // start): first hydrate local from the remote (restores a fresh install),
