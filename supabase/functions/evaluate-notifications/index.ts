@@ -87,9 +87,20 @@ if (import.meta.main) {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
     );
 
+    // FCM not configured yet (Firebase deferred): nothing to send. Return cleanly
+    // so the hourly pg_cron tick is a no-op instead of a 500.
+    const fcmProjectId = Deno.env.get("FCM_PROJECT_ID");
+    const fcmServiceAccount = Deno.env.get("FCM_SERVICE_ACCOUNT");
+    if (!fcmProjectId || !fcmServiceAccount) {
+      return new Response(
+        JSON.stringify({ ok: true, sent: 0, skipped: "fcm_not_configured" }),
+        { headers: { "Content-Type": "application/json" } },
+      );
+    }
+
     // Access token for FCM v1 from the service-account credential.
-    const projectId = Deno.env.get("FCM_PROJECT_ID")!;
-    const credentials = JSON.parse(Deno.env.get("FCM_SERVICE_ACCOUNT")!);
+    const projectId = fcmProjectId;
+    const credentials = JSON.parse(fcmServiceAccount);
     const auth = new GoogleAuth({
       credentials,
       scopes: ["https://www.googleapis.com/auth/firebase.messaging"],
