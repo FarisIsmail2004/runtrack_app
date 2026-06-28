@@ -38,6 +38,11 @@ migrate_working_dir/
 dart_defines.json
 dart_defines.example.json
 
+# Firebase (provided per-developer; never committed)
+android/app/google-services.json
+ios/Runner/GoogleService-Info.plist
+lib/firebase_options.dart
+
 # Symbolication related
 app.*.symbols
 
