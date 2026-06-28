@@ -52,6 +52,19 @@ Deno.test("weeklyProgress: runs metric met; null goal -> target 0", () => {
   assertEquals(weeklyProgress(runs, null, now, "UTC"), { current: 3, target: 0, met: false });
 });
 
+Deno.test("weeklyProgress: duration metric sums duration_s this week", () => {
+  const now = new Date("2026-06-28T18:00:00Z"); // Sun
+  const runs = [
+    { started_at: "2026-06-22T07:00:00Z", distance_m: 3000, duration_s: 1200 }, // Mon, in week
+    { started_at: "2026-06-24T07:00:00Z", distance_m: 5000, duration_s: 1800 }, // Wed, in week
+    { started_at: "2026-06-21T07:00:00Z", distance_m: 9999, duration_s: 9999 }, // last Sun, excluded
+  ];
+  const p = weeklyProgress(runs, { type: "duration", target_value: 3000 }, now, "UTC");
+  assertEquals(p.current, 3000);
+  assertEquals(p.target, 3000);
+  assertEquals(p.met, true);
+});
+
 Deno.test("daysSinceLastRun", () => {
   const now = new Date("2026-06-28T18:00:00Z");
   assertEquals(daysSinceLastRun(["2026-06-21T07:00:00Z"], now, "UTC"), 7);

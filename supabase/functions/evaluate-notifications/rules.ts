@@ -1,4 +1,4 @@
-import { localParts, minutesOfDay, weekStartUtc, localDayString } from "./week.ts";
+import { weekStartUtc, localDayString } from "./week.ts";
 
 export type RunRow = { started_at: string; distance_m: number; duration_s: number };
 export type Goal = { type: string; target_value: number } | null;
@@ -42,7 +42,7 @@ export function currentStreak(runsUtc: string[], nowUtc: Date, tz: string): numb
   return streak;
 }
 
-export function weeklyProgress(runs: RunRow[], goal: Goal, nowUtc: Date, tz: string) {
+export function weeklyProgress(runs: RunRow[], goal: Goal, nowUtc: Date, tz: string): { current: number; target: number; met: boolean } {
   const start = weekStartUtc(nowUtc, tz).getTime();
   const inWeek = runs.filter((r) => new Date(r.started_at).getTime() >= start);
   const metric = goal?.type ?? "runs";
