@@ -41,8 +41,11 @@ export function decideForUser(input: DecideInput): NotifType | null {
 
   const candidates: NotifType[] = [];
 
+  // Compute weekly progress once and reuse for both goal_achieved and weekly_goal.
+  const wp = weeklyProgress(runs, goal, nowUtc, tz);
+
   // goal_achieved: this week's goal met.
-  if (prefs.goal_achieved_alerts && weeklyProgress(runs, goal, nowUtc, tz).met) {
+  if (prefs.goal_achieved_alerts && wp.met) {
     candidates.push("goal_achieved");
   }
   // streak: active streak >= 2, no run today, evening local.
@@ -55,7 +58,6 @@ export function decideForUser(input: DecideInput): NotifType | null {
   }
   // weekly_goal: behind, <=2 days left in the week (Sat=6, Sun=7), goal set.
   if (prefs.weekly_goal_alerts && goal) {
-    const wp = weeklyProgress(runs, goal, nowUtc, tz);
     const daysLeft = 7 - local.weekday; // Sun -> 0, Sat -> 1
     if (!wp.met && daysLeft <= 2) candidates.push("weekly_goal");
   }
@@ -117,17 +119,28 @@ if (import.meta.main) {
 
     let sent = 0;
     for (const [userId, { tz, tokens }] of byUser) {
-      const [{ data: prefsRow }, { data: runs }, { data: goals }, { data: log }] =
-        await Promise.all([
-          supabase.from("notification_prefs").select("*").eq("user_id", userId).maybeSingle(),
-          supabase.from("runs").select("started_at, distance_m, duration_s")
-            .eq("user_id", userId).not("ended_at", "is", null)
-            .order("started_at", { ascending: false }).limit(60),
-          supabase.from("goals").select("type, target_value")
-            .eq("user_id", userId).order("created_at", { ascending: false }).limit(1),
-          supabase.from("notification_log").select("type, sent_at")
-            .eq("user_id", userId).order("sent_at", { ascending: false }).limit(30),
-        ]);
+      const [
+        { data: prefsRow, error: prefsErr },
+        { data: runs, error: runsErr },
+        { data: goals, error: goalsErr },
+        { data: log, error: logErr },
+      ] = await Promise.all([
+        supabase.from("notification_prefs").select("*").eq("user_id", userId).maybeSingle(),
+        supabase.from("runs").select("started_at, distance_m, duration_s")
+          .eq("user_id", userId).not("ended_at", "is", null)
+          .order("started_at", { ascending: false }).limit(60),
+        supabase.from("goals").select("type, target_value")
+          .eq("user_id", userId).order("created_at", { ascending: false }).limit(1),
+        supabase.from("notification_log").select("type, sent_at")
+          .eq("user_id", userId).order("sent_at", { ascending: false }).limit(30),
+      ]);
+
+      if (prefsErr || runsErr || goalsErr || logErr) {
+        console.error(
+          `skip user ${userId}: ${prefsErr?.message ?? runsErr?.message ?? goalsErr?.message ?? logErr?.message}`,
+        );
+        continue;
+      }
 
       const prefs: Prefs = prefsRow ?? {
         streak_alerts: true, weekly_goal_alerts: true,
@@ -150,8 +163,14 @@ if (import.meta.main) {
         if (await send(token, title, body, { type })) delivered = true;
       }
       if (delivered) {
-        await supabase.from("notification_log").insert({ user_id: userId, type });
-        sent++;
+        const { error: insErr } = await supabase
+          .from("notification_log")
+          .insert({ user_id: userId, type });
+        if (insErr) {
+          console.error(`failed to log notification for user ${userId}: ${insErr.message}`);
+        } else {
+          sent++;
+        }
       }
     }
 
