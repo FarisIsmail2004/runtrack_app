@@ -1,3 +1,5 @@
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -9,6 +11,8 @@ import 'core/supabase/supabase_client.dart';
 import 'features/auth/application/auth_notifier.dart';
 import 'features/goals/application/goal_sync_providers.dart';
 import 'features/notifications/application/notification_providers.dart';
+import 'features/notifications/application/push_providers.dart';
+import 'features/notifications/data/push_message_handler.dart';
 import 'features/onboarding/application/onboarding_providers.dart';
 import 'features/profile/application/profile_sync_providers.dart';
 import 'features/run_tracking/application/sync_providers.dart';
@@ -48,12 +52,43 @@ Future<void> main() async {
     debugPrint('initSupabase() failed — continuing offline: $e');
   }
 
+  // Initialise Firebase Messaging only when this build is configured for the
+  // backend (google-services.json present). Guarded so offline/test builds and
+  // unconfigured developer builds never touch Firebase.
+  if (isSupabaseConfigured) {
+    try {
+      await Firebase.initializeApp();
+    } catch (e) {
+      debugPrint('Firebase.initializeApp() failed — push disabled: $e');
+    }
+  }
+
   final container = ProviderContainer();
   try {
     await container.read(localNotificationServiceProvider).init();
   } catch (e) {
     debugPrint(
       'LocalNotificationService.init() failed (expected in tests): $e',
+    );
+  }
+
+  if (isSupabaseConfigured) {
+    final pushHandler = PushMessageHandler(
+      showLocal: (t, b) =>
+          container.read(localNotificationServiceProvider).show(t, b),
+      navigate: (route) => container.read(appRouterProvider).go(route),
+    );
+    FirebaseMessaging.onMessage.listen(
+      (m) => pushHandler.onForegroundMessage({
+        'notification': {
+          'title': m.notification?.title,
+          'body': m.notification?.body,
+        },
+        'data': m.data,
+      }),
+    );
+    FirebaseMessaging.onMessageOpenedApp.listen(
+      (m) => pushHandler.onMessageOpened({'data': m.data}),
     );
   }
 
@@ -91,6 +126,8 @@ class RunTrackApp extends ConsumerWidget {
         ref.read(profileSyncServiceProvider)?.syncOnLogin();
         ref.read(goalSyncServiceProvider)?.syncOnLogin();
         runSync?.syncPendingRuns();
+        triggerPushRegistration(ref);
+        ref.read(notificationPrefsSyncServiceProvider)?.push();
       }
     });
 
