@@ -22,6 +22,10 @@ Deno.test("weekStartUtc: Monday 00:00 local in UTC", () => {
   // Sunday 2026-06-28 12:00Z, zone UTC -> week Monday is 2026-06-22 00:00Z.
   const ws = weekStartUtc(new Date("2026-06-28T12:00:00Z"), "UTC");
   assertEquals(ws.toISOString(), "2026-06-22T00:00:00.000Z");
+
+  // 2026-06-28T23:30Z is Mon 09:30 Sydney (AEST, UTC+10) -> week start = Mon 00:00 AEST.
+  const wsSyd = weekStartUtc(new Date("2026-06-28T23:30:00Z"), "Australia/Sydney");
+  assertEquals(wsSyd.toISOString(), "2026-06-28T14:00:00.000Z");
 });
 
 Deno.test("localDayString", () => {
