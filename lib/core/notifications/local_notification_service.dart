@@ -77,6 +77,26 @@ class LocalNotificationService implements RunReminderSink {
     return false;
   }
 
+  /// Shows an immediate local notification (used to surface a foreground push,
+  /// which Android does not auto-display). Uses the existing channel.
+  Future<void> show(String title, String body) async {
+    await _plugin.show(
+      0,
+      title,
+      body,
+      const NotificationDetails(
+        android: AndroidNotificationDetails(
+          _channelId,
+          _channelName,
+          channelDescription: _channelDesc,
+          importance: Importance.defaultImportance,
+          priority: Priority.defaultPriority,
+        ),
+        iOS: DarwinNotificationDetails(),
+      ),
+    );
+  }
+
   /// Cancels every run-reminder slot (ids 1001..1007), then schedules [slots]
   /// as weekly-recurring zoned notifications.
   @override
