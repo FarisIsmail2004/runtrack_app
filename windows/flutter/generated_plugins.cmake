@@ -4,6 +4,7 @@
 
 list(APPEND FLUTTER_PLUGIN_LIST
   app_links
+  firebase_core
   flutter_timezone
   geolocator_windows
   passkeys_windows
