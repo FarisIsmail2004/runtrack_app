@@ -1,4 +1,6 @@
 // lib/shared/widgets/app_bottom_nav.dart
+import 'dart:ui' show ImageFilter;
+
 import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
@@ -14,6 +16,14 @@ class AppBottomNav extends StatelessWidget {
 
   final AppTab current;
   final ValueChanged<AppTab> onSelect;
+
+  /// Height of the bar's tappable row, excluding the bottom safe-area inset.
+  static const double barHeight = 64;
+
+  /// Space a screen's scrollable should reserve at the bottom so its last
+  /// items clear the floating glass bar (row height + safe-area inset).
+  static double reservedSpace(BuildContext context) =>
+      barHeight + MediaQuery.viewPaddingOf(context).bottom;
 
   static const _items = [
     (
@@ -41,42 +51,56 @@ class AppBottomNav extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final primary = Theme.of(context).colorScheme.primary;
+    final scheme = Theme.of(context).colorScheme;
+    final primary = scheme.primary;
     final muted = AppColors.of(context).textMuted;
+    final borderColor = AppColors.of(context).surfaceBorder;
 
-    return SafeArea(
-      top: false,
-      child: SizedBox(
-        height: 64,
-        child: Row(
-          children: _items.map((item) {
-            final isActive = item.tab == current;
-            final color = isActive ? primary : muted;
-            return Expanded(
-              child: GestureDetector(
-                key: item.key,
-                behavior: HitTestBehavior.opaque,
-                onTap: () => onSelect(item.tab),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      isActive ? item.activeIcon : item.icon,
-                      color: color,
-                      size: 24,
+    return ClipRect(
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 24, sigmaY: 24),
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            // Translucent surface tint so the blurred content reads through.
+            color: scheme.surface.withValues(alpha: 0.6),
+            border: Border(top: BorderSide(color: borderColor, width: 1)),
+          ),
+          child: SafeArea(
+            top: false,
+            child: SizedBox(
+              height: barHeight,
+              child: Row(
+                children: _items.map((item) {
+                  final isActive = item.tab == current;
+                  final color = isActive ? primary : muted;
+                  return Expanded(
+                    child: GestureDetector(
+                      key: item.key,
+                      behavior: HitTestBehavior.opaque,
+                      onTap: () => onSelect(item.tab),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            isActive ? item.activeIcon : item.icon,
+                            color: color,
+                            size: 24,
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            item.label,
+                            style: Theme.of(
+                              context,
+                            ).textTheme.labelSmall?.copyWith(color: color),
+                          ),
+                        ],
+                      ),
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      item.label,
-                      style: Theme.of(
-                        context,
-                      ).textTheme.labelSmall?.copyWith(color: color),
-                    ),
-                  ],
-                ),
+                  );
+                }).toList(),
               ),
-            );
-          }).toList(),
+            ),
+          ),
         ),
       ),
     );

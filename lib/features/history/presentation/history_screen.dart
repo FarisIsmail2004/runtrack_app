@@ -25,10 +25,11 @@ class HistoryScreen extends ConsumerWidget {
     final filterActive = ref.watch(historyFilterProvider).isActive;
 
     return Scaffold(
-      body: SafeArea(
-        child: Column(
-          children: [
-            Expanded(
+      body: Stack(
+        children: [
+          Positioned.fill(
+            child: SafeArea(
+              bottom: false,
               child: runsAsync.when(
                 loading: () => const Center(child: CircularProgressIndicator()),
                 error: (e, _) => Center(
@@ -45,40 +46,29 @@ class HistoryScreen extends ConsumerWidget {
                 },
               ),
             ),
-            _BottomNav(),
-          ],
-        ),
+          ),
+
+          // Frosted-glass navigation bar floating over the content.
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: AppBottomNav(
+              current: AppTab.history,
+              onSelect: (tab) {
+                switch (tab) {
+                  case AppTab.home:
+                    context.go('/home');
+                  case AppTab.history:
+                    break; // already here
+                  case AppTab.profile:
+                    context.go('/profile');
+                }
+              },
+            ),
+          ),
+        ],
       ),
-    );
-  }
-}
-
-// ---------------------------------------------------------------------------
-// Bottom navigation
-// ---------------------------------------------------------------------------
-
-class _BottomNav extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    final borderColor = AppColors.of(context).surfaceBorder;
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Divider(height: 1, thickness: 1, color: borderColor),
-        AppBottomNav(
-          current: AppTab.history,
-          onSelect: (tab) {
-            switch (tab) {
-              case AppTab.home:
-                context.go('/home');
-              case AppTab.history:
-                break; // already here
-              case AppTab.profile:
-                context.go('/profile');
-            }
-          },
-        ),
-      ],
     );
   }
 }
@@ -228,6 +218,9 @@ class _HistoryList extends ConsumerWidget {
     final trendValues = runs.reversed.map((r) => r.distanceM / 1000.0).toList();
 
     return ListView.builder(
+      padding: EdgeInsets.only(
+        bottom: AppBottomNav.reservedSpace(context) + 16.h,
+      ),
       itemCount: items.length + 1, // +1 for the summary card at top
       itemBuilder: (context, index) {
         if (index == 0) {

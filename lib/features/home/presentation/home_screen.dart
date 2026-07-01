@@ -28,12 +28,18 @@ class HomeScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
-      body: SafeArea(
-        child: Column(
-          children: [
-            Expanded(
+      body: Stack(
+        children: [
+          Positioned.fill(
+            child: SafeArea(
+              bottom: false,
               child: ListView(
-                padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 16.h),
+                padding: EdgeInsets.fromLTRB(
+                  20.w,
+                  16.h,
+                  20.w,
+                  AppBottomNav.reservedSpace(context) + 16.h,
+                ),
                 children: [
                   // Header row: greeting + avatar
                   RevealIn(child: _HeaderRow()),
@@ -86,35 +92,29 @@ class HomeScreen extends ConsumerWidget {
                 ],
               ),
             ),
+          ),
 
-            // Bottom navigation bar
-            _buildBottomNav(context),
-          ],
-        ),
+          // Frosted-glass navigation bar floating over the content.
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: AppBottomNav(
+              current: AppTab.home,
+              onSelect: (tab) {
+                switch (tab) {
+                  case AppTab.home:
+                    break; // already here
+                  case AppTab.history:
+                    context.go('/history');
+                  case AppTab.profile:
+                    context.go('/profile');
+                }
+              },
+            ),
+          ),
+        ],
       ),
-    );
-  }
-
-  Widget _buildBottomNav(BuildContext context) {
-    final borderColor = AppColors.of(context).surfaceBorder;
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Divider(height: 1, thickness: 1, color: borderColor),
-        AppBottomNav(
-          current: AppTab.home,
-          onSelect: (tab) {
-            switch (tab) {
-              case AppTab.home:
-                break; // already here
-              case AppTab.history:
-                context.go('/history');
-              case AppTab.profile:
-                context.go('/profile');
-            }
-          },
-        ),
-      ],
     );
   }
 }

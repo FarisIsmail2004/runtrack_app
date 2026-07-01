@@ -57,6 +57,8 @@ app.*.map.json
 # Claude Code / agent tooling and authored docs (kept local, not committed)
 .claude/
 .agents/
+.maestro/
+.serena/
 skills.md
 skills-lock.json
 *.md

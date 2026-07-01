@@ -231,11 +231,11 @@ class _GoalEditorSheetState extends ConsumerState<GoalEditorSheet> {
             if (_editingId != null) ...[
               SizedBox(height: 12.h),
               Center(
-                child: TextButton(
+                child: TextButton( 
                   onPressed: _remove,
                   child: Text(
                     'Remove goal',
-                    style: TextStyle(color: appColors.textMuted),
+                    style: TextStyle(color: Colors.deepOrangeAccent, fontSize: 16.sp, fontWeight: FontWeight.w600),
                   ),
                 ),
               ),

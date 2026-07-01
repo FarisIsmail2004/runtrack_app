@@ -143,17 +143,26 @@ class _DayPicker extends StatelessWidget {
     return Padding(
       padding: EdgeInsets.symmetric(vertical: 8.h),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           for (var wd = 1; wd <= 7; wd++)
-            ChoiceChip(
-              label: Text(_weekdayLabels[wd - 1]),
-              selected: selected.contains(wd),
-              onSelected: (on) {
-                final next = {...selected};
-                on ? next.add(wd) : next.remove(wd);
-                onChanged(next);
-              },
+            Expanded(
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 2.w),
+                child: ChoiceChip(
+                  label: Center(child: Text(_weekdayLabels[wd - 1])),
+                  labelPadding: EdgeInsets.zero,
+                  padding: EdgeInsets.symmetric(vertical: 8.h),
+                  showCheckmark: false,
+                  visualDensity: VisualDensity.compact,
+                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  selected: selected.contains(wd),
+                  onSelected: (on) {
+                    final next = {...selected};
+                    on ? next.add(wd) : next.remove(wd);
+                    onChanged(next);
+                  },
+                ),
+              ),
             ),
         ],
       ),

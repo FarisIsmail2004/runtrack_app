@@ -56,12 +56,18 @@ class ProfileScreen extends ConsumerWidget {
     );
 
     return Scaffold(
-      body: SafeArea(
-        child: Column(
-          children: [
-            Expanded(
+      body: Stack(
+        children: [
+          Positioned.fill(
+            child: SafeArea(
+              bottom: false,
               child: ListView(
-                padding: EdgeInsets.fromLTRB(20.w, 0, 20.w, 24.h),
+                padding: EdgeInsets.fromLTRB(
+                  20.w,
+                  0,
+                  20.w,
+                  AppBottomNav.reservedSpace(context) + 24.h,
+                ),
                 children: [
                   // ── App bar row ───────────────────────────────────────────
                   Padding(
@@ -245,33 +251,28 @@ class ProfileScreen extends ConsumerWidget {
                 ],
               ),
             ),
+          ),
 
-            // ── Bottom nav ────────────────────────────────────────────────
-            Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Divider(
-                  height: 1,
-                  thickness: 1,
-                  color: appColors.surfaceBorder,
-                ),
-                AppBottomNav(
-                  current: AppTab.profile,
-                  onSelect: (tab) {
-                    switch (tab) {
-                      case AppTab.home:
-                        context.go('/home');
-                      case AppTab.history:
-                        context.go('/history');
-                      case AppTab.profile:
-                        break; // already here
-                    }
-                  },
-                ),
-              ],
+          // Frosted-glass navigation bar floating over the content.
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: AppBottomNav(
+              current: AppTab.profile,
+              onSelect: (tab) {
+                switch (tab) {
+                  case AppTab.home:
+                    context.go('/home');
+                  case AppTab.history:
+                    context.go('/history');
+                  case AppTab.profile:
+                    break; // already here
+                }
+              },
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
