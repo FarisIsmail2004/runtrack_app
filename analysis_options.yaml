@@ -9,6 +9,15 @@
 # packages, and plugins designed to encourage good coding practices.
 include: package:flutter_lints/flutter.yaml
 
+analyzer:
+  # Never analyze build output. Swift Package Manager checks the flutterfire
+  # monorepo source (its own tests/example apps referencing Firebase packages we
+  # don't depend on) into build/ios/SourcePackages/checkouts/, which otherwise
+  # floods `flutter analyze` and the IDE with thousands of errors from code that
+  # isn't ours. build/ is gitignored; it should never be analyzed.
+  exclude:
+    - build/**
+
 linter:
   # The lint rules applied to this project can be customized in the
   # section below to disable rules from the `package:flutter_lints/flutter.yaml`
